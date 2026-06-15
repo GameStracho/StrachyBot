@@ -1,0 +1,45 @@
+{
+    "229566521288949760": {
+        "server_name": "Strachyho Test Server",
+        "217607696361193475": {
+            "name": "GameStracho",
+            "exp": 0,
+            "games": {
+                "wordle": {
+                    "games": 0,
+                    "wins": 0
+                },
+                "tic": {
+                    "games": 0,
+                    "wins": 0
+                },
+                "quote": {
+                    "games": 0,
+                    "wins": 0
+                },
+                "hangman": {
+                    "games": 0,
+                    "wins": 0
+                },
+                "anagram": {
+                    "singleplayer_games": 0,
+                    "singleplayer_wins": 0,
+                    "multiplayer_games": 0,
+                    "multiplayer_wins": 0
+                },
+                "trivia": {
+                    "easy_shown": 0,
+                    "easy_correct": 0,
+                    "medium_shown": 0,
+                    "medium_correct": 0,
+                    "hard_shown": 0,
+                    "hard_correct": 0
+                }
+            },
+            "cute": 0,
+            "waifu": 0,
+            "who_asked": 0,
+            "who_asked_time": 0
+        }
+    }
+}

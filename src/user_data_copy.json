@@ -1,0 +1,139 @@
+{
+    "users": [
+        {
+            "name": "NmS",
+            "user_id": 257574878377541642,
+            "exp": 2399,
+            "hangman_games": 74,
+            "hangman_wins": 49,
+            "facts_shown": 35,
+            "facts_available": 3,
+            "anagram": {
+                "singleplayer_games": 14,
+                "singleplayer_wins": 11,
+                "multiplayer_games": 19,
+                "multiplayer_wins": 7
+            },
+            "trivia": {
+                "easy_shown": 26,
+                "easy_correct": 22,
+                "medium_shown": 13,
+                "medium_correct": 6,
+                "hard_shown": 36,
+                "hard_correct": 16
+            },
+            "cute": 73,
+            "waifu": 85,
+            "who_asked": 21,
+            "who_asked_time": 142
+        },
+        {
+            "name": "GameStracho",
+            "user_id": 217607696361193475,
+            "exp": 466,
+            "hangman_games": 13,
+            "hangman_wins": 8,
+            "facts_shown": 10,
+            "facts_available": 3,
+            "anagram": {
+                "singleplayer_games": 2,
+                "singleplayer_wins": 0,
+                "multiplayer_games": 6,
+                "multiplayer_wins": 1
+            },
+            "trivia": {
+                "easy_shown": 3,
+                "easy_correct": 2,
+                "medium_shown": 8,
+                "medium_correct": 4,
+                "hard_shown": 34,
+                "hard_correct": 14
+            },
+            "cute": 2,
+            "waifu": 3,
+            "who_asked": 5,
+            "who_asked_time": 4
+        },
+        {
+            "name": "MichalBr",
+            "user_id": 222683869982228491,
+            "exp": 563,
+            "hangman_games": 2,
+            "hangman_wins": 2,
+            "facts_shown": 7,
+            "facts_available": 0,
+            "anagram": {
+                "singleplayer_games": 0,
+                "singleplayer_wins": 0,
+                "multiplayer_games": 8,
+                "multiplayer_wins": 0
+            },
+            "trivia": {
+                "easy_shown": 4,
+                "easy_correct": 3,
+                "medium_shown": 2,
+                "medium_correct": 0,
+                "hard_shown": 42,
+                "hard_correct": 11
+            },
+            "cute": 444,
+            "waifu": 1,
+            "who_asked": 69,
+            "who_asked_time": 601
+        },
+        {
+            "name": "domzak94",
+            "user_id": 496286547667058688,
+            "exp": 1913,
+            "hangman_games": 21,
+            "hangman_wins": 15,
+            "facts_shown": 94,
+            "facts_available": 0,
+            "anagram": {
+                "singleplayer_games": 46,
+                "singleplayer_wins": 45,
+                "multiplayer_games": 11,
+                "multiplayer_wins": 8
+            },
+            "trivia": {
+                "easy_shown": 7,
+                "easy_correct": 5,
+                "medium_shown": 3,
+                "medium_correct": 2,
+                "hard_shown": 22,
+                "hard_correct": 13
+            },
+            "cute": 102,
+            "waifu": 4,
+            "who_asked": 1,
+            "who_asked_time": 3
+        },
+        {
+            "name": "Cpt. John22",
+            "user_id": 662622850326462484,
+            "exp": 2234,
+            "hangman_games": 72,
+            "hangman_wins": 32,
+            "facts_shown": 38,
+            "facts_available": 3,
+            "anagram": {
+                "singleplayer_games": 8,
+                "singleplayer_wins": 5,
+                "multiplayer_games": 18,
+                "multiplayer_wins": 6
+            },
+            "trivia": {
+                "easy_shown": 111,
+                "easy_correct": 76,
+                "medium_shown": 21,
+                "medium_correct": 10,
+                "hard_shown": 12,
+                "hard_correct": 4
+            },
+            "cute": 97,
+            "waifu": 23,
+            "who_asked": 2,
+            "who_asked_time": 31
+        }
+    ]
+}
