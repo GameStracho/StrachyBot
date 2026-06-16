@@ -77,10 +77,11 @@ async def tic_play(
     interaction: discord.Interaction, opponent: discord.User,
     grid_size: app_commands.Choice[int]):
     user_id: int = interaction.user.id
+    mention: str = bot.user.mention if bot.user is not None else ""
     if user_id == opponent.id:
         await interaction.response.send_message(
             ephemeral=True,
-            content=f"To play singleplayer choose {bot.user.mention if bot.user is not None else ""} as your opponent. - Coming soon")
+            content=f"To play singleplayer choose {mention} as your opponent. - Coming soon")
     else:
         await tic.start(interaction, opponent, grid_size.value)
 
