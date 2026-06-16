@@ -1,0 +1,7 @@
+services:
+  discord-bot:
+    build: .
+    container_name: StrachyBot
+    restart: always
+    env_file:
+      - .env

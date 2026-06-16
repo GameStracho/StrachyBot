@@ -8,7 +8,7 @@ from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 
-from lib import console, wordle, tic, quote, google
+from lib import console, wordle, tic, quote
 
 load_dotenv()
 TOKEN = getenv("DISCORD_TOKEN")
