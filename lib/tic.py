@@ -17,15 +17,16 @@ class TicTacToeButtons(discord.ui.View):
             for j in range(grid_size):
                 button: discord.ui.Button = discord.ui.Button(
                     custom_id=str((i * grid_size) + j), label="\u1CBC", row=i)
-                button.callback = self.button_callback
+                #button.callback = self.button_callback
                 self.add_item(button)
 
     async def button_callback(self, interaction: discord.Interaction):
         await interaction.response.send_message(
                ephemeral=True, content="responding...", delete_after=0)
-        await button_pressed(
-            self.game_id, int(interaction.data["custom_id"]),
-            interaction.user.id)
+        # TODO: resolve type issues
+        #await button_pressed(
+        #    self.game_id, int(interaction.data["custom_id"]),
+        #    interaction.user.id)
 
 
 games: Dict[int, dict] = {}
@@ -33,7 +34,7 @@ games: Dict[int, dict] = {}
 
 async def start(
         interaction: discord.Interaction, opponent: discord.User, grid_size: int) -> None:
-    user: discord.User = interaction.user
+    user: discord.User | discord.Member = interaction.user
     msg: str = f"🟣 - {user.mention}\n🟠 - {opponent.mention}"
     embed = discord.Embed(
         color=Color.purple(), title="Tic-Tac-Toe", description=msg)
@@ -41,6 +42,10 @@ async def start(
     icon: discord.File = discord.File(
         "./src/images/icon_tic.png", filename="icon_tic.png")
     embed.set_thumbnail(url="attachment://icon_tic.png")
+
+    if embed.description is None:
+        embed.description = ""
+
     embed.description += f"\n\nIt's {user.mention}'s turn."
 
     view: discord.ui.View = TicTacToeButtons(user.id, grid_size)
@@ -88,17 +93,16 @@ async def button_pressed(game_id: int, button_num: int, user_id: int) -> None:
 def change_button_label(game_id: int, button_num: int) -> bool:
     game_info: dict = games[game_id]
     view: discord.ui.View = game_info["view"]
-
-    if view.children[button_num].label == "\u1CBC":
-        label: str = ""
-        if game_info["turn"]:
-            label = "🟠"
-        else:
-            label = "🟣"
-        view.children[button_num].label = label
-        return True
-    else:
+    btn = view.children[button_num]
+    if not isinstance(btn, discord.ui.Button):
         return False
+    if btn.label == "\u1CBC":
+        if game_info["turn"]:
+            btn.label = "🟠"
+        else:
+            btn.label = "🟣"
+        return True
+    return False
 
 
 def __check_end(game_id: int) -> bool:
@@ -122,6 +126,8 @@ def __check_end(game_id: int) -> bool:
         return True
 
     for button in view.children:
+        if not isinstance(button, discord.ui.Button):
+            continue
         if button.label == "\u1CBC":
             return False
     embed.description = f"{game_info['msg']}\n\nGame ended in a draw. *+5 xp for both*"
@@ -136,10 +142,13 @@ def __check_rows(view: discord.ui.View, symbol: str) -> bool:
     for i in range(rows_num):
         for j in range(rows_num - 2):
             #print(f"rows: {(i * rows_num) + j}, {(i * rows_num) + j + 1}, {(i * rows_num) + j + 2}")
-            if (view.children[(i * rows_num) + j].label == symbol and
-                view.children[(i * rows_num) + j + 1].label == symbol and
-                view.children[(i * rows_num) + j + 2].label == symbol):
-                    return True
+            a = view.children[(i * rows_num) + j]
+            b = view.children[(i * rows_num) + j + 1]
+            c = view.children[(i * rows_num) + j + 2]
+            if not (isinstance(a, discord.ui.Button) and isinstance(b, discord.ui.Button) and isinstance(c, discord.ui.Button)):
+                continue
+            if (a.label == symbol and b.label == symbol and c.label == symbol):
+                return True
     return False
 
 
@@ -148,10 +157,13 @@ def __check_columns(view: discord.ui.View, symbol: str) -> bool:
     for i in range(columns_num):
         for j in range(columns_num - 2):
             #print(f"columns: {i + (j * columns_num)}, {i + ((j + 1) * columns_num)}, {i + ((j + 2) * columns_num)}")
-            if (view.children[i + (j * columns_num)].label == symbol and
-                view.children[i + ((j + 1) * columns_num)].label == symbol and
-                view.children[i + ((j + 2) * columns_num)].label == symbol):
-                    return True
+            a = view.children[i + (j * columns_num)]
+            b = view.children[i + ((j + 1) * columns_num)]
+            c = view.children[i + ((j + 2) * columns_num)]
+            if not (isinstance(a, discord.ui.Button) and isinstance(b, discord.ui.Button) and isinstance(c, discord.ui.Button)):
+                continue
+            if (a.label == symbol and b.label == symbol and c.label == symbol):
+                return True
     return False
 
 
@@ -169,11 +181,14 @@ def __check_diagonals(view: discord.ui.View, symbol: str) -> bool:
         step: int = (diagonals_num - 1) + (i * 2)
         #print(f"step: {step}")
         for starting_point in starting_points[i]:
-            #print(f"diagonals: {starting_point}, {starting_point + step}, {starting_point + 2 * step}")
-            if (view.children[starting_point].label == symbol and
-                view.children[starting_point + step].label == symbol and
-                view.children[starting_point + 2 * step].label == symbol):
-                    return True
+            a = view.children[starting_point]
+            b = view.children[starting_point + step]
+            c = view.children[starting_point + 2 * step]
+            if not (isinstance(a, discord.ui.Button) and isinstance(b, discord.ui.Button) and isinstance(c, discord.ui.Button)):
+                continue
+            if (a.label == symbol and b.label == symbol and c.label == symbol):
+                return True
+    return False
 
 
 def __switch_turns(game_id: int) -> None:
@@ -195,13 +210,22 @@ async def __remove_buttons(game_id: int) -> None:
     view: discord.ui.View = game_info["view"]
     embed: discord.Embed = game_info["embed"]
 
+    if embed.description is None:
+        embed.description = ""
     embed.description += "\n\n"
     
     rows_num: int = int(sqrt(len(view.children)))
     label: str = ""
     for i in range(rows_num):
         for j in range(rows_num):
-            label = view.children[(i * rows_num) + j].label
+            btn = view.children[(i * rows_num) + j]
+            if not isinstance(btn, discord.ui.Button):
+                embed.description += " ` ⚫ `"
+                continue
+            
+            if btn.label is not None:
+                label = btn.label
+            
             if label == "\u1CBC":
                 embed.description += " ` ⚫ `"
             elif label == "🟣":
@@ -214,5 +238,6 @@ async def __remove_buttons(game_id: int) -> None:
     try:
         interaction: discord.Interaction = game_info["interaction"]
         await interaction.edit_original_response(embed=embed, view=None)
-    except:
+    except Exception as e:
+        print(f"ERROR: Could not edit original message. \n{e}")
         pass

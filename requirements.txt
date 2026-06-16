@@ -2,3 +2,7 @@ colorama == 0.4.6
 discord == 2.3.2
 dotenv == 0.9.9
 requests == 2.34.2
+types-colorama == 0.4.15
+
+# google
+google_auth_oauthlib

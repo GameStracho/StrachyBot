@@ -25,7 +25,7 @@ def is_playing(user_id: int):
 
 
 async def start(interaction: discord.Interaction) -> None:
-    user: discord.User = interaction.user
+    user: discord.User | discord.Member = interaction.user
     msg: str = "⬜ ⬜ ⬜ ⬜ ⬜"
     embed = discord.Embed(color=Color.blue(), title="Wordle", description=msg)
     embed.set_author(name=user.display_name, icon_url=user.display_avatar)
@@ -76,7 +76,7 @@ async def guess(word: str, interaction: discord.Interaction):
         if game_info["lives"] == 6:
             msg = ""
         else:
-            msg += f"\n\n"
+            msg += "\n\n"
 
         square_line: str = "\n"
         searched_word = game_info["searched_word"]

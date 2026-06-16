@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List
+from typing import Dict, List, Any
 import discord
 from discord import Color
 import requests
@@ -17,15 +17,22 @@ class QuoteGuessButtons(discord.ui.View):
         for i in range(len(labels)):
             button: discord.ui.Button = discord.ui.Button(
                 custom_id=str(i), label=labels[i], row=0)
-            button.callback = self.button_callback
+            # mypy: assigning to a callback attribute on a Button is allowed at runtime
+            button.callback = self.button_callback  # type: ignore[method-assign]
             self.add_item(button)
     
     async def button_callback(self, interaction: discord.Interaction):
         await interaction.response.send_message(
                ephemeral=True, content="responding...", delete_after=0)
+        data: Any = interaction.data
+        custom_id = None
+        if isinstance(data, dict):
+            custom_id = data.get("custom_id")
+        if custom_id is None:
+            return
         await guess(
                 interaction.user, self.game_id,
-                int(interaction.data["custom_id"]))
+                int(custom_id))
 
 
 games: Dict[int, dict] = {}
@@ -49,7 +56,7 @@ async def start(interaction: discord.Interaction) -> None:
         f"`{quotes[answer]['quote']}`\n"
     )
 
-    user: discord.User = interaction.user
+    user = interaction.user
 
     embed = discord.Embed(
         color=Color.blue(), title="Quote Guess", description=msg)
@@ -85,7 +92,7 @@ async def start(interaction: discord.Interaction) -> None:
         embed=embed, view=QuoteGuessButtons(user.id))
 
 
-async def guess(user: discord.User, game_id: int, choice: int):
+async def guess(user: discord.User | discord.Member, game_id: int, choice: int):
     user_id: int = user.id
     if user_id in games and user_id == game_id:
         game_info: dict = games[user_id]

@@ -15,8 +15,11 @@ def __save(stats: dict) -> None:
         json.dump(stats, file, indent=4)
 
 
-def create(user: discord.Member, stats: dict) -> dict:
+def create(user: discord.User | discord.Member, stats: dict) -> dict:
     print("yep")
+    if isinstance(user, discord.User):
+        return {} # TODO: resolve later
+
     user_id: int = user.id
     guild: discord.Guild = user.guild
 
@@ -68,10 +71,14 @@ def __create_stats(stats: dict, stats_names: List[str]):
 
 
 
-def edit(user: discord.User, stat_category: str, stat_name: str, stat_value: int) -> None:
+def edit(user: discord.User | discord.Member, stat_category: str, stat_name: str, stat_value: int) -> None:
     stats: dict = __load()
     stats = create(user, stats)
-    user_stats: dict = stats[str(user.guild.id)][str(user.id)]
+    user_stats: dict = {}
+
+    if isinstance(user, discord.Member):
+        stats[str(user.guild.id)][str(user.id)]
+
     if stat_category:
        user_stats["mini_games"][stat_category][stat_name] += stat_value
     else:

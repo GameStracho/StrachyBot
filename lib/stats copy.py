@@ -31,7 +31,7 @@ def create(user: discord.Member, stats: dict) -> dict:
     return stats
 
 
-def edit(user: discord.User, stat_name: str, stat_value: int) -> None:
+def edit(user: discord.Member, stat_name: str, stat_value: int) -> None:
     stats: dict = __load()
     stats = create(user, stats)
     stats[str(user.id)][stat_name] += stat_value
