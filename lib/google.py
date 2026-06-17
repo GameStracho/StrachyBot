@@ -1,11 +1,9 @@
 import io
-import json
 import os
 import datetime
-from collections import namedtuple
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload  # type: ignore
+from googleapiclient.discovery import build  # type: ignore
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 
@@ -97,7 +95,7 @@ def replace_file():
         media_body=media_content
     ).execute()
 
-    console.log("GOOGLE", f"File user_data.json successfully replaced.")
+    console.log("GOOGLE", "File user_data.json successfully replaced.")
 
 
 def download_file():

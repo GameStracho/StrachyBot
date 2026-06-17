@@ -8,14 +8,20 @@ from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 
-from lib import console, wordle, tic, quote, google
+from lib import console, wordle, tic, quote
 
 load_dotenv()
-TOKEN = getenv("DISCORD_TOKEN")
+TOKEN: str | None = getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
+
+
+if TOKEN is not None:
+    bot.run(TOKEN)
+else:
+    print("ERROR: Could not load discord token.")
 
 @bot.event
 async def on_ready() -> None:
@@ -23,7 +29,7 @@ async def on_ready() -> None:
         f"{Fore.YELLOW}{str(bot.user)}{Fore.WHITE} "
         f"is now online and ready to serve!"))
 
-    synced: List[discord.AppCommand] = await bot.tree.sync()
+    synced: List[app_commands.AppCommand] = await bot.tree.sync()
     synced_commands: str = ""
     for command in synced:
         if len(synced_commands):
@@ -71,10 +77,11 @@ async def tic_play(
     interaction: discord.Interaction, opponent: discord.User,
     grid_size: app_commands.Choice[int]):
     user_id: int = interaction.user.id
+    mention: str = bot.user.mention if bot.user is not None else ""
     if user_id == opponent.id:
         await interaction.response.send_message(
             ephemeral=True,
-            content=f"To play singleplayer choose {bot.user.mention} as your opponent. - Coming soon")
+            content=f"To play singleplayer choose {mention} as your opponent. - Coming soon")
     else:
         await tic.start(interaction, opponent, grid_size.value)
 
@@ -99,5 +106,3 @@ async def announcement(
         embed.description = message
     
     await interaction.response.send_message(embed=embed)
-
-bot.run(TOKEN)
