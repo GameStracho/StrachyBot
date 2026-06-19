@@ -4,7 +4,7 @@ import discord
 from discord import Color
 import requests
 
-from lib import console, stats
+from modules import console, stats
 
 
 class QuoteGuessButtons(discord.ui.View):
