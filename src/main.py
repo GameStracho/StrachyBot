@@ -17,13 +17,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
 
-
-if TOKEN is not None:
-    bot.run(TOKEN)
-else:
-    print("ERROR: Could not load discord token.")
-
-
 async def load_cogs() -> None:
     """Load all cogs from the modules directory."""
     cogs_dir = os.path.join(os.path.dirname(__file__), "modules")
@@ -55,6 +48,8 @@ async def setup_hook() -> None:
 
 @bot.event
 async def on_ready() -> None:
+    """Called when the bot starts."""
+
     console.log("INFO", (
         f"{Fore.YELLOW}{str(bot.user)}{Fore.WHITE} "
         f"is now online and ready to serve!"))
@@ -69,15 +64,6 @@ async def on_ready() -> None:
 
     console.log("INFO", (
         f"Slash commands synced: {Fore.YELLOW}{synced_commands}{Fore.WHITE}"))
-
-
-async def __restrict_command(interaction: discord.Interaction, user_id: int) -> bool:
-    if user_id == 217607696361193475:
-        return True
-    else:
-        await interaction.response.send_message(
-            ephemeral=True, content="You don't have permissions to use this command.")
-    return False
 
 
 @bot.tree.command(
@@ -95,3 +81,9 @@ async def announcement(
         embed.description = message
     
     await interaction.response.send_message(embed=embed)
+
+if __name__ == "__main__":
+    if TOKEN is not None:
+        bot.run(TOKEN)
+    else:
+        console.log("ERROR: Could not load discord token.")
