@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-from modules.tic import logic
+from modules.tic_tac_toe import logic
 
 
 class TicCog(commands.Cog):
