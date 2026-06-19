@@ -17,9 +17,9 @@ def log(category: str, color: str, message: str, file = sys.stdout) -> None:
     while len(padded_category) < 10:
         padded_category += " "
 
-    print(current_time() + color + padded_category
+    print(current_time() + color + Style.BRIGHT + padded_category
         + Style.RESET_ALL + message,
-        file
+        file=file
     )
 
 
