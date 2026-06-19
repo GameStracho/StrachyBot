@@ -1,9 +1,8 @@
 import os
-from typing import List, Optional
+from typing import List
 from colorama import Fore
 
 import discord
-from discord import Color
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
@@ -62,22 +61,6 @@ async def on_ready() -> None:
 
     console.log_info(f"Slash commands synced: {console.highlight(Fore.YELLOW, synced_commands)}")
 
-
-@bot.tree.command(
-    name="announcement", description="Announce messages in chat.")
-async def announcement(
-        interaction: discord.Interaction,
-        title: Optional[str] = "",
-        message:  Optional[str] = ""):
-    console.log_info(f"{interaction.user.display_name} used command /announce.")
-    
-    embed: discord.Embed = discord.Embed(color=Color.yellow())
-    if title:
-        embed.title = title
-    if message:
-        embed.description = message
-    
-    await interaction.response.send_message(embed=embed)
 
 if __name__ == "__main__":
     if TOKEN is not None:
