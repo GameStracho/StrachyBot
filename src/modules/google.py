@@ -41,7 +41,8 @@ def create_service(client_secret_file, api_name, api_version, *scopes, prefix=''
 
     try:
         service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials, static_discovery=False)
-        console.log("GOOGLE", (
+        console.log_info((
+            "GOOGLE: " +
             API_SERVICE_NAME +
             f" {API_VERSION} " +
             "service created successfully."
@@ -49,7 +50,8 @@ def create_service(client_secret_file, api_name, api_version, *scopes, prefix=''
         return service
     except Exception as e:
         print(e)
-        console.log("GOOGLE", (
+        console.log_info((
+            "GOOGLE: " +
             f"Failed to create service instance for {API_SERVICE_NAME}"
         ))
         os.remove(os.path.join(working_dir, token_dir, token_file))
@@ -82,7 +84,7 @@ def upload_file(file_name: str):
 
     print(file)
 
-    console.log("GOOGLE", f"File {file_name} successfully uploaded.")
+    console.log_info(f"GOOGLE: File {file_name} successfully uploaded.")
 
 
 def replace_file():
@@ -95,7 +97,7 @@ def replace_file():
         media_body=media_content
     ).execute()
 
-    console.log("GOOGLE", "File user_data.json successfully replaced.")
+    console.log_info("GOOGLE: File user_data.json successfully replaced.")
 
 
 def download_file():
@@ -112,7 +114,7 @@ def download_file():
     while not done:
         status, done = downloader.next_chunk()
     
-    console.log("GOOGLE", f"File {file_name} successfully downloaded.")
+    console.log_info(f"GOOGLE: File {file_name} successfully downloaded.")
     
     fh.seek(0)
     

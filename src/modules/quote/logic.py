@@ -82,7 +82,8 @@ async def start(interaction: discord.Interaction) -> None:
         f"\n4️⃣ {choices[3]}"
     )
 
-    console.log("QUOTE", (
+    console.log_info((
+        "QUOTE: "
         f"{user.display_name} has started a new game. "
         f"The correct answer is {answer}."))
 

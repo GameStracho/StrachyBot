@@ -35,9 +35,9 @@ async def load_cogs() -> None:
 
         try:
             await bot.load_extension(f"modules.{module_name}.cogs")
-            console.log("INFO", f"Loaded cog: {module_name}")
+            console.log_info(f"Loaded cog: {module_name}")
         except Exception as e:
-            console.log("ERROR", f"Failed to load cog {module_name}: {e}")
+            console.log_error(f"Failed to load cog {module_name}: {e}")
 
 
 @bot.event
@@ -50,9 +50,7 @@ async def setup_hook() -> None:
 async def on_ready() -> None:
     """Called when the bot starts."""
 
-    console.log("INFO", (
-        f"{Fore.YELLOW}{str(bot.user)}{Fore.WHITE} "
-        f"is now online and ready to serve!"))
+    console.log_info(console.highlight(Fore.YELLOW, str(bot.user)) + "is now online and ready to serve!")
 
     synced: List[app_commands.AppCommand] = await bot.tree.sync()
     synced_commands: str = ""
@@ -62,8 +60,7 @@ async def on_ready() -> None:
         else:
             synced_commands += command.name
 
-    console.log("INFO", (
-        f"Slash commands synced: {Fore.YELLOW}{synced_commands}{Fore.WHITE}"))
+    console.log_info(f"Slash commands synced: {console.highlight(Fore.YELLOW, synced_commands)}")
 
 
 @bot.tree.command(
@@ -72,7 +69,7 @@ async def announcement(
         interaction: discord.Interaction,
         title: Optional[str] = "",
         message:  Optional[str] = ""):
-    console.log("INFO", ( f"{interaction.user.display_name} used command /announce."))
+    console.log_info(f"{interaction.user.display_name} used command /announce.")
     
     embed: discord.Embed = discord.Embed(color=Color.yellow())
     if title:
@@ -86,4 +83,4 @@ if __name__ == "__main__":
     if TOKEN is not None:
         bot.run(TOKEN)
     else:
-        console.log("ERROR: Could not load discord token.")
+        console.log_error("Could not load discord token.")
