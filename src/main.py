@@ -49,7 +49,7 @@ async def setup_hook() -> None:
 async def on_ready() -> None:
     """Called when the bot starts."""
 
-    console.log_info(console.highlight(Fore.YELLOW, str(bot.user)) + "is now online and ready to serve!")
+    console.log_info(console.highlight(Fore.YELLOW, str(bot.user)) + " is now online and ready to serve!")
 
     synced: List[app_commands.AppCommand] = await bot.tree.sync()
     synced_commands: str = ""
