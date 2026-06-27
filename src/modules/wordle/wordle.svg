@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
-   sodipodi:docname="wordle-2.svg"
+   sodipodi:docname="wordle.svg"
    inkscape:export-filename="wordle-2.png"
    inkscape:export-xdpi="192"
    inkscape:export-ydpi="192"
@@ -27,8 +27,8 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      inkscape:zoom="11.313709"
-     inkscape:cx="2.3422912"
-     inkscape:cy="23.378718"
+     inkscape:cx="2.3422911"
+     inkscape:cy="23.378717"
      inkscape:window-width="1920"
      inkscape:window-height="1052"
      inkscape:window-x="0"
@@ -44,23 +44,23 @@
      style="stroke-width:2;stroke-dasharray:none">
     <g
        id="g1"
-       style="stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;stroke-linecap:butt;paint-order:markers stroke fill;fill:#338000">
+       style="stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;stroke-linecap:butt;paint-order:fill markers stroke;fill:#338000">
       <rect
-         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;paint-order:markers stroke fill"
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
          id="rect1"
          width="10.667"
          height="10.667"
          x="0"
          y="0" />
       <rect
-         style="fill:#d4aa00;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;paint-order:markers stroke fill"
+         style="fill:#d4aa00;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
          id="rect1-5"
          width="10.667"
          height="10.667"
          x="10.667"
          y="0" />
       <rect
-         style="fill:#d4aa00;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;paint-order:markers stroke fill"
+         style="fill:#d4aa00;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
          id="rect1-5-2"
          width="10.667"
          height="10.667"
@@ -70,23 +70,23 @@
     <g
        id="g2"
        transform="translate(0,10.667)"
-       style="stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;stroke-linecap:butt;paint-order:markers stroke fill;fill:#d4aa00">
+       style="stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;stroke-linecap:butt;paint-order:fill markers stroke;fill:#d4aa00">
       <rect
-         style="fill:#338000;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;paint-order:markers stroke fill"
+         style="fill:#338000;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
          id="rect1-0"
          width="10.667"
          height="10.667"
          x="0"
          y="0" />
       <rect
-         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;paint-order:markers stroke fill"
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
          id="rect1-5-9"
          width="10.667"
          height="10.667"
          x="10.667"
          y="0" />
       <rect
-         style="fill:#d4aa00;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;paint-order:markers stroke fill"
+         style="fill:#d4aa00;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
          id="rect1-5-2-3"
          width="10.667"
          height="10.667"
@@ -96,23 +96,23 @@
     <g
        id="g2-6"
        transform="translate(0,21.333)"
-       style="stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;stroke-linecap:butt;paint-order:markers stroke fill;fill:#333333">
+       style="stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;stroke-linecap:butt;paint-order:fill markers stroke;fill:#333333">
       <rect
-         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;paint-order:markers stroke fill"
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
          id="rect1-1"
          width="10.667"
          height="10.667"
          x="0"
          y="0" />
       <rect
-         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;paint-order:markers stroke fill"
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
          id="rect1-5-8"
          width="10.667"
          height="10.667"
          x="10.667"
          y="0" />
       <rect
-         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:2;stroke-dasharray:none;paint-order:markers stroke fill"
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
          id="rect1-5-2-7"
          width="10.667"
          height="10.667"
