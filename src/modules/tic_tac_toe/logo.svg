@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   sodipodi:docname="tic-tac-toe.svg"
+   inkscape:export-filename="tic-tac-toe.png"
+   inkscape:export-xdpi="192"
+   inkscape:export-ydpi="192"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#111111"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="11.313709"
+     inkscape:cx="5.4358834"
+     inkscape:cy="21.964504"
+     inkscape:window-width="1920"
+     inkscape:window-height="1052"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <linearGradient
+       id="swatch49">
+      <stop
+         style="stop-color:#a0a0a0;stop-opacity:1;"
+         offset="0"
+         id="stop49" />
+    </linearGradient>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath51">
+      <path
+         id="path51"
+         style="stroke-width:0.0999999;stroke-linecap:square;paint-order:markers fill stroke;stop-color:#000000"
+         d="m 1806.4991,-753.5228 h 1637.2646 v 66.90533 H 1806.4991 Z" />
+    </clipPath>
+    <linearGradient
+       id="linearGradient32"
+       inkscape:swatch="gradient">
+      <stop
+         style="stop-color:#7f2aff;stop-opacity:1;"
+         offset="0"
+         id="stop32" />
+      <stop
+         style="stop-color:#7f2aff;stop-opacity:0;"
+         offset="1"
+         id="stop33" />
+    </linearGradient>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     style="stroke-width:2;stroke-dasharray:none">
+    <g
+       id="g1"
+       style="stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;stroke-linecap:butt;paint-order:fill markers stroke;fill:#333333">
+      <rect
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
+         id="rect1"
+         width="10.667"
+         height="10.667"
+         x="0"
+         y="0" />
+      <rect
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
+         id="rect1-5"
+         width="10.667"
+         height="10.667"
+         x="10.667"
+         y="0" />
+      <rect
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
+         id="rect1-5-2"
+         width="10.667"
+         height="10.667"
+         x="21.333"
+         y="0" />
+    </g>
+    <g
+       id="g2"
+       transform="translate(0,10.667)"
+       style="stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;stroke-linecap:butt;paint-order:fill markers stroke;fill:#333333">
+      <rect
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
+         id="rect1-0"
+         width="10.667"
+         height="10.667"
+         x="0"
+         y="0" />
+      <rect
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
+         id="rect1-5-9"
+         width="10.667"
+         height="10.667"
+         x="10.667"
+         y="0" />
+      <rect
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
+         id="rect1-5-2-3"
+         width="10.667"
+         height="10.667"
+         x="21.333"
+         y="0" />
+    </g>
+    <g
+       id="g2-6"
+       transform="translate(0,21.333)"
+       style="stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;stroke-linecap:butt;paint-order:fill markers stroke;fill:#333333">
+      <rect
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
+         id="rect1-1"
+         width="10.667"
+         height="10.667"
+         x="0"
+         y="0" />
+      <rect
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
+         id="rect1-5-8"
+         width="10.667"
+         height="10.667"
+         x="10.667"
+         y="0" />
+      <rect
+         style="fill:#333333;stroke-linecap:butt;stroke-linejoin:round;stroke:#202020;stroke-opacity:1;stroke-width:1;stroke-dasharray:none;paint-order:fill markers stroke"
+         id="rect1-5-2-7"
+         width="10.667"
+         height="10.667"
+         x="21.333"
+         y="0" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:9.33333px;font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono';text-align:start;letter-spacing:0.82px;word-spacing:0px;writing-mode:lr-tb;direction:rtl;text-anchor:start;fill:#4d4d4d;stroke:#202020;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       x="3.3125"
+       y="4.25"
+       id="text1"><tspan
+         sodipodi:role="line"
+         id="tspan1"></tspan></text>
+    <rect
+       style="display:inline;opacity:1;fill:#7f2aff;fill-opacity:1;stroke:none;stroke-width:1.226;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="rect51"
+       width="32.5625"
+       height="1.625"
+       x="5.6169634"
+       y="-0.61362594"
+       transform="rotate(45)" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Layer 2">
+    <circle
+       style="opacity:1;fill:#7f2aff;fill-opacity:1;stroke:none;stroke-width:1.08978;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path3"
+       cx="5.3499999"
+       cy="5.3499999"
+       r="4" />
+    <circle
+       style="opacity:1;fill:#7f2aff;fill-opacity:1;stroke:none;stroke-width:1.08978;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path3-2"
+       cx="16"
+       cy="16"
+       r="4" />
+    <circle
+       style="opacity:1;fill:#7f2aff;fill-opacity:1;stroke:none;stroke-width:1.08978;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path3-4"
+       cx="26.65"
+       cy="26.65"
+       r="4" />
+    <circle
+       style="fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:1.0894;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path3-4-0"
+       cx="26.65"
+       cy="16"
+       r="4" />
+    <circle
+       style="fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:1.0894;stroke-linecap:butt;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path3-4-6"
+       cx="26.65"
+       cy="5.3499999"
+       r="4" />
+  </g>
+</svg>
