@@ -6,7 +6,7 @@ from typing import Dict, List
 import discord
 from discord import Color
 
-from lib import console, stats
+from modules import console, stats
 
 
 games: Dict[int, dict] = {}
@@ -46,7 +46,8 @@ async def start(interaction: discord.Interaction) -> None:
     }
     games[user.id] = game_info
 
-    console.log("WORDLE", (
+    console.log_info((
+        "WORDLE"
         f"{user.display_name} has started a new game. "
         f"The word is: {searched_word}."))
 

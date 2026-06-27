@@ -4,7 +4,7 @@ from math import sqrt
 import discord
 from discord import Color
 
-from lib import console, stats
+from modules import console, stats
 
 
 class TicTacToeButtons(discord.ui.View):
@@ -64,7 +64,8 @@ async def start(
 
     games[user.id] = game_info
 
-    console.log("TIC", (
+    console.log_info((
+        "TIC"
         f"{interaction.user.display_name} has started a new game "
         f"against {opponent.display_name}."))
 

@@ -45,10 +45,10 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
 6. Run the bot locally
     ```bash
     # Linux/macOS
-    python3 main.py
+    python3 src/main.py
 
     # Windows
-    python main.py
+    python src/main.py
     ```
 
 ### Option 2: Docker hosting

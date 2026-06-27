@@ -4,7 +4,7 @@ import discord
 from discord import Color
 import requests
 
-from lib import console, stats
+from modules import console, stats
 
 
 class QuoteGuessButtons(discord.ui.View):
@@ -82,7 +82,8 @@ async def start(interaction: discord.Interaction) -> None:
         f"\n4️⃣ {choices[3]}"
     )
 
-    console.log("QUOTE", (
+    console.log_info((
+        "QUOTE: "
         f"{user.display_name} has started a new game. "
         f"The correct answer is {answer}."))
 
