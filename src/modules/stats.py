@@ -17,8 +17,8 @@ def __save(stats: dict) -> None:
 
 def create(user: discord.User | discord.Member, stats: dict) -> dict:
     print("yep")
-    if isinstance(user, discord.User):
-        return {} # TODO: resolve later
+    if not isinstance(user, discord.Member):
+        return {}
 
     user_id: int = user.id
     guild: discord.Guild = user.guild
@@ -74,13 +74,14 @@ def __create_stats(stats: dict, stats_names: List[str]):
 def edit(user: discord.User | discord.Member, stat_category: str, stat_name: str, stat_value: int) -> None:
     stats: dict = __load()
     stats = create(user, stats)
-    user_stats: dict = {}
 
     if isinstance(user, discord.Member):
-        stats[str(user.guild.id)][str(user.id)]
+        user_stats: dict = stats[str(user.guild.id)][str(user.id)]
+    else:
+        user_stats = {}
 
     if stat_category:
-       user_stats["mini_games"][stat_category][stat_name] += stat_value
+        user_stats["mini_games"][stat_category][stat_name] += stat_value
     else:
         user_stats[stat_name] += stat_value
     __save(stats)
