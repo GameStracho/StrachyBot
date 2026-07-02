@@ -1,6 +1,8 @@
-from modules import console
-from shared.messages import handle_error
+from typing import Optional
 import datetime
+
+from modules import console
+from shared import messages
 
 import discord
 from discord import Color
@@ -28,4 +30,19 @@ async def show_info(interaction: discord.Interaction, start_time: datetime.datet
         
         await interaction.response.send_message(embed=embed)
     except Exception as e:
-        await handle_error(e, interaction)
+        await messages.handle_error(e, interaction)
+
+
+async def announce(interaction: discord.Interaction, title: Optional[str], message: Optional[str]):
+    console.log_info(f"/info: User {interaction.user.display_name} passed title '{title}' and '{message}'.")
+    
+    try:
+        embed: discord.Embed = discord.Embed(color=Color.darker_grey())
+        if title:
+            embed.title = title
+        if message:
+            embed.description = message
+        
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+        await messages.handle_error(e, interaction)

@@ -1,9 +1,11 @@
-import discord
-from discord.ext import commands
-from discord import app_commands
+from typing import Optional
 
 from modules.utils import logic
 from shared.bot import StrachyBot
+
+import discord
+from discord.ext import commands
+from discord import app_commands
 
 
 class UtilsCog(commands.Cog):
@@ -15,6 +17,15 @@ class UtilsCog(commands.Cog):
         self,
         interaction: discord.Interaction) -> None:
         await logic.show_info(interaction, self.bot.start_time)
+
+
+    @app_commands.command(name="announcement", description="Make announcements in chat.")
+    async def announcement(
+        self,
+        interaction: discord.Interaction,
+        title: Optional[str] = "",
+        message:  Optional[str] = "") -> None:
+        await logic.announce(interaction, title, message)
 
 
 async def setup(bot: StrachyBot) -> None:
