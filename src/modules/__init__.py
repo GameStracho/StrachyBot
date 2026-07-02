@@ -1,4 +1,4 @@
 # Import utility modules for easy access
-from modules import console, stats
+from modules import stats
 
-__all__ = ["console", "stats"]
+__all__ = ["stats"]

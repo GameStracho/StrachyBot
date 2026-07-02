@@ -7,7 +7,7 @@ from googleapiclient.discovery import build  # type: ignore
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 
-from modules import console
+from shared import console
 
 def create_service(client_secret_file, api_name, api_version, *scopes, prefix=''):
     CLIENT_SECRET_FILE = client_secret_file
