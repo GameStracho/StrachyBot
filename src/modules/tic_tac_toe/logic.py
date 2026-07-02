@@ -4,7 +4,8 @@ from math import sqrt
 import discord
 from discord import Color
 
-from modules import console, stats
+from modules import stats
+from shared import console
 
 
 class TicTacToeButtons(discord.ui.View):

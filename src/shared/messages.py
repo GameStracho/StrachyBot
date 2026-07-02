@@ -1,4 +1,4 @@
-from modules import console
+from shared import console
 
 import discord
 from discord import Color

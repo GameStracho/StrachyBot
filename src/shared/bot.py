@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-from modules import console
+from shared import console
 
 class StrachyBot(commands.Bot):
     def __init__(self):

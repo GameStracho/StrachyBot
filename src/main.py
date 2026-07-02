@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 import asyncio
 
-from modules import console
+from shared import console
 from shared.bot import StrachyBot
 
 async def main() -> None:

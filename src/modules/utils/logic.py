@@ -1,7 +1,7 @@
 from typing import Optional
 import datetime
 
-from modules import console
+from shared import console
 from shared import messages
 
 import discord

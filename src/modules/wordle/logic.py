@@ -6,7 +6,8 @@ from typing import Dict, List
 import discord
 from discord import Color
 
-from modules import console, stats
+from modules import stats
+from shared import console
 
 
 games: Dict[int, dict] = {}
