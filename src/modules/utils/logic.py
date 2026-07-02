@@ -1,0 +1,31 @@
+from modules import console
+from shared.messages import handle_error
+import datetime
+
+import discord
+from discord import Color
+
+async def show_info(interaction: discord.Interaction, start_time: datetime.datetime):
+    console.log_info(f"/info: User {interaction.user.display_name} used the command.")
+
+    try:
+        uptime: datetime.timedelta = discord.utils.utcnow() - start_time
+
+        embed: discord.Embed = discord.Embed(
+            color=Color.darker_grey(),
+            title="Bot information",
+            description="Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe*.")
+        
+        embed.add_field(name="Ping", value=f"{round(interaction.client.latency * 1000)} ms", inline=True)
+        embed.add_field(name="Uptime", value=f"{str(uptime).split('.')[0]}", inline=True)
+
+        embed.add_field(name="Version", value="v1.0.3 (02.07.2026)", inline=True)
+        embed.add_field(name="Changelog", value=(
+            "- Added `/info` command"
+            "\n- Fixed errors in `/announcement` command"
+            "\n- Added error handlers"
+        ), inline=False)
+        
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+        await handle_error(e, interaction)

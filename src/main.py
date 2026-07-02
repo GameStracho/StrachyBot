@@ -5,7 +5,7 @@ import asyncio
 from modules import console
 from shared.bot import StrachyBot
 
-async def main():
+async def main() -> None:
     load_dotenv()
     token: str | None = os.getenv("DISCORD_TOKEN")
 

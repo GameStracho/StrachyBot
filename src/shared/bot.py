@@ -16,6 +16,8 @@ class StrachyBot(commands.Bot):
 
         super().__init__(command_prefix="!", case_insensitive=True, intents=intents)
 
+        self.start_time = discord.utils.utcnow()
+
 
     async def setup_hook(self) -> None:
         """Called before the bot logs in."""
