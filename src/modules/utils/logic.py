@@ -21,11 +21,10 @@ async def show_info(interaction: discord.Interaction, start_time: datetime.datet
         embed.add_field(name="Ping", value=f"{round(interaction.client.latency * 1000)} ms", inline=True)
         embed.add_field(name="Uptime", value=f"{str(uptime).split('.')[0]}", inline=True)
 
-        embed.add_field(name="Version", value="v1.0.3 (02.07.2026)", inline=True)
+        embed.add_field(name="Version", value="v1.0.4 (2026-07-03)", inline=True)
         embed.add_field(name="Changelog", value=(
-            "- Added `/info` command"
-            "\n- Fixed errors in `/announcement` command"
-            "\n- Added error handlers"
+            "- Added `/info`, `/announcement` and `error` icons"
+            "\n- Scaled down `wordle` and `tic-tac-toe` icons"
         ), inline=False)
 
         icon: discord.File = discord.File(
