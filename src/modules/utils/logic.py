@@ -14,21 +14,24 @@ async def show_info(interaction: discord.Interaction, start_time: datetime.datet
         uptime: datetime.timedelta = discord.utils.utcnow() - start_time
 
         embed: discord.Embed = discord.Embed(
-            color=Color.darker_grey(),
+            color=Color.blue(),
             title="Bot information",
             description="Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe*.")
         
         embed.add_field(name="Ping", value=f"{round(interaction.client.latency * 1000)} ms", inline=True)
         embed.add_field(name="Uptime", value=f"{str(uptime).split('.')[0]}", inline=True)
 
-        embed.add_field(name="Version", value="v1.0.3 (02.07.2026)", inline=True)
+        embed.add_field(name="Version", value="v1.0.4 (2026-07-03)", inline=True)
         embed.add_field(name="Changelog", value=(
-            "- Added `/info` command"
-            "\n- Fixed errors in `/announcement` command"
-            "\n- Added error handlers"
+            "- Added `/info`, `/announcement` and `error` icons"
+            "\n- Scaled down `wordle` and `tic-tac-toe` icons"
         ), inline=False)
+
+        icon: discord.File = discord.File(
+        "./src/modules/utils/info.png", filename="info.png")
+        embed.set_thumbnail(url="attachment://info.png")
         
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed, file=icon)
     except Exception as e:
         await messages.handle_error(e, interaction)
 
@@ -37,12 +40,16 @@ async def announce(interaction: discord.Interaction, title: Optional[str], messa
     console.log_info(f"/info: User {interaction.user.display_name} passed title '{title}' and '{message}'.")
     
     try:
-        embed: discord.Embed = discord.Embed(color=Color.darker_grey())
+        embed: discord.Embed = discord.Embed(color=Color.yellow())
         if title:
             embed.title = title
         if message:
             embed.description = message
+
+        icon: discord.File = discord.File(
+        "./src/modules/utils/announcement.png", filename="announcement.png")
+        embed.set_thumbnail(url="attachment://announcement.png")
         
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed, file=icon)
     except Exception as e:
         await messages.handle_error(e, interaction)
