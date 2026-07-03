@@ -52,7 +52,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Docker support and list of required packages
-- Git utility (.gitignore, README.md, LICENSE)
+- Git utility (.gitignore, [README.md](README.md), LICENSE)
 - CI/CD pipeline running linters, type checks and unit tests
 
 ### Fixed

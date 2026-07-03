@@ -81,4 +81,4 @@ This project is licensed under the **GNU General Public License** - see the [LIC
 ---
 ## 🔁 Changelog
 
-To see a full list of changes between releases, please refer to [CHANGELOG](CHANGELOG) file.
+To see a full list of changes between releases, please refer to [CHANGELOG](CHANGELOG.md) file.
