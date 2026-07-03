@@ -77,3 +77,8 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
 ---
 ## 🔑 License
 This project is licensed under the **GNU General Public License** - see the [LICENSE](LICENSE) file for details.
+
+---
+## 🔁 Changelog
+
+To see a full list of changes between releases, please refer to [CHANGELOG](CHANGELOG) file.
