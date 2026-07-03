@@ -32,7 +32,7 @@ async def start(interaction: discord.Interaction) -> None:
     embed.set_author(name=user.display_name, icon_url=user.display_avatar)
 
     icon: discord.File = discord.File(
-        "./src/modules/wordle/logo.png", filename="wordle.png")
+        "./src/modules/wordle/icon.png", filename="wordle.png")
     embed.set_thumbnail(url="attachment://wordle.png")
 
     searched_word: str = random.choice(words).split("\n")[0]

@@ -41,7 +41,7 @@ async def start(
         color=Color.purple(), title="Tic-Tac-Toe", description=msg)
 
     icon: discord.File = discord.File(
-        "./src/modules/tic_tac_toe/logo.png", filename="tic-tac-toe.png")
+        "./src/modules/tic_tac_toe/icon.png", filename="tic-tac-toe.png")
     embed.set_thumbnail(url="attachment://tic-tac-toe.png")
 
     if embed.description is None:
