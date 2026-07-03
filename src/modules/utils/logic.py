@@ -37,12 +37,16 @@ async def announce(interaction: discord.Interaction, title: Optional[str], messa
     console.log_info(f"/info: User {interaction.user.display_name} passed title '{title}' and '{message}'.")
     
     try:
-        embed: discord.Embed = discord.Embed(color=Color.darker_grey())
+        embed: discord.Embed = discord.Embed(color=Color.yellow())
         if title:
             embed.title = title
         if message:
             embed.description = message
+
+        icon: discord.File = discord.File(
+        "./src/modules/utils/announcement.png", filename="announcement.png")
+        embed.set_thumbnail(url="attachment://announcement.png")
         
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed, file=icon)
     except Exception as e:
         await messages.handle_error(e, interaction)
