@@ -14,7 +14,7 @@ async def show_info(interaction: discord.Interaction, start_time: datetime.datet
         uptime: datetime.timedelta = discord.utils.utcnow() - start_time
 
         embed: discord.Embed = discord.Embed(
-            color=Color.darker_grey(),
+            color=Color.blue(),
             title="Bot information",
             description="Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe*.")
         
@@ -27,8 +27,12 @@ async def show_info(interaction: discord.Interaction, start_time: datetime.datet
             "\n- Fixed errors in `/announcement` command"
             "\n- Added error handlers"
         ), inline=False)
+
+        icon: discord.File = discord.File(
+        "./src/modules/utils/info.png", filename="info.png")
+        embed.set_thumbnail(url="attachment://info.png")
         
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed, file=icon)
     except Exception as e:
         await messages.handle_error(e, interaction)
 
