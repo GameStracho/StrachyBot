@@ -1,9 +1,24 @@
 services:
+  postgres-dev:
+    container_name: postgres-dev
+    image: postgres:15
+    profiles:
+      - development
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-Password1234}
+      POSTGRES_DB: StrachyBot
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d StrachyBot" ]
+      interval: 5s
+      timeout: 2s
+      retries: 5
   postgres:
     container_name: postgres
     image: postgres:15
     profiles:
-      - development
       - production
     environment:
       POSTGRES_USER: postgres
@@ -21,9 +36,9 @@ services:
       - development
     env_file: .env
     ports:
-      - ${ADMINER_PORT:-8080}:80  # Fixed internal port mapping!
+      - ${ADMINER_PORT:-8080}:80
     depends_on:
-      postgres:
+      postgres-dev:
         condition: "service_healthy"
         required: true
     environment:
@@ -32,7 +47,7 @@ services:
       
       # Provide the unified DSN connection string
       # Format: pgsql://username:password@host:port/database
-      ADMINER_AUTOLOGIN_SERVER: "pgsql://postgres:${DATABASE_PASSWORD:-Password1234}@postgres:5432/${POSTGRES_DB:-StrachyBot}"
+      ADMINER_AUTOLOGIN_SERVER: "pgsql://postgres:${DATABASE_PASSWORD:-Password1234}@postgres-dev:5432/StrachyBot"
   bot:
     build: .
     container_name: StrachyBot
@@ -45,5 +60,7 @@ services:
         condition: "service_healthy"
         required: true
     environment:
+      CONNECTION_STRING: postgresql+asyncpg://postgres:${DATABASE_PASSWORD}@postgres:5432/StrachyBot
+
       # Force Python logs to show instantly
       PYTHONUNBUFFERED: "1"
