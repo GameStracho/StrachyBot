@@ -1,14 +1,21 @@
 import os
 from typing import List
 from colorama import Fore
+from datetime import datetime
+import importlib
 
 import discord
 from discord.ext import commands
 from discord import app_commands
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from shared import console
+from shared import console, database
 
 class StrachyBot(commands.Bot):
+    start_time: datetime = discord.utils.utcnow()
+    db_session_maker: async_sessionmaker[AsyncSession] = database.AsyncSessionLocal
+
     def __init__(self):
         # Setup intents
         intents = discord.Intents.default()
@@ -16,19 +23,21 @@ class StrachyBot(commands.Bot):
 
         super().__init__(command_prefix="!", case_insensitive=True, intents=intents)
 
-        self.start_time = discord.utils.utcnow()
-
 
     async def setup_hook(self) -> None:
         """Called before the bot logs in."""
-        await self.__load_cogs()
+        await self.__load_modules()
 
+        # import shared database models
+        importlib.import_module(f"shared.models")
+        console.log_debug("Shared database models loaded.")
 
-    async def on_ready(self) -> None:
-        """Called when the bot starts."""
+        # create database tables
+        async with database.engine.begin() as connection:
+            await connection.run_sync(database.Base.metadata.create_all)
+            console.log_success("Database tables synced.")
 
-        console.log_info(console.highlight(Fore.YELLOW, str(self.user)) + " is now online and ready to serve!")
-
+        # sync commands with Discord
         synced: List[app_commands.AppCommand] = await self.tree.sync()
         synced_commands: str = ""
         for command in synced:
@@ -40,12 +49,18 @@ class StrachyBot(commands.Bot):
         console.log_info(f"Slash commands synced: {console.highlight(Fore.YELLOW, synced_commands)}")
 
 
-    async def __load_cogs(self) -> None:
-        """Load all cogs from the modules directory."""
-        cogs_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "modules"))
-        
-        for module_name in os.listdir(cogs_dir):
-            module_path = os.path.join(cogs_dir, module_name)
+    async def on_ready(self) -> None:
+        """Called when the bot starts."""
+        console.log_info(console.highlight(Fore.YELLOW, str(self.user)) + " is now online and ready to serve!")
+
+
+    async def __load_modules(self) -> None:
+        """Load all modules from src/modules directory."""
+        modules_dir: str = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "modules"))
+        success: bool = True
+
+        for module_name in os.listdir(modules_dir):
+            module_path = os.path.join(modules_dir, module_name)
             
             # Skip non-directories and utility modules
             if not os.path.isdir(module_path) or module_name.startswith("_"):
@@ -57,7 +72,20 @@ class StrachyBot(commands.Bot):
                 continue
 
             try:
-                await self.load_extension(f"modules.{module_name}.cogs")
-                console.log_info(f"Loaded cog: {module_name}")
+                # Load existing cogs.py in the module
+                if os.path.exists(os.path.join(module_path, "cogs.py")):
+                    await self.load_extension(f"modules.{module_name}.cogs")
+                    console.log_debug(f"Loaded cog file for module '{module_name}'.")
+
+                # Load existing cogs.py in the module
+                if os.path.exists(os.path.join(module_path, "models.py")):
+                    importlib.import_module(f"modules.{module_name}.models")
+                    console.log_debug(f"Registered database models for module '{module_name}'.")
+
+                console.log_info(f"Module '{module_name}' successfully loaded.")
             except Exception as e:
-                console.log_error(f"Failed to load cog {module_name}: {e}")
+                console.log_error(f"Failed to load module '{module_name}': {e}.")
+                success = False
+
+        if success:
+            console.log_success("All modules loaded.")
