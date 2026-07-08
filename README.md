@@ -17,6 +17,8 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
 ### Option 1: Local Development
 **Prerequisites**
  - Install [Python](https://www.python.org/downloads/)
+ - Install [Docker](https://docs.docker.com/engine/install/)
+ - Install [Docker Compose](https://docs.docker.com/compose/install/)
 
 1. Clone the repository and navigate into it:
    ```bash
@@ -34,6 +36,9 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
    sed -i 's/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=your_new_password/' .env
    # or use a random password
    sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$(openssl rand -base64 32 | tr -d '=+/')/" .env
+
+   # change docker profile to development
+   sed -i 's/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=development/' .env
 
    # (Optional) change adminer port if port 8080 is occupied
     sed -i 's/^ADMINER_PORT=.*/ADMINER_PORT=8080/' .env
@@ -54,7 +59,14 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
     pip install -r requirements.txt
     ```
 5. (Optional) *VS Code Configuration:* Ensure your python interpreter is set to the virtual environment. Press `Ctrl+Shift+P` (or `Cmd+Shift+P`), search for **Python: Select Interpreter**, and choose the one inside `./venv/bin/python`.
-6. Run the bot locally
+6. Run docker services (database and adminer)
+   ```bash
+    docker compose up --build
+
+    # or start in detached (background) process
+    docker compose up --build -d
+    ```
+7. Run the bot locally
     ```bash
     # Linux/macOS
     python3 src/main.py
@@ -85,7 +97,7 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
    # or use a random password instead (recommended)
    sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$(openssl rand -base64 32 | tr -d '=+/')/" .env
    ```
-3. Build and start the container
+3. Build and start the StrachyBot container and database service
    ```bash
     docker compose up --build
 

@@ -2,6 +2,9 @@ services:
   postgres:
     container_name: postgres
     image: postgres:15
+    profiles:
+      - development
+      - production
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-Password1234}
@@ -14,6 +17,8 @@ services:
   adminer:
     container_name: adminer
     image: dockette/adminer:postgres
+    profiles:
+      - development
     env_file: .env
     ports:
       - ${ADMINER_PORT:-8080}:80  # Fixed internal port mapping!
@@ -31,6 +36,8 @@ services:
   bot:
     build: .
     container_name: StrachyBot
+    profiles:
+      - production
     restart: always
     env_file: .env
     depends_on:
