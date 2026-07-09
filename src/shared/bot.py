@@ -7,21 +7,24 @@ import importlib
 import discord
 from discord.ext import commands
 from discord import app_commands
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, AsyncEngine
 
 from shared import console, database
 
 class StrachyBot(commands.Bot):
     start_time: datetime = discord.utils.utcnow()
-    db_session_maker: async_sessionmaker[AsyncSession] = database.AsyncSessionLocal
+    db_engine: AsyncEngine
+    db_session_factory: async_sessionmaker[AsyncSession]
 
-    def __init__(self):
+    def __init__(self, db_engine: AsyncEngine | None = None):
         # Setup intents
         intents = discord.Intents.default()
         intents.message_content = True
 
         super().__init__(command_prefix="!", case_insensitive=True, intents=intents)
+
+        self.db_engine = db_engine if db_engine else database.create_db_engine()
+        self.db_session_factory = database.create_session_factory(self.db_engine)
 
 
     async def setup_hook(self) -> None:
@@ -29,11 +32,11 @@ class StrachyBot(commands.Bot):
         await self.__load_modules()
 
         # import shared database models
-        importlib.import_module(f"shared.models")
+        importlib.import_module("shared.models")
         console.log_debug("Shared database models loaded.")
 
         # create database tables
-        async with database.engine.begin() as connection:
+        async with self.db_engine.begin() as connection:
             await connection.run_sync(database.Base.metadata.create_all)
             console.log_success("Database tables synced.")
 

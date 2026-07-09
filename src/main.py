@@ -3,16 +3,15 @@ from dotenv import load_dotenv
 import asyncio
 
 from shared import console
-
-profile: str = os.getenv("COMPOSE_PROFILES", "development")
-
-if profile == "development":
-    load_dotenv()
-    console.log_debug("Environment variables loaded.")
-
 from shared.bot import StrachyBot
 
 async def main() -> None:
+    profile: str = os.getenv("COMPOSE_PROFILES", "development")
+
+    if profile == "development":
+        load_dotenv()
+        console.log_debug("Environment variables loaded.")
+
     token: str | None = os.getenv("DISCORD_TOKEN")
 
     if token is None:
