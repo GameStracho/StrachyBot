@@ -8,7 +8,6 @@ class TicTacToeMatch(Base):
     __table_args__ = (
         CheckConstraint("grid_size BETWEEN 3 AND 5", name="valid_grid_size"),
         CheckConstraint("total_moves BETWEEN 0 AND grid_size * grid_size", name="valid_total_moves"),
-        # CheckConstraint("opponent_id != player_id", name="unique_player_ids")
     )
 
     match_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("match_history.match_id", ondelete="CASCADE"), primary_key=True)

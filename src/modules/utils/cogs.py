@@ -26,7 +26,3 @@ class UtilsCog(commands.Cog):
         title: Optional[str] = "",
         message:  Optional[str] = "") -> None:
         await logic.announce(interaction, title, message)
-
-
-async def setup(bot: StrachyBot) -> None:
-    await bot.add_cog(UtilsCog(bot))

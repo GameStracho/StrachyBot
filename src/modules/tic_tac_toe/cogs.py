@@ -3,10 +3,10 @@ from discord.ext import commands
 from discord import app_commands
 
 from modules.tic_tac_toe import logic
-
+from shared.bot import StrachyBot
 
 class TicCog(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: StrachyBot) -> None:
         self.bot = bot
 
     @app_commands.command(
@@ -27,7 +27,3 @@ class TicCog(commands.Cog):
                 content=f"To play singleplayer choose {mention} as your opponent. - Coming soon")
         else:
             await logic.start(interaction, opponent, grid_size.value)
-
-
-async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(TicCog(bot))

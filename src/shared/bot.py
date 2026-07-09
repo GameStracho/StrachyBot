@@ -54,7 +54,7 @@ class StrachyBot(commands.Bot):
 
     async def on_ready(self) -> None:
         """Called when the bot starts."""
-        console.log_info(console.highlight(Fore.YELLOW, str(self.user)) + " is now online and ready to serve!")
+        console.log_success(console.highlight(Fore.YELLOW, str(self.user)) + " is now online and ready to serve!")
 
 
     async def __load_modules(self) -> None:
@@ -75,9 +75,9 @@ class StrachyBot(commands.Bot):
                 continue
 
             try:
-                # Load existing cogs.py in the module
+                # Load existing cogs from __init.py__ inside the module
                 if os.path.exists(os.path.join(module_path, "cogs.py")):
-                    await self.load_extension(f"modules.{module_name}.cogs")
+                    await self.load_extension(f"modules.{module_name}")
                     console.log_debug(f"Loaded cog file for module '{module_name}'.")
 
                 # Load existing cogs.py in the module
