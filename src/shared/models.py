@@ -1,19 +1,30 @@
 from datetime import datetime, timezone
 from typing import Optional
+from enum import Enum as PyEnum
 
-from sqlalchemy import BigInteger, String, CheckConstraint
+from sqlalchemy import BigInteger, String, Enum
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.database import Base
 
+class EMatchStatus(PyEnum):
+    PENDING = "pending"
+    WIN = "win"
+    LOSS = "loss"
+    TIMEOUT = "timeout"
+    DRAW = "draw"
+
 class MatchHistory(Base):
     __tablename__ = "match_history"
-    __table_args__ = (
-        CheckConstraint("status IN ('pending', 'win', 'loss', 'timeout', 'draw')", name="valid_status"),
-    )
 
     match_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     player_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     start_time: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(timezone.utc))
-    end_time: Mapped[Optional[datetime]] = mapped_column(nullable=True, default=None)
-    status: Mapped[str] = mapped_column(String(10), nullable=False, default="pending")
+    end_time: Mapped[Optional[datetime]] = mapped_column(nullable=True, default=None, onupdate=datetime.now(timezone.utc))
+    
+    # native_enum=True tells Postgres to create a custom ENUM data type
+    status: Mapped[EMatchStatus] = mapped_column(
+        Enum(EMatchStatus, native_enum=True),
+        nullable=False,
+        default=EMatchStatus.PENDING
+    )
