@@ -14,8 +14,8 @@ class EMatchStatus(PyEnum):
     TIMEOUT = "timeout"
     DRAW = "draw"
 
-class MatchHistory(Base):
-    __tablename__ = "match_history"
+class Match(Base):
+    __tablename__ = "match"
 
     match_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     player_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
