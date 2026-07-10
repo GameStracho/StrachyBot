@@ -7,6 +7,7 @@ types-colorama == 0.4.15
 # database
 sqlalchemy == 2.0.51
 asyncpg == 0.31.0
+alembic == 1.18.5
 
 # google
 google_auth_oauthlib
