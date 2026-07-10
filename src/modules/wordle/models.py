@@ -11,4 +11,4 @@ class WordleMatch(Base):
 
     match_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("match.match_id", ondelete="CASCADE"), primary_key=True)
     secret_word: Mapped[str] = mapped_column(String(5), nullable=False)
-    guesses_count: Mapped[int] = mapped_column(nullable=False)
+    guesses: Mapped[int] = mapped_column(nullable=False, default=0)
