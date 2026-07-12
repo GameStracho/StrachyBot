@@ -1,13 +1,13 @@
-from typing import Optional
+from typing import Optional, List, Tuple
 import datetime
-
-from shared.bot import StrachyBot
-from shared import console, messages
 
 import discord
 from discord.ext import commands
 from discord import app_commands
 
+from shared.bot import StrachyBot
+from shared import console, messages
+from .helpers import parse_changelog
 
 class UtilsCog(commands.Cog):
     def __init__(self, bot: StrachyBot) -> None:
@@ -31,11 +31,10 @@ class UtilsCog(commands.Cog):
             embed.add_field(name="Ping", value=f"{round(interaction.client.latency * 1000)} ms", inline=True)
             embed.add_field(name="Uptime", value=f"{str(uptime).split('.')[0]}", inline=True)
 
-            embed.add_field(name="Version", value="v1.0.4 (2026-07-03)", inline=True)
-            embed.add_field(name="Changelog", value=(
-                "- Added `/info`, `/announcement` and `error` icons"
-                "\n- Scaled down `wordle` and `tic-tac-toe` icons"
-            ), inline=False)
+            sections: List[Tuple[str, str]] = parse_changelog()
+
+            for section_name, section_content in sections:
+                embed.add_field(name=section_name, value=section_content, inline=False)
 
             icon: discord.File = discord.File(
             "./src/modules/utils/info.png", filename="info.png")
