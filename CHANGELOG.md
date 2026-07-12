@@ -6,6 +6,10 @@
 - Adminer service to view and manage database table records during development
 - `production` and `development` Docker Compose profiles to separate development-only services
 - Optional automatic database backups to a git repository
+- Parsing of the latest version from `CHANGELOG.md` in the `/info` command 
+
+### Changed
+- Embed title of the `/info` command
 
 ### Fixed
 - Resolved issues with `tic-tac-toe` data types that led to buttons not being responsive
