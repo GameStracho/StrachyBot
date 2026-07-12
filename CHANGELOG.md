@@ -1,6 +1,14 @@
-# Changelog
+## [1.0.5] - 2026-07-12
 
-All notable changes to this project will be documented in this file.
+### Added
+- PostgresSQL database with tables for tracking `wordle` and `tic-tac-toe` games
+- Database migrations automatically updated on bot startup
+- Adminer service to view and manage database table records during development
+- `production` and `development` Docker Compose profiles to separate development-only services
+
+### Fixed
+- Resolved issues with `tic-tac-toe` data types that led to buttons not being responsive
+
 
 ## [1.0.4] - 2026-07-03
 
