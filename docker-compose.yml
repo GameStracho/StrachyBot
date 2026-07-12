@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:15
+    container_name: StrachyBotDB
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-Password1234}
