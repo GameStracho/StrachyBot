@@ -35,11 +35,6 @@ class StrachyBot(commands.Bot):
         importlib.import_module("shared.models")
         console.log_debug("Shared database models loaded.")
 
-        # create database tables
-        async with self.db_engine.begin() as connection:
-            await connection.run_sync(database.Base.metadata.create_all)
-            console.log_success("Database tables synced.")
-
         # sync commands with Discord
         synced: List[app_commands.AppCommand] = await self.tree.sync()
         synced_commands: str = ""
@@ -66,21 +61,16 @@ class StrachyBot(commands.Bot):
             module_path = os.path.join(modules_dir, module_name)
             
             # Skip non-directories and utility modules
-            if not os.path.isdir(module_path) or module_name.startswith("_"):
-                continue
-            
-            # Skip if cogs.py does not exist in the module
-            cogs_file = os.path.join(module_path, "cogs.py")
-            if not os.path.exists(cogs_file):
+            if not os.path.isdir(module_path) or module_name.startswith("_") or not os.path.join(module_path, "cogs.py"):
                 continue
 
             try:
-                # Load existing cogs from __init.py__ inside the module
+                # Load existing cogs from '__init.py__'
                 if os.path.exists(os.path.join(module_path, "cogs.py")):
                     await self.load_extension(f"modules.{module_name}")
                     console.log_debug(f"Loaded cog file for module '{module_name}'.")
 
-                # Load existing cogs.py in the module
+                # Import database models from 'models.py'
                 if os.path.exists(os.path.join(module_path, "models.py")):
                     importlib.import_module(f"modules.{module_name}.models")
                     console.log_debug(f"Registered database models for module '{module_name}'.")
