@@ -31,9 +31,10 @@ def parse_changelog() -> List[Tuple[str, str]]:
                 if section_name:
                     section_content = section_content.rstrip()
                     sections.append((section_name, section_content))
+                    indented_content: str = re.sub(r"\n", "\n\t", section_content)
                     console.log_debug(
                         f"utils: {section_name} section parsed with content: \n"
-                        f"\t{re.sub(r'\n', '\n\t', section_content)}"
+                        f"\t{indented_content}"
                     )
                     section_name = ""
                     section_content = ""
