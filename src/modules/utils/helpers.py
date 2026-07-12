@@ -5,7 +5,7 @@ from shared import console
 
 def __strip_header(text: str):
     """"Strips markdown characters (#) from a header"""
-    return re.sub("^[#]* ", "", text)
+    return re.sub(r'^[#]* ', '', text)
 
 def parse_changelog() -> List[Tuple[str, str]]:
     """Parses sections of the newest version in CHANGELOG.md into list of pairs - section names and contents."""
@@ -31,7 +31,10 @@ def parse_changelog() -> List[Tuple[str, str]]:
                 if section_name:
                     section_content = section_content.rstrip()
                     sections.append((section_name, section_content))
-                    console.log_debug(f"utils: {section_name} section parsed with content: \n\t{re.sub("\n", "\n\t", section_content)}")
+                    console.log_debug(
+                        f"utils: {section_name} section parsed with content: \n"
+                        f"\t{re.sub(r'\n', '\n\t', section_content)}"
+                    )
                     section_name = ""
                     section_content = ""
 
