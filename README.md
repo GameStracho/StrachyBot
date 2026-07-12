@@ -1,8 +1,10 @@
 # 🤖 Discord Bot
 
-[![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg?style=flat-for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![Discord.py](https://img.shields.io/badge/discord.py-v2.3+-5865F2.svg?style=flat-for-the-badge&logo=discord&logoColor=white)](https://discordpy.readthedocs.io/)
-[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat-for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
+[![Python Version](https://img.shields.io/badge/python-3.11-blue.svg?style=flat-for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![Discord.py](https://img.shields.io/badge/discord.py-v2.3.2-5865F2.svg?style=flat-for-the-badge&logo=discord&logoColor=white)](https://discordpy.readthedocs.io/)
+[![Docker](https://img.shields.io/badge/docker-compose-%230db7ed.svg?style=flat-for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192.svg?style=flat-for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Adminer](https://img.shields.io/badge/Adminer-dockette%2Fadminer-2563eb.svg?style=flat-for-the-badge&logo=adminer&logoColor=white)](https://hub.docker.com/r/dockette/adminer)
 [![Platform](https://img.shields.io/badge/platform-Raspberry%20Pi%205-A22846.svg?style=flat-for-the-badge&logo=raspberrypi&logoColor=white)](https://www.raspberrypi.com)
 
 ## 📌 About
@@ -15,16 +17,31 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
 ### Option 1: Local Development
 **Prerequisites**
  - Install [Python](https://www.python.org/downloads/)
+ - Install [Docker](https://docs.docker.com/engine/install/)
+ - Install [Docker Compose](https://docs.docker.com/compose/install/)
 
 1. Clone the repository and navigate into it:
    ```bash
    git clone https://github.com/GameStracho/StrachyBot
    cd StrachyBot
    ```
-2. Copy `.env.example` configuration file and insert your token.
+2. Copy `.env.example` configuration file and update the configuration.
    ```bash
    cp .env.example .env
+   
+   # insert your bot's token
    sed -i 's/^DISCORD_TOKEN=.*/DISCORD_TOKEN=your-token-here/' .env
+
+   # set up database password (recommended)
+   sed -i 's/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=your_new_password/' .env
+   # or use a random password
+   sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$(openssl rand -base64 32 | tr -d '=+/')/" .env
+
+   # change docker profile to development
+   sed -i 's/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=development/' .env
+
+   # (Optional) change adminer port if port 8080 is occupied
+    sed -i 's/^ADMINER_PORT=.*/ADMINER_PORT=8080/' .env
    ```
 3. Create and activate a local virtual environment:
     ```bash
@@ -42,7 +59,18 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
     pip install -r requirements.txt
     ```
 5. (Optional) *VS Code Configuration:* Ensure your python interpreter is set to the virtual environment. Press `Ctrl+Shift+P` (or `Cmd+Shift+P`), search for **Python: Select Interpreter**, and choose the one inside `./venv/bin/python`.
-6. Run the bot locally
+6. Run docker services (database and adminer)
+   ```bash
+    docker compose up --build
+
+    # or start in detached (background) process
+    docker compose up --build -d
+    ```
+7. Update database to latest migration
+   ```bash
+   alembic upgrade head
+   ```
+8. Run the bot locally
     ```bash
     # Linux/macOS
     python3 src/main.py
@@ -61,20 +89,38 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
    git clone https://github.com/GameStracho/StrachyBot
    cd StrachyBot
    ```
-2. Copy `.env.example` configuration file and insert your token.
+2. Copy `.env.example` configuration file and update the configuration.
    ```bash
    cp .env.example .env
+   
+   # insert your bot's token
    sed -i 's/^DISCORD_TOKEN=.*/DISCORD_TOKEN=your-token-here/' .env
+
+   # set up database password
+   sed -i 's/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=your_new_password/' .env
+   # or use a random password instead (recommended)
+   sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$(openssl rand -base64 32 | tr -d '=+/')/" .env
    ```
-3. Build and start the container
+3. Build and start the StrachyBot container and database service
    ```bash
     docker compose up --build
 
-    # or start in detached process (in background)
+    # or start in detached (background) process
     docker compose up --build -d
    ```
 
 ---
+
+## ⚙️ Developer Commands
+
+- `ruff check .` - run static syntax check
+- `mypy .` - run static type validation
+- `alembic revision --autogenerate -m "MIGRATION NAME"` - create database migration
+- `alembic upgrade head` - apply migrations
+- `pytest` - run unit tests
+
+---
+
 ## 🔑 License
 This project is licensed under the **GNU General Public License** - see the [LICENSE](LICENSE) file for details.
 

@@ -8,6 +8,22 @@ from modules import stats
 from shared import console
 
 
+EMPTY_BUTTON_LABEL = "⸼"
+
+
+class TicTacToeButton(discord.ui.Button):
+    def __init__(self, game_id: int, *, custom_id: str, row: int) -> None:
+        super().__init__(custom_id=custom_id, label=EMPTY_BUTTON_LABEL, row=row)
+        self.game_id = game_id
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        await interaction.response.send_message(
+            ephemeral=True, content="responding...", delete_after=0)
+        if self.custom_id is None:
+            return
+        await button_pressed(self.game_id, int(self.custom_id), interaction.user.id)
+
+
 class TicTacToeButtons(discord.ui.View):
     def __init__(self, game_id: int, grid_size: int) -> None:
         super().__init__(timeout=None)
@@ -16,18 +32,13 @@ class TicTacToeButtons(discord.ui.View):
         
         for i in range(grid_size):
             for j in range(grid_size):
-                button: discord.ui.Button = discord.ui.Button(
-                    custom_id=str((i * grid_size) + j), label="\u1CBC", row=i)
-                #button.callback = self.button_callback
+                button_index = (i * grid_size) + j
+                button = TicTacToeButton(
+                    game_id,
+                    custom_id=str(button_index),
+                    row=i,
+                )
                 self.add_item(button)
-
-    async def button_callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(
-               ephemeral=True, content="responding...", delete_after=0)
-        # TODO: resolve type issues
-        #await button_pressed(
-        #    self.game_id, int(interaction.data["custom_id"]),
-        #    interaction.user.id)
 
 
 games: Dict[int, dict] = {}
@@ -98,7 +109,7 @@ def change_button_label(game_id: int, button_num: int) -> bool:
     btn = view.children[button_num]
     if not isinstance(btn, discord.ui.Button):
         return False
-    if btn.label == "\u1CBC":
+    if btn.label == EMPTY_BUTTON_LABEL:
         if game_info["turn"]:
             btn.label = "🟠"
         else:
@@ -130,7 +141,7 @@ def __check_end(game_id: int) -> bool:
     for button in view.children:
         if not isinstance(button, discord.ui.Button):
             continue
-        if button.label == "\u1CBC":
+        if button.label == EMPTY_BUTTON_LABEL:
             return False
     embed.description = f"{game_info['msg']}\n\nGame ended in a draw. *+5 xp for both*"
     stats.edit(game_info['users'][0], "", "exp", 5)
@@ -228,7 +239,7 @@ async def __remove_buttons(game_id: int) -> None:
             if btn.label is not None:
                 label = btn.label
             
-            if label == "\u1CBC":
+            if label == EMPTY_BUTTON_LABEL:
                 embed.description += " ` ⚫ `"
             elif label == "🟣":
                 embed.description += " ` 🟣 `"

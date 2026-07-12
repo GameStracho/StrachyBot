@@ -3,10 +3,10 @@ from discord.ext import commands
 from discord import app_commands
 
 from modules.wordle import logic
-
+from shared.bot import StrachyBot
 
 class WordleCog(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: StrachyBot) -> None:
         self.bot = bot
 
     @app_commands.command(
@@ -21,7 +21,3 @@ class WordleCog(commands.Cog):
         else:
             await interaction.response.send_message(
                 ephemeral=True, content="You have to start a new game first.")
-
-
-async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(WordleCog(bot))

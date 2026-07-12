@@ -1,7 +1,58 @@
 services:
-  discord-bot:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-Password1234}
+      POSTGRES_DB: StrachyBot
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d StrachyBot" ]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+  socat:
+    image: alpine/socat
+    profiles:
+      - development
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    # Socat listens locally on 5432 inside this container and forwards it to the 'postgres' service on port 5432
+    command: tcp-listen:5432,fork,reuseaddr tcp-connect:postgres:5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+  adminer:
+    image: dockette/adminer:postgres
+    profiles:
+      - development
+    env_file: .env
+    ports:
+      - ${ADMINER_PORT:-8080}:80
+    depends_on:
+      postgres:
+        condition: "service_healthy"
+        required: true
+    environment:
+      # Enable the autologin plugin
+      ADMINER_PLUGIN_AUTOLOGIN: "1"
+      
+      # Provide the unified DSN connection string
+      # Format: pgsql://username:password@host:port/database
+      ADMINER_AUTOLOGIN_SERVER: "pgsql://postgres:${DATABASE_PASSWORD:-Password1234}@postgres:5432/StrachyBot"
+  bot:
     build: .
     container_name: StrachyBot
+    profiles:
+      - production
     restart: always
-    env_file:
-      - .env
+    env_file: .env
+    command: sh -c "alembic upgrade head && python src/main.py" 
+    depends_on:
+      postgres:
+        condition: "service_healthy"
+        required: true
+    environment:
+      CONNECTION_STRING: postgresql+asyncpg://postgres:${DATABASE_PASSWORD}@postgres:5432/StrachyBot
+
+      # Force Python logs to show instantly
+      PYTHONUNBUFFERED: "1"
