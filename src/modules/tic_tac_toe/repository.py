@@ -46,20 +46,20 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
     console.log_debug(f"tic: Updating match ({match_id}) with status ({status}) and total_moves ({total_moves})...")
 
     async with session.begin():
-        parent_match: Match | None = await session.execute(
+        parent_match: Match | None = (await session.execute(
             select(Match).where(Match.match_id == match_id)
-        ).scalar_one_or_none()
+        )).scalar_one_or_none()
 
-        child_match: TicTacToeMatch | None = await session.execute(
+        child_match: TicTacToeMatch | None = (await session.execute(
             select(TicTacToeMatch).where(TicTacToeMatch.match_id == match_id)
-        ).scalar_one_or_none()
+        )).scalar_one_or_none()
 
         if not parent_match or not child_match:
             console.log_warning(f"tic: Match ({match_id}) not found, update aborted.")
             return False
 
         if parent_match.status != EMatchStatus.PENDING:
-            console.log_error(f"tic: Only 'pending' matches can be updated.")
+            console.log_error("tic: Only 'pending' matches can be updated.")
             return False
 
         parent_match.status = status

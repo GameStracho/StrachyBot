@@ -45,20 +45,20 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
     console.log_debug(f"wordle: Updating match ({match_id}) with status ({status}) and guesses ({guesses})...")
 
     async with session.begin():
-        parent_match: Match | None = await session.execute(
+        parent_match: Match | None = (await session.execute(
             select(Match).where(Match.match_id == match_id)
-        ).scalar_one_or_none()
+        )).scalar_one_or_none()
 
-        child_match: WordleMatch | None = await session.execute(
+        child_match: WordleMatch | None = (await session.execute(
             select(WordleMatch).where(WordleMatch.match_id == match_id)
-        ).scalar_one_or_none()
+        )).scalar_one_or_none()
 
         if not parent_match or not child_match:
             console.log_error(f"wordle: Match ({match_id}) not found, update aborted.")
             return False
 
         if parent_match.status != EMatchStatus.PENDING:
-            console.log_error(f"wordle: Only 'pending' matches can be updated.")
+            console.log_error("wordle: Only 'pending' matches can be updated.")
             return False
 
         parent_match.status = status
