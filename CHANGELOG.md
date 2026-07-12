@@ -9,6 +9,11 @@
 ### Fixed
 - Resolved issues with `tic-tac-toe` data types that led to buttons not being responsive
 
+### Deprecated
+- Google Drive backups
+- User statistics recorded into JSON files
+
+---
 
 ## [1.0.4] - 2026-07-03
 
