@@ -24,7 +24,7 @@ class UtilsCog(commands.Cog):
 
             embed: discord.Embed = discord.Embed(
                 color=discord.Color.blue(),
-                title="Bot information",
+                title="StrachyBot 🤖",
                 description="Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe*."
             )
             
