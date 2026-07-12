@@ -39,7 +39,7 @@ async def test_all_modules_load_and_sync_correctly(monkeypatch):
     print(f"Registered tables found: {list(registered_tables)}")
     
     # Verify core table exists
-    assert "match_history" in registered_tables, "Core 'match_history' table was not registered!"
+    assert "match" in registered_tables, "Core 'match' table was not registered!"
     
     # Check that module-specific tables were discovered dynamically
     for module in expected_modules:
