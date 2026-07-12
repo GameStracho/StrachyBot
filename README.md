@@ -66,7 +66,11 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
     # or start in detached (background) process
     docker compose up --build -d
     ```
-7. Run the bot locally
+7. Update database to latest migration
+   ```bash
+   alembic upgrade head
+   ```
+8. Run the bot locally
     ```bash
     # Linux/macOS
     python3 src/main.py
@@ -106,6 +110,17 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
    ```
 
 ---
+
+## ⚙️ Developer Commands
+
+- `ruff check .` - run static syntax check
+- `mypy .` - run static type validation
+- `alembic revision --autogenerate -m "MIGRATION NAME"` - create database migration
+- `alembic upgrade head` - apply migrations
+- `pytest` - run unit tests
+
+---
+
 ## 🔑 License
 This project is licensed under the **GNU General Public License** - see the [LICENSE](LICENSE) file for details.
 
