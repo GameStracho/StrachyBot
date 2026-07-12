@@ -5,6 +5,7 @@
 - Database migrations automatically updated on bot startup
 - Adminer service to view and manage database table records during development
 - `production` and `development` Docker Compose profiles to separate development-only services
+- Optional automatic database backups to a git repository
 
 ### Fixed
 - Resolved issues with `tic-tac-toe` data types that led to buttons not being responsive
