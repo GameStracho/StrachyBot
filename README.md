@@ -109,6 +109,25 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
     docker compose up --build -d
    ```
 
+### Automatic database backups (optional)
+1. Create a new **private** StrachyBotBackups repository on [GitHub](https://github.com/new)
+2. Add SSH key to your [GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
+3. Clone the StrachyBotBackups repository into `backups`
+   ```bash
+      git clone git@github.com:YOUR-GITHUB-USERNAME/StrachyBotBackups.git backups
+   ```
+4. Update backup script's privileges to make it executable
+   ```bash
+   chmod +x scripts/backup.sh
+   ```
+5. Open cron manager terminal.
+   ```bash
+   crontab -e
+   ```
+6. Add new cron job to the **bottom of the file**. This job executes the backup script every dat at 2 am and logs errors into `backups/err.log`.
+   ```bash
+   0 2 * * * /bin/bash /absolute-path-to-StrachyBot/scripts/backup.sh 2> /absolute-path-to-StrachyBot/backups/err.log
+   ```
 ---
 
 ## ⚙️ Developer Commands
