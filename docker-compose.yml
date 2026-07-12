@@ -55,6 +55,7 @@ services:
       - production
     restart: always
     env_file: .env
+    command: sh -c "alembic upgrade head && python src/main.py" 
     depends_on:
       postgres:
         condition: "service_healthy"
