@@ -29,11 +29,13 @@ class TriviaCog(commands.Cog):
 
             game_id: int = 1
 
-            view: TriviaView = TriviaView(game=game_id, interaction=interaction, options=options, correct_answer=correct_answer)
+            view: TriviaView = TriviaView(game=game_id, options=options, correct_answer=correct_answer)
 
             embed = discord.Embed(color=discord.Color.green(), title="Trivia", description="Some Question?")
 
-            console.log_info(f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) started a new game ({game_id}). Correct answer is '{correct_answer}'.")
+            console.log_info(f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) started a new game ({game_id}). Correct answer is '{correct_answer}'.")          
+            # CRITICAL: Save the sent message reference to the view so the timeout handler can edit it!
             await interaction.response.send_message(embed=embed, view=view)
+            view.message = await interaction.original_response()
         except Exception:
             await messages.handle_error("/trivia", interaction)

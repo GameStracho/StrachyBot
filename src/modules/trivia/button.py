@@ -18,7 +18,7 @@ class TriviaButton(discord.ui.Button):
 
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        parent_view: view.TriviaView = self.view
+        parent_view: view.TriviaView | None = self.view
         assert parent_view is not None
         
         console.log_debug((
