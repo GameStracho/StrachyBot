@@ -1,29 +1,27 @@
 import discord
 
 from shared import console
+import modules.trivia.view as view
 
 class TriviaButton(discord.ui.Button):
     _is_correct: bool = False
 
-    def __init__(self, label: str, is_correct: bool = False, emoji: str = ""):
-        super().__init__(label=label, style=discord.ButtonStyle.secondary, emoji=emoji)
+    def __init__(self, label: str, is_correct: bool, row: int, emoji: str = ""):
+        super().__init__(label=label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row)
 
         self._is_correct = is_correct
-        console.log_debug(f"New TriviaButton created: label = '{label}', is_correct = {is_correct}, emoji = '{emoji}'.")
+        console.log_debug(f"New TriviaButton created: label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}.")
 
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        # Disable all buttons and update the original message to reveal answers.
-        view = self.view
-        if view is None:
+        parent_view: view.TriviaView = self.view
+        if parent_view is None:
             return
 
-        for child in view.children:
-            if isinstance(child, TriviaButton):
-                child.disable()
+        parent_view.disable_buttons()
 
         # Edit the original message to show disabled buttons
-        await interaction.response.edit_message(view=view)
+        await interaction.response.edit_message(view=parent_view)
 
 
     def disable(self) -> None:
