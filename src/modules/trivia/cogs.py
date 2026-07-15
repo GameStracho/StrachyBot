@@ -1,8 +1,13 @@
+from typing import List
+import random
+
 import discord
 from discord.ext import commands
 from discord import app_commands
 
 from shared.bot import StrachyBot
+from shared import console, messages
+from .view import TriviaView
 
 class TriviaCog(commands.Cog):
     def __init__(self, bot: StrachyBot) -> None:
@@ -11,7 +16,23 @@ class TriviaCog(commands.Cog):
     @app_commands.command(
         name="trivia", description="Try to answer a question by selecting 1 of 4 answers.")
     async def trivia(self, interaction: discord.Interaction):
-        embed = discord.Embed(
-            color=discord.Color.blue(), title="Trivia", description="Question")
+        try:
+            console.log_info(f"/trivia: Command used by user {interaction.user.display_name} ({interaction.user.id})")
+            
+            options: List[str] = []
+            correct_answer = "Option 1"
 
-        await interaction.response.send_message(embed=embed)
+            for i in range(4):
+                options.append(f"Option {i}")
+
+            random.shuffle(options)
+
+            view: TriviaView = TriviaView(interaction=interaction, options=options, correct_answer=correct_answer)
+
+            embed = discord.Embed(color=discord.Color.green(), title="Trivia", description="Some Question?")
+
+            game_id: int = 0
+            console.log_info(f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) started a new game ({game_id}). Correct answer is '{correct_answer}'.")
+            await interaction.response.send_message(embed=embed, view=view)
+        except Exception:
+            await messages.handle_error("/trivia", interaction)
