@@ -27,11 +27,12 @@ class TriviaCog(commands.Cog):
 
             random.shuffle(options)
 
-            view: TriviaView = TriviaView(interaction=interaction, options=options, correct_answer=correct_answer)
+            game_id: int = 1
+
+            view: TriviaView = TriviaView(game=game_id, interaction=interaction, options=options, correct_answer=correct_answer)
 
             embed = discord.Embed(color=discord.Color.green(), title="Trivia", description="Some Question?")
 
-            game_id: int = 0
             console.log_info(f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) started a new game ({game_id}). Correct answer is '{correct_answer}'.")
             await interaction.response.send_message(embed=embed, view=view)
         except Exception:

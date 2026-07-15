@@ -10,15 +10,24 @@ class TriviaButton(discord.ui.Button):
         super().__init__(label=label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row)
 
         self._is_correct = is_correct
-        console.log_debug(f"New TriviaButton created: label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}.")
+
+        console.log_debug((
+            f"/trivia: New TriviaButton created: "
+            f"label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
+        ))
 
 
     async def callback(self, interaction: discord.Interaction) -> None:
         parent_view: view.TriviaView = self.view
-        if parent_view is None:
-            return
+        assert parent_view is not None
+        
+        console.log_debug((
+            f"/trivia: clicked on {"Correct" if self._is_correct else "Incorrect"} answer"
+            f"chosen for game ({parent_view.get_game_id()}) by user {interaction.user.display_name} ({interaction.user.id})."
+        ))
 
         parent_view.disable_buttons()
+        self.style = discord.ButtonStyle.primary
 
         # Edit the original message to show disabled buttons
         await interaction.response.edit_message(view=parent_view)
