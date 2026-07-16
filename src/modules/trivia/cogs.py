@@ -14,7 +14,7 @@ class TriviaCog(commands.Cog):
 
     @app_commands.command(
         name="trivia", description="Try to answer a question by selecting 1 of 4 answers.")
-    async def trivia(self, interaction: discord.Interaction):
+    async def trivia(self, interaction: discord.Interaction) -> None:
         try:
             console.log_info(f"/trivia: Command used by user {interaction.user.display_name} ({interaction.user.id})")
 

@@ -56,11 +56,11 @@ class TriviaGame():
         return self._incorrect_answers
 
 
-    def get_correct_answer(self):
+    def get_correct_answer(self) -> str:
         return self._correct_answer
 
 
-    def is_over(self):
+    def is_over(self) -> bool:
         return self._is_over
 
 

@@ -3,7 +3,7 @@ import discord
 from shared import console
 import modules.trivia.view as view
 
-class TriviaButton(discord.ui.Button):
+class TriviaButton(discord.ui.Button["TriviaButton"]):
     _is_correct: bool = False
     _game_id: int = -1
 
@@ -23,12 +23,17 @@ class TriviaButton(discord.ui.Button):
         parent_view: view.TriviaView | None = self.view
         assert parent_view is not None
         
+        answer_type: str = "Correct" if self._is_correct else "Incorrect"
+
         console.log_debug((
-            f"/trivia: {"Correct" if self._is_correct else "Incorrect"} answer ({self.label}) "
+            f"/trivia: {answer_type} answer ({self.label}) "
             f"chosen for game {self._game_id} by user {interaction.user.display_name} ({interaction.user.id})."
         ))
 
-        embed: discord.Embed = interaction.message.embeds[0]
+        message: discord.Message | None = interaction.message
+        assert message is not None
+
+        embed: discord.Embed = message.embeds[0]
         embed.description = "" # remove timeout countdown
 
         if self._is_correct:

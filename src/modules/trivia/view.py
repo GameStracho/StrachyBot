@@ -35,7 +35,7 @@ class TriviaView(discord.ui.View):
         console.log_debug(f"/trivia: New TriviaView created for game {self._game.get_game_id()} with {timeout}s timeout.")
 
 
-    def disable_buttons(self):
+    def disable_buttons(self) -> None:
         self._game.end()
 
         console.log_debug(f"/trivia: Revealing answers for game {self._game.get_game_id()}...")
