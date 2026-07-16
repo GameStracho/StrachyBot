@@ -3,7 +3,7 @@ import discord
 from shared import console
 import modules.trivia.view as view
 
-class TriviaButton(discord.ui.Button["TriviaButton"]):
+class TriviaButton(discord.ui.Button["view.TriviaView"]):
     _is_correct: bool = False
     _game_id: int = -1
 
@@ -20,8 +20,8 @@ class TriviaButton(discord.ui.Button["TriviaButton"]):
 
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        parent_view: view.TriviaView | None = self.view
-        assert parent_view is not None
+        parent_view = self.view
+        assert isinstance(parent_view, view.TriviaView)
         
         answer_type: str = "Correct" if self._is_correct else "Incorrect"
 
