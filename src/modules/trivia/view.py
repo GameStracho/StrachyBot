@@ -54,8 +54,9 @@ class TriviaView(discord.ui.View):
         self.disable_buttons()
 
         embed: discord.Embed = self.message.embeds[0]
-        embed.add_field(name="Result", value="Timed Out! ⏰", inline=False)
+        embed.add_field(name="Result", value="Timed out! ⏰", inline=False)
         embed.color = discord.Color.darker_grey()
+        embed.description = "" # remove timeout countdown
 
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)

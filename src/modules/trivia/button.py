@@ -29,6 +29,7 @@ class TriviaButton(discord.ui.Button):
         ))
 
         embed: discord.Embed = interaction.message.embeds[0]
+        embed.description = "" # remove timeout countdown
 
         if self._is_correct:
             embed.color = discord.Color.green()
