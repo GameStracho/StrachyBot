@@ -5,14 +5,16 @@ import modules.trivia.view as view
 
 class TriviaButton(discord.ui.Button):
     _is_correct: bool = False
+    _game_id: int = -1
 
-    def __init__(self, label: str, is_correct: bool, row: int, emoji: str = ""):
+    def __init__(self, game_id: int, label: str, is_correct: bool, row: int, emoji: str = ""):
         super().__init__(label=label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row)
 
         self._is_correct = is_correct
+        self._game_id = game_id
 
         console.log_debug((
-            f"/trivia: New TriviaButton created: "
+            f"/trivia: New TriviaButton created for game {self._game_id}: "
             f"label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
         ))
 
@@ -22,8 +24,8 @@ class TriviaButton(discord.ui.Button):
         assert parent_view is not None
         
         console.log_debug((
-            f"/trivia: clicked on {"Correct" if self._is_correct else "Incorrect"} answer"
-            f"chosen for game ({parent_view.get_game_id()}) by user {interaction.user.display_name} ({interaction.user.id})."
+            f"/trivia: {"Correct" if self._is_correct else "Incorrect"} answer ({self.label}) "
+            f"chosen for game {self._game_id} by user {interaction.user.display_name} ({interaction.user.id})."
         ))
 
         parent_view.disable_buttons()

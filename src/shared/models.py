@@ -8,11 +8,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 from shared.database import Base
 
 class EMatchStatus(PyEnum):
-    PENDING = "pending"
-    WIN = "win"
-    LOSS = "loss"
-    TIMEOUT = "timeout"
-    DRAW = "draw"
+    PENDING = "Pending"
+    WIN = "Win"
+    LOSS = "Loss"
+    TIMEOUT = "Timeout"
+    DRAW = "Draw"
 
 class Match(Base):
     __tablename__ = "match"
