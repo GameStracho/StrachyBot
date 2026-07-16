@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+import time
 
 from shared.bot import StrachyBot
 from shared import console, messages
@@ -20,7 +21,10 @@ class TriviaCog(commands.Cog):
             game: TriviaGame = TriviaGame()
             view: TriviaView = TriviaView(game=game)
 
-            embed = discord.Embed(color=discord.Color.green(), title="Trivia", description=game.get_question())
+            embed = discord.Embed(color=discord.Color.light_gray(), title="Trivia")
+            embed.add_field(name="Category", value=game.get_category(), inline=True)
+            embed.add_field(name="Difficulty", value=game.get_difficulty(), inline=True)
+            embed.add_field(name="Question", value=game.get_question(), inline=False)
 
             console.log_info(f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) started a new {game}.")
           

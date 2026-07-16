@@ -27,6 +27,9 @@ class ETriviaCategory(PyEnum):
     ANIME_MANGA = "Anime & Manga"
     CARTOON_ANIMATION = "Cartoon & Animations"
 
+    def __str__(self) -> str:
+        return self.value
+
 
     def __int__(self) -> int:
         match self:
@@ -89,3 +92,6 @@ class ETriviaDifficulty(PyEnum):
     EASY = "Easy"
     MEDIUM = "Medium"
     HARD = "Hard"
+
+    def __str__(self) -> str:
+        return self.value

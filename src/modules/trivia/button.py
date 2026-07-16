@@ -28,11 +28,20 @@ class TriviaButton(discord.ui.Button):
             f"chosen for game {self._game_id} by user {interaction.user.display_name} ({interaction.user.id})."
         ))
 
+        embed: discord.Embed = interaction.message.embeds[0]
+
+        if self._is_correct:
+            embed.color = discord.Color.green()
+            embed.add_field(name="Result", value="The answer was correct! 🎉", inline=False)
+        else:
+            embed.color = discord.Color.red()
+            embed.add_field(name="Result", value="The answer was incorrect! 👎", inline=False)
+
         parent_view.disable_buttons()
         self.style = discord.ButtonStyle.primary
 
         # Edit the original message to show disabled buttons
-        await interaction.response.edit_message(view=parent_view)
+        await interaction.response.edit_message(embed=embed, view=parent_view)
 
 
     def disable(self) -> None:

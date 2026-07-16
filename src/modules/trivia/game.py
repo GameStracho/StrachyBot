@@ -14,7 +14,7 @@ class TriviaGame():
             self,
             category: ETriviaCategory = ETriviaCategory.ANY,
             difficulty: ETriviaDifficulty = ETriviaDifficulty.ANY) -> None:
-        self._game_id = -100
+        self._game_id = -1
         self._question = ""
         self._incorrect_answers = []
         self._correct_answer = ""

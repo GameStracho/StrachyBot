@@ -13,7 +13,7 @@ class TriviaView(discord.ui.View):
     _game: TriviaGame
     message: discord.Message | None
 
-    def __init__(self, game: TriviaGame, timeout: float = 20.0):
+    def __init__(self, game: TriviaGame, timeout: float = 10.0):
         super().__init__(timeout=timeout)
 
         self._game = game
@@ -32,7 +32,7 @@ class TriviaView(discord.ui.View):
             label, is_correct = option
             self.add_item(button.TriviaButton(game_id=self._game.get_game_id(), label=label, is_correct=is_correct, emoji=BUTTON_EMOJIS[i], row=i))
 
-        console.log_debug(f"/trivia: New TriviaView created for game {self._game.get_game_id()} with {timeout} s timeout.")
+        console.log_debug(f"/trivia: New TriviaView created for game {self._game.get_game_id()} with {timeout}s timeout.")
 
 
     def disable_buttons(self):
@@ -49,8 +49,13 @@ class TriviaView(discord.ui.View):
         if self._game.is_over() or self.message is None:
             return
 
+
         console.log_info(f"/trivia: Game {self._game.get_game_id()} timed out.")
         self.disable_buttons()
 
+        embed: discord.Embed = self.message.embeds[0]
+        embed.add_field(name="Result", value="Timed Out! ⏰", inline=False)
+        embed.color = discord.Color.darker_grey()
+
         # Edit the original message to show disabled buttons
-        await self.message.edit(view=self)
+        await self.message.edit(embed=embed, view=self)
