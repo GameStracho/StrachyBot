@@ -40,12 +40,10 @@ class TriviaButton(discord.ui.Button["view.TriviaView"]):
 
         if self._is_correct:
             embed.color = discord.Color.green()
-            embed.add_field(name="Result", value="The answer was correct! 🎉", inline=False)
             self.style = discord.ButtonStyle.green
             self.emoji = "✔️"
         else:
             embed.color = discord.Color.red()
-            embed.add_field(name="Result", value="The answer was incorrect! 👎", inline=False)
             self.style = discord.ButtonStyle.red
             self.emoji = "✖️"
 
