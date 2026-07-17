@@ -41,6 +41,9 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
 
     Returns true on success.
     """
+    if status == EMatchStatus.PENDING:
+        console.log_warning(f"wordle: Cannot update match status {status}.")
+        return False
 
     console.log_debug(f"wordle: Updating match ({match_id}) with status ({status}) and guesses ({guesses})...")
 

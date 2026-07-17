@@ -61,7 +61,7 @@ class TriviaButton(discord.ui.Button["view.TriviaView"]):
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)
-        except:
+        except Exception:
             await messages.handle_error(command="/trivia", interaction=interaction, use_followup=False)
 
 
