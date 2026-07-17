@@ -5,7 +5,7 @@ from discord import Color
 
 from shared import console
 
-async def handle_error(command: str, interaction: discord.Interaction):
+async def handle_error(command: str, interaction: discord.Interaction, use_followup: bool = False):
     """
     Print error message with details to console and send generic message to user.
     IMPORTANT: only call from an except block!
@@ -20,4 +20,7 @@ async def handle_error(command: str, interaction: discord.Interaction):
         "./src/images/error.png", filename="error.png")
     embed.set_thumbnail(url="attachment://error.png")
 
-    await interaction.response.send_message(embed=embed, file=icon, ephemeral=True)
+    if use_followup:
+        await interaction.followup.send(embed=embed, file=icon, ephemeral=True)
+    else:
+        await interaction.response.send_message(embed=embed, file=icon, ephemeral=True)

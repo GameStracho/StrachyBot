@@ -6,11 +6,11 @@ class ETriviaCategory(PyEnum):
     BOOKS = "Books"
     FILM = "Film"
     MUSIC = "Music"
-    MUSICALS = "Musicals & Theaters"
+    MUSICALS_AND_THEATERS = "Musicals & Theaters"
     TELEVISION = "Television"
     VIDEO_GAMES = "Video Games"
     BOARD_GAMES = "Board Games"
-    SCIENCE_NATURE = "Science & Nature"
+    SCIENCE_AND_NATURE = "Science & Nature"
     COMPUTERS = "Computers"
     MATHEMATICS = "Mathematics"
     MYTHOLOGY = "Mythology"
@@ -24,8 +24,8 @@ class ETriviaCategory(PyEnum):
     VEHICLES = "Vehicles"
     COMICS = "Comics"
     GADGETS = "Gadgets"
-    ANIME_MANGA = "Anime & Manga"
-    CARTOON_ANIMATION = "Cartoon & Animations"
+    ANIME_AND_MANGA = "Anime & Manga"
+    CARTOON_AND_ANIMATION = "Cartoon & Animations"
 
     def __str__(self) -> str:
         return self.value
@@ -43,7 +43,7 @@ class ETriviaCategory(PyEnum):
                 return 11
             case ETriviaCategory.MUSIC:
                 return 12
-            case ETriviaCategory.MUSICALS:
+            case ETriviaCategory.MUSICALS_AND_THEATERS:
                 return 13
             case ETriviaCategory.TELEVISION:
                 return 14
@@ -51,7 +51,7 @@ class ETriviaCategory(PyEnum):
                 return 15
             case ETriviaCategory.BOARD_GAMES:
                 return 16
-            case ETriviaCategory.SCIENCE_NATURE:
+            case ETriviaCategory.SCIENCE_AND_NATURE:
                 return 17
             case ETriviaCategory.COMPUTERS:
                 return 18
@@ -79,9 +79,9 @@ class ETriviaCategory(PyEnum):
                 return 29
             case ETriviaCategory.GADGETS:
                 return 30
-            case ETriviaCategory.ANIME_MANGA:
+            case ETriviaCategory.ANIME_AND_MANGA:
                 return 31
-            case ETriviaCategory.CARTOON_ANIMATION:
+            case ETriviaCategory.CARTOON_AND_ANIMATION:
                 return 32
             case _:
                 raise ValueError(f"No API integer code mapped for {self}")
