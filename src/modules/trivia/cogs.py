@@ -19,13 +19,13 @@ class TriviaCog(commands.Cog):
             console.log_info(f"/trivia: Command used by user {interaction.user.display_name} ({interaction.user.id})")
 
             timeout_duration: float = 15.0
-            # time.time() returns a float, Discord requires an integer Unix timestamp
+            # Discord requires an integer Unix timestamp
             timeout_timestamp = int(time.time() + timeout_duration)
 
             game: TriviaGame = TriviaGame()
             view: TriviaView = TriviaView(game=game, timeout=timeout_duration)
 
-            embed = discord.Embed(color=discord.Color.teal(), title="Trivia", description=f"Time left: <t:{timeout_timestamp}:R> ⏱️")
+            embed = discord.Embed(color=discord.Color.dark_gold(), title="Trivia", description=f"Time left: <t:{timeout_timestamp}:R> ⏱️")
             embed.add_field(name="Category", value=game.get_category(), inline=True)
             embed.add_field(name="Difficulty", value=game.get_difficulty(), inline=True)
             embed.add_field(name="Question", value=game.get_question(), inline=False)

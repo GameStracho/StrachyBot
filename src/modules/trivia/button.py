@@ -36,15 +36,19 @@ class TriviaButton(discord.ui.Button["view.TriviaView"]):
         embed: discord.Embed = message.embeds[0]
         embed.description = "" # remove timeout countdown
 
+        parent_view.disable_buttons()
+
         if self._is_correct:
             embed.color = discord.Color.green()
             embed.add_field(name="Result", value="The answer was correct! 🎉", inline=False)
+            self.style = discord.ButtonStyle.green
+            self.emoji = "✔️"
         else:
             embed.color = discord.Color.red()
             embed.add_field(name="Result", value="The answer was incorrect! 👎", inline=False)
+            self.style = discord.ButtonStyle.red
+            self.emoji = "✖️"
 
-        parent_view.disable_buttons()
-        self.style = discord.ButtonStyle.primary
 
         # Edit the original message to show disabled buttons
         await interaction.response.edit_message(embed=embed, view=parent_view)
