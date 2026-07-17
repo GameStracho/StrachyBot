@@ -36,8 +36,7 @@ class TriviaCog(commands.Cog):
             # Discord requires an integer Unix timestamp
             timeout_timestamp = int(time.time() + timeout_duration)
 
-            view: TriviaView = TriviaView(db_session_factory=self.bot.db_session_factory,
-                                          game=game, timeout=timeout_duration)
+            view: TriviaView = TriviaView(game=game, timeout=timeout_duration)
 
             embed = discord.Embed(color=discord.Color.dark_gold(),
                                   title="Trivia", description=f"Time left: <t:{timeout_timestamp}:R> ⏱️")

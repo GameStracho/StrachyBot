@@ -1,9 +1,8 @@
 from typing import List, Tuple
 import discord
 import random
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from shared import console, models
+from shared import console, models, bot
 import modules.trivia.button as button
 from .game import TriviaGame
 from .repository import update_match
@@ -11,15 +10,12 @@ from .repository import update_match
 BUTTON_EMOJIS: List[str] = ["🇦", "🇧" , "🇨", "🇩"]
 
 class TriviaView(discord.ui.View):
-    _interaction: discord.Interaction
-    _db_session_factory: async_sessionmaker[AsyncSession]
     _game: TriviaGame
     message: discord.Message | None
 
-    def __init__(self, db_session_factory: async_sessionmaker[AsyncSession], game: TriviaGame, timeout: float = 10.0):
+    def __init__(self, game: TriviaGame, timeout: float = 10.0):
         super().__init__(timeout=timeout)
 
-        self._db_session_factory = db_session_factory
         self._game = game
 
         options: List[Tuple[str, bool]] = [(self._game.get_correct_answer(), True)]
@@ -32,7 +28,6 @@ class TriviaView(discord.ui.View):
         for i, option in enumerate(options):
             label, is_correct = option
             self.add_item(button.TriviaButton(
-                db_session_factory=self._db_session_factory,
                 game_id=self._game.match_id, player_id=self._game.get_player_id(),
                 label=label, is_correct=is_correct, emoji=BUTTON_EMOJIS[i], row=i
             ))
@@ -62,7 +57,10 @@ class TriviaView(discord.ui.View):
         embed.color = discord.Color.darker_grey()
         embed.description = "" # remove timeout countdown
 
-        async with self._db_session_factory() as session:
+        strachy_bot = self.message._state._get_client()
+        assert isinstance(strachy_bot, bot.StrachyBot)
+
+        async with strachy_bot.db_session_factory() as session:
             await update_match(session=session, match_id=self._game.match_id, status=models.EMatchStatus.TIMEOUT)
 
         # Edit the original message to show disabled buttons
