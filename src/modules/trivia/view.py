@@ -30,7 +30,10 @@ class TriviaView(discord.ui.View):
         for i, option in enumerate(options):
             print(i, option)
             label, is_correct = option
-            self.add_item(button.TriviaButton(game_id=self._game.get_game_id(), label=label, is_correct=is_correct, emoji=BUTTON_EMOJIS[i], row=i))
+            self.add_item(button.TriviaButton(
+                game_id=self._game.get_game_id(), player_id=self._game.get_player_id(),
+                label=label, is_correct=is_correct, emoji=BUTTON_EMOJIS[i], row=i
+            ))
 
         console.log_debug(f"/trivia: New TriviaView created for game {self._game.get_game_id()} with {timeout}s timeout.")
 

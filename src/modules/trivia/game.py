@@ -3,6 +3,7 @@ from .models import ETriviaCategory, ETriviaDifficulty
 
 class TriviaGame():
     _game_id: int
+    _player_id: int
     _question: str
     _incorrect_answers: List[str]
     _correct_answer: str
@@ -12,9 +13,11 @@ class TriviaGame():
 
     def __init__(
             self,
+            player_id: int,
             category: ETriviaCategory = ETriviaCategory.ANY,
             difficulty: ETriviaDifficulty = ETriviaDifficulty.ANY) -> None:
         self._game_id = -1
+        self._player_id = player_id
         self._question = ""
         self._incorrect_answers = []
         self._correct_answer = ""
@@ -32,12 +35,16 @@ class TriviaGame():
 
     def __str__(self) -> str:
         return (
-            f"Trivia game {self._game_id} - {self._question} (difficulty: {self._difficulty}, category: {self._category}, "
+            f"Trivia game {self._game_id} for user {self._player_id} - {self._question} (difficulty: {self._difficulty}, category: {self._category}, "
             f"is over: {self._is_over}, correct answer: {self._correct_answer}, incorrect answers: {self._incorrect_answers})"
         )
 
     def get_game_id(self) -> int:
         return self._game_id
+
+
+    def get_player_id(self) -> int:
+        return self._player_id
 
 
     def get_category(self) -> ETriviaCategory:
