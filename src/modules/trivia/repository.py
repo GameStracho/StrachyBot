@@ -72,5 +72,4 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
         match.status = status
 
     console.log_debug(f"trivia: Match ({match_id}) updated.")
-
     return True

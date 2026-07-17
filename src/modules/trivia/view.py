@@ -1,21 +1,25 @@
 from typing import List, Tuple
 import discord
 import random
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from shared import console
+from shared import console, models
 import modules.trivia.button as button
 from .game import TriviaGame
+from .repository import update_match
 
 BUTTON_EMOJIS: List[str] = ["🇦", "🇧" , "🇨", "🇩"]
 
 class TriviaView(discord.ui.View):
     _interaction: discord.Interaction
+    _db_session_factory: async_sessionmaker[AsyncSession]
     _game: TriviaGame
     message: discord.Message | None
 
-    def __init__(self, game: TriviaGame, timeout: float = 10.0):
+    def __init__(self, db_session_factory: async_sessionmaker[AsyncSession], game: TriviaGame, timeout: float = 10.0):
         super().__init__(timeout=timeout)
 
+        self._db_session_factory = db_session_factory
         self._game = game
 
         options: List[Tuple[str, bool]] = [(self._game.get_correct_answer(), True)]
@@ -25,27 +29,25 @@ class TriviaView(discord.ui.View):
 
         random.shuffle(options)
 
-        print(len(options))
-
         for i, option in enumerate(options):
-            print(i, option)
             label, is_correct = option
             self.add_item(button.TriviaButton(
-                game_id=self._game.get_game_id(), player_id=self._game.get_player_id(),
+                db_session_factory=self._db_session_factory,
+                game_id=self._game.match_id, player_id=self._game.get_player_id(),
                 label=label, is_correct=is_correct, emoji=BUTTON_EMOJIS[i], row=i
             ))
 
-        console.log_debug(f"/trivia: New TriviaView created for game {self._game.get_game_id()} with {timeout}s timeout.")
+        console.log_debug(f"/trivia: New TriviaView created for game {self._game.match_id} with {timeout}s timeout.")
 
 
     def disable_buttons(self) -> None:
         self._game.end()
 
-        console.log_debug(f"/trivia: Revealing answers for game {self._game.get_game_id()}...")
+        console.log_debug(f"/trivia: Revealing answers for game {self._game.match_id}...")
         for child in self.children:
             if isinstance(child, button.TriviaButton):
                 child.disable()
-        console.log_debug(f"/trivia: Answers revealed for game {self._game.get_game_id()}.")
+        console.log_debug(f"/trivia: Answers revealed for game {self._game.match_id}.")
 
 
     async def on_timeout(self) -> None:
@@ -53,12 +55,15 @@ class TriviaView(discord.ui.View):
             return
 
 
-        console.log_info(f"/trivia: Game {self._game.get_game_id()} timed out.")
+        console.log_info(f"/trivia: Game {self._game.match_id} timed out.")
         self.disable_buttons()
 
         embed: discord.Embed = self.message.embeds[0]
         embed.color = discord.Color.darker_grey()
         embed.description = "" # remove timeout countdown
+
+        async with self._db_session_factory() as session:
+            await update_match(session=session, match_id=self._game.match_id, status=models.EMatchStatus.TIMEOUT)
 
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)

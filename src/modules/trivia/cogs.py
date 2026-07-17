@@ -8,6 +8,7 @@ from shared import console, messages
 from .view import TriviaView
 from .game import TriviaGame
 from .models import ETriviaCategory, ETriviaDifficulty
+from .repository import create_match
 
 class TriviaCog(commands.Cog):
     def __init__(self, bot: StrachyBot) -> None:
@@ -24,19 +25,28 @@ class TriviaCog(commands.Cog):
             console.log_info(f"/trivia: Command used by user {interaction.user.display_name} ({interaction.user.id})")
             game: TriviaGame = TriviaGame(player_id=interaction.user.id, category=category, difficulty=difficulty)
 
+            async with self.bot.db_session_factory() as session:
+                game.match_id = await create_match(
+                    session=session, player_id=game.get_player_id(), category=game.get_category(),
+                    difficulty=game.get_difficulty(), question=game.get_question(),
+                    correct_answer=game.get_correct_answer()
+                )
+
             timeout_duration: float = 15.0
             # Discord requires an integer Unix timestamp
             timeout_timestamp = int(time.time() + timeout_duration)
 
-            view: TriviaView = TriviaView(game=game, timeout=timeout_duration)
+            view: TriviaView = TriviaView(db_session_factory=self.bot.db_session_factory,
+                                          game=game, timeout=timeout_duration)
 
-            embed = discord.Embed(color=discord.Color.dark_gold(), title="Trivia", description=f"Time left: <t:{timeout_timestamp}:R> ⏱️")
+            embed = discord.Embed(color=discord.Color.dark_gold(),
+                                  title="Trivia", description=f"Time left: <t:{timeout_timestamp}:R> ⏱️")
             embed.add_field(name="Category", value=game.get_category(), inline=True)
             embed.add_field(name="Difficulty", value=game.get_difficulty(), inline=True)
             embed.add_field(name="Question", value=game.get_question(), inline=False)
 
             console.log_info(f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) started a new {game}.")
-          
+
             # CRITICAL: Save the sent message reference to the view so the timeout handler can edit it!
             await interaction.followup.send(embed=embed, view=view)
             view.message = await interaction.original_response()
