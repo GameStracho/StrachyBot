@@ -1,7 +1,27 @@
-## [1.0.5] - 2026-07-12
+## [1.1] Trivia - 2026-07-19
 
 ### Added
-- PostgresSQL database with tables for tracking `wordle` and `tic-tac-toe` games
+- `Trivia` mini-game where a player must answer a question (fetched from the *Open Trivia Database* API with 25 *category* and 4 *difficulty* settings) by selecting the correct answer from 4 options
+- `trivia_match` database table for recording `Trivia` matches
+- Checks preventing updates of *status* from `pending` to `pending` in `Wordle` and `Tic-Tac-Toe` mini-games
+- Helper functions for loading Discord attachments and fetching a public API into a custom class
+
+### Changed
+- Log detailed error tracebacks instead of simple error descriptions
+- Capitalized match *status* values
+
+### Fixed
+- Stripped time zone indicator from dates stored into the database
+
+### Removed
+- `Quote Guess` mini-game, which was a more niche version of the `Trivia` mini-game.
+
+---
+
+## [1.0.5] Database Utility - 2026-07-12
+
+### Added
+- PostgresSQL database with tables for tracking `Wordle` and `Tic-Tac-Toe` mini-games
 - Database migrations automatically updated on bot startup
 - Adminer service to view and manage database table records during development
 - `production` and `development` Docker Compose profiles to separate development-only services
@@ -12,7 +32,7 @@
 - Embed title of the `/info` command
 
 ### Fixed
-- Resolved issues with `tic-tac-toe` data types that led to buttons not being responsive
+- Resolved issues with `Tic-Tac-Toe` data types that led to buttons not being responsive
 
 ### Deprecated
 - Google Drive backups
@@ -20,7 +40,7 @@
 
 ---
 
-## [1.0.4] - 2026-07-03
+## [1.0.4] Custom Embed Icons - 2026-07-03
 
 ### Added
 - New embed icons for `/info` and `/announcement` commands
@@ -28,16 +48,16 @@
 - This changelog file
 
 ### Changed
-- Scaled down asset dimensions for `wordle` and `tic-tac-toe` icons for better Discord UI rendering
+- Scaled down asset dimensions for `Wordle` and `Tic-Tac-Toe` icons for better Discord UI rendering
 
 ---
 
-## [1.0.3] - 2026-07-02
+## [1.0.3] Bot Statistics - 2026-07-02
 
 ### Added
 - New `/info` slash command to display bot statistics in new `utils` module
 - Global error handlers to catch and log failed interactions cleanly
-- Added custom `wordle` and `tic-tac-toe` icons
+- Added custom `Wordle` and `Tic-Tac-Toe` icons
 
 ### Changed
 - Created custom `StrachyBot` logo
@@ -50,7 +70,7 @@
 
 ---
 
-## [1.0.2] - 2026-06-27
+## [1.0.2] Restructure - 2026-06-27
 
 ### Added
 - Automatic loading of available modules with *cogs*
@@ -66,7 +86,7 @@
 
 ---
 
-## [1.0.1] - 2026-06-17
+## [1.0.1] DevOps Utility - 2026-06-17
 
 ### Added
 - Docker support and list of required packages
@@ -78,10 +98,10 @@
 
 ---
 
-## [1.0.0] - 2023-02-17
+## [1.0] Initial Release - 2023-02-17
 
 ### Added
-- New `wordle`, `tic-tac-toe` and `quote-guess` mini games
+- New `Wordle`, `Tic-Tac-Toe` and `Quote Guess` mini games
 - New `/announcement` command for creating pretty announcements
 - User stats tracking played games and achieved wins
 - Backups of user stats on Google Drive
