@@ -7,16 +7,16 @@ from shared.database import Base
 class ETriviaCategory(PyEnum):
     ANY = "Any"
     GENERAL_KNOWLEDGE = "General Knowledge"
-    BOOKS = "Entertainment: Books"
-    FILM = "Entertainment: Film"
-    MUSIC = "Entertainment: Music"
-    MUSICALS_AND_THEATERS = "Entertainment: Musicals &amp; Theatres"
-    TELEVISION = "Entertainment: Television"
-    VIDEO_GAMES = "Entertainment: Video Games"
-    BOARD_GAMES = "Entertainment: Board Games"
-    SCIENCE_AND_NATURE = "Science &amp; Nature"
-    COMPUTERS = "Science: Computers"
-    MATHEMATICS = "Science: Mathematics"
+    BOOKS = "Books"
+    FILM = "Film"
+    MUSIC = "Music"
+    MUSICALS_AND_THEATERS = "Musicals & Theatres"
+    TELEVISION = "Television"
+    VIDEO_GAMES = "Video Games"
+    BOARD_GAMES = "Board Games"
+    SCIENCE_AND_NATURE = "Science & Nature"
+    COMPUTERS = "Computers"
+    MATHEMATICS = "Mathematics"
     MYTHOLOGY = "Mythology"
     SPORTS = "Sports"
     GEOGRAPHY = "Geography"
@@ -28,8 +28,8 @@ class ETriviaCategory(PyEnum):
     VEHICLES = "Vehicles"
     COMICS = "Comics"
     GADGETS = "Gadgets"
-    ANIME_AND_MANGA = "Entertainment: Anime &amp; Manga"
-    CARTOON_AND_ANIMATION = "Entertainment: Cartoon &amp; Animations"
+    ANIME_AND_MANGA = "Anime & Manga"
+    CARTOON_AND_ANIMATION = "Cartoon & Animations"
 
     def __str__(self) -> str:
         return self.value
@@ -92,23 +92,13 @@ class ETriviaCategory(PyEnum):
 
 
 class ETriviaDifficulty(PyEnum):
-    ANY = "any"
-    EASY = "easy"
-    MEDIUM = "medium"
-    HARD = "hard"
+    ANY = "Any"
+    EASY = "Easy"
+    MEDIUM = "Medium"
+    HARD = "Hard"
 
     def __str__(self) -> str:
-        match self:
-            case ETriviaDifficulty.ANY:
-                return "Any"
-            case ETriviaDifficulty.EASY:
-                return "Easy"
-            case ETriviaDifficulty.MEDIUM:
-                return "Medium"
-            case ETriviaDifficulty.HARD:
-                return "Hard"
-            case _:
-                raise ValueError(f"No print mapped for {self}")
+        return self.value
 
 
 class TriviaMatch(Base):
