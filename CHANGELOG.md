@@ -11,12 +11,14 @@
 - Log detailed error tracebacks instead of simple error descriptions
 - Capitalized match *status* values
 - Restructured `tests` folder
+- Command for running automated tests
 
 ### Fixed
 - Stripped time zone indicator from dates stored into the database
+- Added missing type annotations
 
 ### Removed
-- `Quote Guess` mini-game, which was a more niche version of the `Trivia` mini-game.
+- `Quote Guess` mini-game, which was a more niche version of the `Trivia` mini-game
 
 ---
 
