@@ -5,10 +5,12 @@
 - `trivia_match` database table for recording `Trivia` matches
 - Checks preventing updates of *status* from `pending` to `pending` in `Wordle` and `Tic-Tac-Toe` mini-games
 - Helper functions for loading Discord attachments and fetching a public API into a custom class
+- 16 *unit* and 2 *integration* tests for `trivia` module
 
 ### Changed
 - Log detailed error tracebacks instead of simple error descriptions
 - Capitalized match *status* values
+- Restructured `tests` folder
 
 ### Fixed
 - Stripped time zone indicator from dates stored into the database
