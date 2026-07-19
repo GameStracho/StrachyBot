@@ -26,4 +26,4 @@ jobs:
       run: mypy .
 
     - name: Run Tests with Pytest
-      run: pytest
+      run: python3 -m pytest

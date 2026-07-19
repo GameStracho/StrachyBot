@@ -41,8 +41,8 @@ class UtilsCog(commands.Cog):
             embed.set_thumbnail(url="attachment://info.png")
             
             await interaction.response.send_message(embed=embed, file=icon)
-        except Exception as e:
-            await messages.handle_error(e, interaction)
+        except Exception:
+            await messages.handle_error("/info", interaction)
 
 
     @app_commands.command(name="announcement", description="Make announcements in chat.")
@@ -51,7 +51,7 @@ class UtilsCog(commands.Cog):
         interaction: discord.Interaction,
         title: Optional[str] = "",
         message:  Optional[str] = "") -> None:
-        console.log_info(f"/info: User {interaction.user.display_name} passed title '{title}' and '{message}'.")
+        console.log_info(f"/announcement: User {interaction.user.display_name} passed title '{title}' and '{message}'.")
     
         try:
             embed: discord.Embed = discord.Embed(color=discord.Color.yellow())
@@ -65,5 +65,5 @@ class UtilsCog(commands.Cog):
             embed.set_thumbnail(url="attachment://announcement.png")
             
             await interaction.response.send_message(embed=embed, file=icon)
-        except Exception as e:
-            await messages.handle_error(e, interaction)
+        except Exception:
+            await messages.handle_error("/announcement", interaction)

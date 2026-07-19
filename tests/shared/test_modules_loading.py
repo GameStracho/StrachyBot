@@ -6,20 +6,21 @@ import pytest
 from shared.bot import StrachyBot
 from shared.database import Base
 
-from utils.mocks import DummyTransaction
+from tests import mocks
 
 @pytest.mark.asyncio
-async def test_all_modules_load_and_sync_correctly(monkeypatch):
+async def test_all_modules_load_and_sync_correctly(monkeypatch: pytest.MonkeyPatch) -> None:
     # 1. Arrange: Find out how many actual folders exist in /src/modules
-    modules_dir = os.path.join(os.path.dirname(__file__), "..", "src", "modules")
+    modules_dir = os.path.join(os.path.dirname(__file__), "..", "..", "src", "modules")
     expected_modules = [
         folder for folder in os.listdir(modules_dir)
         if os.path.isdir(os.path.join(modules_dir, folder)) and "__init__.py" in os.listdir(os.path.join(modules_dir, folder))
     ]
 
     # 2. Act: Instantiate the bot and run custom dynamic setup hook
-    mock_engine = type("EngineStub", (), {"begin": lambda self: DummyTransaction()})()
-    bot = StrachyBot(mock_engine)
+    mock_engine = type("EngineStub", (), {"begin": lambda self: mocks.DummyTransaction()})()
+    bot = StrachyBot()
+    bot.create_db_session_factory(mock_engine)
     monkeypatch.setattr(bot.tree, "sync", AsyncMock(return_value=[]))
     await bot.setup_hook()
 

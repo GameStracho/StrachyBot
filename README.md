@@ -136,7 +136,7 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
 - `mypy .` - run static type validation
 - `alembic revision --autogenerate -m "MIGRATION NAME"` - create database migration
 - `alembic upgrade head` - apply migrations
-- `pytest` - run unit tests
+- `python3 -m pytest` - run unit tests
 
 ---
 

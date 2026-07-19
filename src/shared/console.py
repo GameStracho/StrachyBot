@@ -1,3 +1,4 @@
+from typing import TextIO, Any
 from datetime import datetime
 from colorama import Fore, Style
 import sys
@@ -9,7 +10,7 @@ def current_time() -> str:
     )
 
 
-def log(category: str, color: str, message: str, file = sys.stdout) -> None:
+def log(category: str, color: str, message: str, file: TextIO | Any = sys.stdout) -> None:
     """print colored category followed by message to file"""
 
     padded_category = " " + category

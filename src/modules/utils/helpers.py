@@ -3,7 +3,7 @@ import re
 
 from shared import console
 
-def __strip_header(text: str):
+def __strip_header(text: str) -> str:
     """"Strips markdown characters (#) from a header"""
     return re.sub(r'^[#]* ', '', text)
 

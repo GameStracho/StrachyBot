@@ -42,6 +42,9 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
 
     Returns true on success.
     """
+    if status == EMatchStatus.PENDING:
+        console.log_warning(f"tic: Cannot update match status {status}.")
+        return False
 
     console.log_debug(f"tic: Updating match ({match_id}) with status ({status}) and total_moves ({total_moves})...")
 
