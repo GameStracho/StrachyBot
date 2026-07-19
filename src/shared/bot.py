@@ -13,18 +13,32 @@ from shared import console, database
 
 class StrachyBot(commands.Bot):
     start_time: datetime = discord.utils.utcnow()
-    db_engine: AsyncEngine
-    db_session_factory: async_sessionmaker[AsyncSession]
+    _db_session_factory: async_sessionmaker[AsyncSession] | None
 
-    def __init__(self, db_engine: AsyncEngine | None = None):
+    def __init__(self) -> None:
         # Setup intents
         intents = discord.Intents.default()
         intents.message_content = True
 
         super().__init__(command_prefix="!", case_insensitive=True, intents=intents)
 
-        self.db_engine = db_engine if db_engine else database.create_db_engine()
-        self.db_session_factory = database.create_session_factory(self.db_engine)
+        self._db_session_factory = None
+
+
+    def create_db_session_factory(self, db_engine: AsyncEngine | None = None) -> None:
+        """
+            Create database session factory from a db_engine for accessing the database. Creates a new engine if db_engine is None.
+        """
+        if not db_engine:
+            db_engine = database.create_db_engine()
+
+        assert db_engine
+
+        self._db_session_factory = database.create_session_factory(db_engine)
+
+
+    def get_db_session_factory(self) -> async_sessionmaker[AsyncSession] | None:
+        return self._db_session_factory
 
 
     async def setup_hook(self) -> None:

@@ -19,6 +19,7 @@ async def main() -> None:
         return
 
     bot = StrachyBot()
+    bot.create_db_session_factory()
     await bot.start(token)
 
 if __name__ == "__main__":

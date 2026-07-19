@@ -25,12 +25,15 @@ class TriviaCog(commands.Cog):
             game: TriviaGame = TriviaGame(player_id=interaction.user.id, category=category, difficulty=difficulty)
             await game.fetch_api()
 
-            async with self.bot.db_session_factory() as session:
-                game.match_id = await create_match(
-                    session=session, player_id=game.get_player_id(), category=game.get_category(),
-                    difficulty=game.get_difficulty(), question=game.get_question(),
-                    correct_answer=game.get_correct_answer()
-                )
+            session_factory = self.bot.get_db_session_factory()
+
+            if session_factory:
+                async with session_factory() as session:
+                    game.match_id = await create_match(
+                        session=session, player_id=game.get_player_id(), category=game.get_category(),
+                        difficulty=game.get_difficulty(), question=game.get_question(),
+                        correct_answer=game.get_correct_answer()
+                    )
 
             timeout_duration: float = 15.0
             # Discord requires an integer Unix timestamp

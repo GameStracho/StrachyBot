@@ -71,8 +71,11 @@ class TriviaButton(discord.ui.Button["view.TriviaView"]):
             strachy_bot = interaction.client
             assert isinstance(strachy_bot, bot.StrachyBot)
 
-            async with strachy_bot.db_session_factory() as session:
-                await update_match(session=session, match_id=self._game_id, status=status)
+            session_factory = strachy_bot.get_db_session_factory()
+
+            if session_factory:
+                async with session_factory() as session:
+                    await update_match(session=session, match_id=self._game_id, status=status)
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)

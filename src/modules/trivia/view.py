@@ -63,8 +63,12 @@ class TriviaView(discord.ui.View):
         strachy_bot = self.message._state._get_client()
         assert isinstance(strachy_bot, bot.StrachyBot)
 
-        async with strachy_bot.db_session_factory() as session:
-            await update_match(session=session, match_id=self._game.match_id, status=models.EMatchStatus.TIMEOUT)
+        session_factory = strachy_bot.get_db_session_factory()
+
+        if session_factory:
+            async with session_factory() as session:
+                if session:
+                    await update_match(session=session, match_id=self._game.match_id, status=models.EMatchStatus.TIMEOUT)
 
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)
