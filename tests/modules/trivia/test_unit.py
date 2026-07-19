@@ -11,7 +11,7 @@ from modules.trivia.game import TriviaGame
 from modules.trivia.models import ETriviaCategory, ETriviaDifficulty
 from modules.trivia.response import TriviaResponse
 from modules.trivia.view import TriviaView
-from tests.utils import mocks
+from tests import mocks
 
 
 @pytest.mark.parametrize(

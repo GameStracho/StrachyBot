@@ -10,7 +10,7 @@ from shared import bot
 from modules.trivia.game import TriviaGame
 from modules.trivia.models import ETriviaCategory, ETriviaDifficulty
 from modules.trivia.view import TriviaView
-from tests.utils import mocks
+from tests import mocks
 
 
 @pytest.mark.asyncio
