@@ -39,7 +39,7 @@ class TriviaButton(discord.ui.Button["view.TriviaView"]):
             
             answer_type: str = "Correct" if self._is_correct else "Incorrect"
 
-            console.log_debug((
+            console.log_info((
                 f"/trivia: {answer_type} answer ({self.label}) "
                 f"chosen for game {self._game_id} by user {interaction.user.display_name} ({interaction.user.id})."
             ))

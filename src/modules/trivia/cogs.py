@@ -23,6 +23,7 @@ class TriviaCog(commands.Cog):
 
             console.log_info(f"/trivia: Command used by user {interaction.user.display_name} ({interaction.user.id})")
             game: TriviaGame = TriviaGame(player_id=interaction.user.id, category=category, difficulty=difficulty)
+            await game.fetch_api()
 
             async with self.bot.db_session_factory() as session:
                 game.match_id = await create_match(

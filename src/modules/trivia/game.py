@@ -1,5 +1,8 @@
 from typing import List
+
+from shared import helpers
 from .models import ETriviaCategory, ETriviaDifficulty
+from .response import TriviaResponse
 
 class TriviaGame():
     match_id: int
@@ -18,19 +21,9 @@ class TriviaGame():
             difficulty: ETriviaDifficulty = ETriviaDifficulty.ANY) -> None:
         self.match_id = -1
         self._player_id = player_id
-        self._question = ""
-        self._incorrect_answers = []
-        self._correct_answer = ""
         self._is_over = False
         self._category = category
         self._difficulty = difficulty
-
-        # TODO: retrieve following info from an API
-        for i in range(3):
-            self._incorrect_answers.append(f"{i * 2 + 1}")
-
-        self._question = "How many continents are on Earth?"
-        self._correct_answer = "7"
 
 
     def __str__(self) -> str:
@@ -38,6 +31,24 @@ class TriviaGame():
             f"Trivia game {self.match_id} for user {self._player_id} - {self._question} (difficulty: {self._difficulty}, category: {self._category}, "
             f"is over: {self._is_over}, correct answer: {self._correct_answer}, incorrect answers: {self._incorrect_answers})"
         )
+
+
+    async def fetch_api(self) -> None:
+        url: str = f"https://opentdb.com/api.php?amount=1&type=multiple&category={int(self._category)}"
+        
+        if self._difficulty != ETriviaDifficulty.ANY:
+            url = f"{url}&difficulty={str(self._difficulty).lower()}"
+
+        response: TriviaResponse = await helpers.fetch_api(url, TriviaResponse)
+
+        if not len(response.results):
+            raise Exception("No API response received.")
+
+        self._category = response.results[0].category
+        self._difficulty = response.results[0].difficulty
+        self._question = response.results[0].question
+        self._correct_answer = response.results[0].correct_answer
+        self._incorrect_answers = response.results[0].incorrect_answers
 
 
     def get_player_id(self) -> int:
