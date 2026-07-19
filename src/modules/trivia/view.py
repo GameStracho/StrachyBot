@@ -57,6 +57,9 @@ class TriviaView(discord.ui.View):
         embed.color = discord.Color.darker_grey()
         embed.description = "" # remove timeout countdown
 
+        # hide a second icon appearing above the embed
+        embed.set_thumbnail(url="attachment://icon.png")
+
         strachy_bot = self.message._state._get_client()
         assert isinstance(strachy_bot, bot.StrachyBot)
 

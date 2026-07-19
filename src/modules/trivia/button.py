@@ -50,6 +50,9 @@ class TriviaButton(discord.ui.Button["view.TriviaView"]):
             embed: discord.Embed = message.embeds[0]
             embed.description = "" # remove timeout countdown
 
+            # hide a second icon appearing above the embed
+            embed.set_thumbnail(url="attachment://icon.png")
+
             parent_view.disable_buttons()
 
             status: models.EMatchStatus = models.EMatchStatus.PENDING

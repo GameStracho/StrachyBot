@@ -3,15 +3,14 @@ from discord.ext import commands
 from discord import app_commands
 import time
 
-from shared.bot import StrachyBot
-from shared import console, messages
+from shared import console, messages, bot, helpers
 from .view import TriviaView
 from .game import TriviaGame
 from .models import ETriviaCategory, ETriviaDifficulty
 from .repository import create_match
 
 class TriviaCog(commands.Cog):
-    def __init__(self, bot: StrachyBot) -> None:
+    def __init__(self, bot: bot.StrachyBot) -> None:
         self.bot = bot
 
     @app_commands.command(name="trivia", description="Try to answer a question by selecting 1 of 4 answers.")
@@ -40,14 +39,18 @@ class TriviaCog(commands.Cog):
 
             embed = discord.Embed(color=discord.Color.dark_gold(),
                                   title="Trivia", description=f"Time left: <t:{timeout_timestamp}:R> ⏱️")
+
             embed.add_field(name="Category", value=game.get_category(), inline=True)
             embed.add_field(name="Difficulty", value=game.get_difficulty(), inline=True)
             embed.add_field(name="Question", value=game.get_question(), inline=False)
 
+            icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
+            embed.set_thumbnail(url=icon_url)
+
             console.log_info(f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) started a new {game}.")
 
             # CRITICAL: Save the sent message reference to the view so the timeout handler can edit it!
-            await interaction.followup.send(embed=embed, view=view)
+            await interaction.followup.send(embed=embed, view=view, file=icon)
             view.message = await interaction.original_response()
         except Exception:
             await messages.handle_error(command="/trivia", interaction=interaction, use_followup=True)
