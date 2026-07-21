@@ -34,6 +34,11 @@ def log_error(message: str) -> None:
     log("ERROR", Fore.RED, message, sys.stderr)
 
 
+def log_fail(message: str) -> None:
+    """print FAIL message to stderr"""
+    log("FAIL", Fore.LIGHTMAGENTA_EX, message, sys.stderr)
+
+
 def log_warning(message: str) -> None:
     """print WARNING message to stdout"""
     log("WARNING", Fore.YELLOW, message)
