@@ -21,7 +21,7 @@ class TriviaCog(commands.Cog):
             # Tells Discord to display "Thinking..." and extends time limit to 15 mins
             await interaction.response.defer()
 
-            console.log_info(f"/trivia: Command used by user {interaction.user.display_name} ({interaction.user.id})")
+            console.log_debug(f"/trivia: Command used by user {interaction.user.display_name} ({interaction.user.id})")
             game: TriviaGame = TriviaGame(player_id=interaction.user.id, category=category, difficulty=difficulty)
             await game.fetch_api()
 

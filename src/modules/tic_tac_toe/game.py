@@ -35,5 +35,5 @@ class TicTacToeGame():
 
 
     def get_grid_size(self) -> int:
-        return self._total_moves
+        return self._grid_size
 
