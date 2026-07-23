@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 import discord
 from enum import Enum
 
@@ -42,14 +42,6 @@ class TicTacToeGrid():
             return
 
         self._grid[pos.x * self._size + pos.y] = value
-
-
-    def has_empty_cell(self) -> bool:
-        for i in range(len(self._grid)):
-            if self._grid[i] == ETicTacToeCell.EMPTY:
-                return True
-        
-        return False
 
 
 class TicTacToeGame():
@@ -153,7 +145,7 @@ class TicTacToeGame():
         self._is_over = self._total_moves == pow(self._grid.get_size(), 2)
 
 
-    def _check_axis(self, pos: Position, axis: Tuple[Vector, Vector], control_value: ETicTacToeCell) -> bool:
+    def _check_axis(self, pos: Position, axis: Vector, control_value: ETicTacToeCell) -> bool:
         """
             Checks axis for 3 connected cells passing through given position.
         """
@@ -162,10 +154,10 @@ class TicTacToeGame():
         for start_offset in range(3):
             connected: bool = True
 
-            for i in range(1 , 3):
+            for i in range(3):
                 # Move in positive direction
-                row: int = pos.x + (i - start_offset) * axis[1].x
-                col: int = pos.y + (i - start_offset) * axis[1].y
+                row: int = pos.x + (i - start_offset) * axis.x
+                col: int = pos.y + (i - start_offset) * axis.y
                 cell_value: ETicTacToeCell | None = self._grid.get_cell_value(Position(row, col))
 
                 if cell_value != control_value:
