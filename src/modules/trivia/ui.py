@@ -2,7 +2,7 @@ from typing import List, Tuple
 import discord
 import random
 
-from shared import console, messages, models, bot
+from shared import console, messages, models, bot, ui
 from .game import TriviaGame
 from .repository import update_match
 
@@ -48,12 +48,11 @@ class TriviaView(discord.ui.View):
         if self._game.is_over() or self.message is None:
             return
 
-
         console.log_info(f"/trivia: Game {self._game.match_id} timed out.")
         self.disable_buttons()
 
         embed: discord.Embed = self.message.embeds[0]
-        embed.color = discord.Color.darker_grey()
+        embed.color = ui.TIMEOUT_COLOR
         embed.description = "" # remove timeout countdown
 
         # hide a second icon appearing above the embed

@@ -4,7 +4,7 @@ from discord import app_commands
 
 from shared import console, bot, messages, helpers
 from modules.tic_tac_toe import logic
-from .ui import TicTacToeView
+from .ui import TicTacToeView, get_player_emojis, PLAYER_COLOR
 from .game import TicTacToeGame
 
 class TicCog(commands.Cog):
@@ -56,10 +56,12 @@ class TicCog(commands.Cog):
             timeout_duration: float = 15.0
             view: TicTacToeView = TicTacToeView(game=game, timeout=timeout_duration)
 
-            embed = discord.Embed(color=discord.Color.purple(), title="Tic-Tac-Toe")
-            embed.add_field(name="Players", value=f"🟣 - {game.get_player().mention}\n🟠 - {game.get_opponent().mention}", inline=False)
+            player_emoji, opponent_emoji = get_player_emojis()
 
-            embed.add_field(name="Status", value=f"It's {game.get_player().mention}'s turn.", inline=False)
+            embed = discord.Embed(color=PLAYER_COLOR, title="Tic-Tac-Toe")
+            embed.add_field(name="Players", value=f"{player_emoji} {game.get_player().mention}\n{opponent_emoji} {game.get_opponent().mention}", inline=False)
+
+            embed.add_field(name="Status", value=f"It's {player_emoji} {game.get_player().mention}'s turn.", inline=False)
 
             icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
             embed.set_thumbnail(url=icon_url)
