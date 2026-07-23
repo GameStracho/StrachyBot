@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Tuple
 import discord
 from enum import Enum
 
 from shared import console
+from shared.types import Position, EDirection, Vector
 
 class ETicTacToeCell(Enum):
     EMPTY = 0
@@ -23,24 +24,24 @@ class TicTacToeGrid():
         return self._size
 
 
-    def get_cell_value(self, row: int, column: int) -> ETicTacToeCell | None:
+    def get_cell_value(self, pos: Position) -> ETicTacToeCell | None:
         """
             Returns value of cell at position (row, col) or None if position is out of bounds.
         """
-        if row < 0 or row >= self._size or column < 0 or column >= self._size:
+        if pos.x < 0 or pos.x >= self._size or pos.y < 0 or pos.y >= self._size:
             return None
 
-        return self._grid[row * self._size + column]
+        return self._grid[pos.x * self._size + pos.y]
 
 
-    def set_cell_value(self, row: int, column: int, value: ETicTacToeCell) -> None:
+    def set_cell_value(self, pos: Position, value: ETicTacToeCell) -> None:
         """
             Sets value of cell at a valid position (row, col).
         """
-        if row < 0 or row >= self._size or column < 0 or column >= self._size:
+        if pos.x < 0 or pos.x >= self._size or pos.y < 0 or pos.y >= self._size:
             return
 
-        self._grid[row * self._size + column] = value
+        self._grid[pos.x * self._size + pos.y] = value
 
 
     def has_empty_cell(self) -> bool:
@@ -60,10 +61,10 @@ class TicTacToeGame():
     _is_over: bool
     _winner: discord.User | None
 
-    def __init__(self, player_purple: discord.User, player_orange: discord.User, grid_size: int) -> None:
+    def __init__(self, player: discord.User, opponent: discord.User, grid_size: int) -> None:
         self.match_id = -1
-        self._player = player_purple
-        self._opponent = player_orange
+        self._player = player
+        self._opponent = opponent
         self._total_moves = 0
         self._grid = TicTacToeGrid(grid_size)
         self._is_over = False
@@ -105,7 +106,7 @@ class TicTacToeGame():
         return self._is_over
 
 
-    def play(self, row: int, column: int) -> bool:
+    def play(self, pos: Position) -> bool:
         """
             Perform a move by a player who is currently on turn.
 
@@ -116,123 +117,62 @@ class TicTacToeGame():
             console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - the game already finished.")
             return False
 
-        old_value: ETicTacToeCell | None = self._grid.get_cell_value(row=row, column=column)
+        old_value: ETicTacToeCell | None = self._grid.get_cell_value(pos=pos)
 
         if not old_value:
-            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - position ({row, column}) out of bounds.")
+            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - position {pos} out of bounds.")
             return False
 
         if old_value != ETicTacToeCell.EMPTY:
-            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - cell at position ({row, column}) is occupied ({old_value}).")
+            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - cell at position {pos} is occupied ({old_value}).")
             return False
 
-        self._grid.set_cell_value(row, column, ETicTacToeCell.PLAYER if self.is_players_turn() else ETicTacToeCell.OPPONENT)
+        current_player: discord.User = self._player if self.is_players_turn() else self._opponent
+        cell_value: ETicTacToeCell = ETicTacToeCell.PLAYER if self.is_players_turn() else ETicTacToeCell.OPPONENT
+
+        self._grid.set_cell_value(pos=pos, value=cell_value)
         self._total_moves += 1
-        self._end_game(row=row, column=column)
+        self._end_game(pos=pos, current_player=current_player, control_value=cell_value)
 
         return True
 
 
-    def _end_game(self, row: int, column: int) -> None:
+    def _end_game(self, pos: Position, current_player: discord.User, control_value: ETicTacToeCell) -> None:
         """
-            Checks adjacent positions, determines whether the game has ended and assigns a winner.
+            Determines whether the game has ended and assigns a winner.
         """
         assert not self._is_over and not self._winner
 
-        # total_moves is incremented before calling this function, therefore the players must be reversed
-        control_value: ETicTacToeCell = ETicTacToeCell.OPPONENT if self.is_players_turn() else ETicTacToeCell.PLAYER
+        for axis in EDirection.get_axes():
+            if self._check_axis(pos=pos, axis=axis, control_value=control_value):
+                self._winner = current_player
+                self._is_over = True
+                return
 
-        if (self._check_diagonals(row, column, control_value) or self._check_row(row, column, control_value) 
-                or self._check_column(row, column, control_value)):
-            self._winner =  self._player if self.is_players_turn() else self._opponent
-            self._is_over = True
-            return
-
+        # Check for draw
         self._is_over = self._total_moves == pow(self._grid.get_size(), 2)
 
 
-    def _check_diagonals(self, row: int, column: int, control_value: ETicTacToeCell) -> bool:
+    def _check_axis(self, pos: Position, axis: Tuple[Vector, Vector], control_value: ETicTacToeCell) -> bool:
         """
-        Checks diagonals for 3 connected cells adjacent to given position.
-        Returns True, if 3 cells are connected, False otherwise.
-        """
-        assert control_value != ETicTacToeCell.EMPTY
-
-        for start_offset in range(3):
-            # -- check left diagonal --
-            connected_cells: int = 0
-
-            for i in range(1 , 3):
-                cell_value: ETicTacToeCell | None = self._grid.get_cell_value(row - start_offset + i, column - start_offset + i)
-
-                if cell_value != control_value:
-                    break
-
-                connected_cells += 1
-
-            if connected_cells == 2:
-                return True
-
-            # -- check right diagonal --
-            connected_cells = 0
-
-            for i in range(1 , 3):
-                cell_value = self._grid.get_cell_value(row - start_offset + i, column + start_offset - i)
-
-                if cell_value != control_value:
-                    break
-
-                connected_cells += 1
-
-            if connected_cells == 2:
-                return True
-
-        return False
-
-
-    def _check_row(self, row: int, column: int, control_value: ETicTacToeCell) -> bool:
-        """
-        Checks row for 3 connected cells (control values) adjacent to given position.
-        Returns True, if 3 cells are connected, False otherwise.
+            Checks axis for 3 connected cells passing through given position.
         """
         assert control_value != ETicTacToeCell.EMPTY
 
         for start_offset in range(3):
-            connected_cells: int = 0
+            connected: bool = True
 
             for i in range(1 , 3):
-                cell_value: ETicTacToeCell | None = self._grid.get_cell_value(row, column - start_offset + i)
+                # Move in positive direction
+                row: int = pos.x + (i - start_offset) * axis[1].x
+                col: int = pos.y + (i - start_offset) * axis[1].y
+                cell_value: ETicTacToeCell | None = self._grid.get_cell_value(Position(row, col))
 
                 if cell_value != control_value:
+                    connected = False
                     break
 
-                connected_cells += 1
-
-            if connected_cells == 2:
-                return True
-
-        return False
-
-
-    def _check_column(self, row: int, column: int, control_value: ETicTacToeCell) -> bool:
-        """
-        Checks row for 3 connected cells adjacent to given position.
-        Returns True, if 3 cells are connected, False otherwise.
-        """
-        assert control_value != ETicTacToeCell.EMPTY
-
-        for start_offset in range(3):
-            connected_cells: int = 0
-
-            for i in range(1, 3):
-                cell_value: ETicTacToeCell | None = self._grid.get_cell_value(row - start_offset + i, column)
-
-                if cell_value != control_value:
-                    break
-
-                connected_cells += 1
-
-            if connected_cells == 2:
+            if connected:
                 return True
 
         return False
