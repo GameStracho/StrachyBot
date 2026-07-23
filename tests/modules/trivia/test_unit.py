@@ -5,12 +5,11 @@ from unittest.mock import AsyncMock
 import discord
 import pytest
 
-from modules.trivia.button import TriviaButton
 from shared import helpers
 from modules.trivia.game import TriviaGame
 from modules.trivia.models import ETriviaCategory, ETriviaDifficulty
 from modules.trivia.response import TriviaResponse
-from modules.trivia.view import TriviaView
+from modules.trivia.ui import TriviaView, TriviaButton
 from tests import mocks
 
 
@@ -110,7 +109,7 @@ async def test_fetch_api_raises_when_api_returns_no_results(monkeypatch: pytest.
 
 
 def test_trivia_view_initializes_buttons_with_expected_labels(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("modules.trivia.view.random.shuffle", lambda items: items.reverse())
+    monkeypatch.setattr("modules.trivia.ui.random.shuffle", lambda items: items.reverse())
 
     game = TriviaGame(player_id=5, category=ETriviaCategory.ANY, difficulty=ETriviaDifficulty.ANY)
     game.match_id = 12
@@ -144,7 +143,7 @@ async def test_trivia_button_correct_answer_updates_embed_and_status(monkeypatch
     interaction.response = cast(Any, dummy_response)
     interaction.message = message
 
-    monkeypatch.setattr("modules.trivia.button.update_match", AsyncMock(return_value=True))
+    monkeypatch.setattr("modules.trivia.ui.update_match", AsyncMock(return_value=True))
 
     await button.callback(interaction)
 
@@ -170,7 +169,7 @@ async def test_trivia_button_rejects_wrong_user(monkeypatch: pytest.MonkeyPatch)
     interaction.response = cast(Any, dummy_response)
     interaction.message = SimpleNamespace(embeds=[discord.Embed()])
     update_match_mock = AsyncMock(return_value=True)
-    monkeypatch.setattr("modules.trivia.button.update_match", update_match_mock)
+    monkeypatch.setattr("modules.trivia.ui.update_match", update_match_mock)
 
     await button.callback(interaction)
 

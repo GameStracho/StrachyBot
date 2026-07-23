@@ -4,7 +4,7 @@ from discord import app_commands
 
 from shared import console, bot, messages, helpers
 from modules.tic_tac_toe import logic
-from .view import TicTacToeView
+from .ui import TicTacToeView
 from .game import TicTacToeGame
 
 class TicCog(commands.Cog):

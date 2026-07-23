@@ -4,7 +4,7 @@ from discord import app_commands
 import time
 
 from shared import console, messages, bot, helpers
-from .view import TriviaView
+from .ui import TriviaView
 from .game import TriviaGame
 from .models import ETriviaCategory, ETriviaDifficulty
 from .repository import create_match
