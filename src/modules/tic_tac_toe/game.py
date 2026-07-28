@@ -98,7 +98,7 @@ class TicTacToeGame():
         return self._is_over
 
 
-    def play(self, pos: Position) -> bool:
+    def play(self, position: Position) -> bool:
         """
             Perform a move by a player who is currently on turn.
 
@@ -109,22 +109,22 @@ class TicTacToeGame():
             console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - the game already finished.")
             return False
 
-        old_value: ETicTacToeCell | None = self._grid.get_cell_value(pos=pos)
+        old_value: ETicTacToeCell | None = self._grid.get_cell_value(pos=position)
 
         if not old_value:
-            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - position {pos} out of bounds.")
+            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - position {position} out of bounds.")
             return False
 
         if old_value != ETicTacToeCell.EMPTY:
-            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - cell at position {pos} is occupied ({old_value}).")
+            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - cell at position {position} is occupied ({old_value}).")
             return False
 
         current_player: discord.User = self._player if self.is_players_turn() else self._opponent
         cell_value: ETicTacToeCell = ETicTacToeCell.PLAYER if self.is_players_turn() else ETicTacToeCell.OPPONENT
 
-        self._grid.set_cell_value(pos=pos, value=cell_value)
+        self._grid.set_cell_value(pos=position, value=cell_value)
         self._total_moves += 1
-        self._end_game(pos=pos, current_player=current_player, control_value=cell_value)
+        self._end_game(pos=position, current_player=current_player, control_value=cell_value)
 
         return True
 

@@ -35,7 +35,7 @@ class TicTacToeView(discord.ui.View):
 
         for x in range(game.get_grid_size()):
             for y in range(game.get_grid_size()):
-                self.add_item(TicTacToeButton(game_id=self._game.match_id, pos=Position(x, y)))
+                self.add_item(TicTacToeButton(game_id=self._game.match_id, position=Position(x, y)))
 
         console.log_debug((
             f"/tic-tac-toe: New TicTacToeView created for game {self._game.match_id} "
@@ -84,14 +84,16 @@ class TicTacToeView(discord.ui.View):
 
 
 class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
-    pos: Position
+    _position: Position
 
-    def __init__(self, game_id: int, pos: Position) -> None:
-        super().__init__(label="⬛", style=discord.ButtonStyle.secondary, row=pos.y)
+    def __init__(self, game_id: int, position: Position) -> None:
+        super().__init__(label="⬛", style=discord.ButtonStyle.secondary, row=position.y)
+
+        self._position = position
 
         console.log_debug((
             f"/tic-tac-toe: New TicTacToeButton created for game {game_id}: "
-            f"pos = {pos}."
+            f"pos = {position}."
         ))
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -106,7 +108,7 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
             self.label = player_emoji if game.is_players_turn() else opponent_emoji
             self.disabled = True
 
-            game.play(pos=self.pos)
+            game.play(position=self._position)
 
             message: discord.Message | None = interaction.message
             assert message is not None
