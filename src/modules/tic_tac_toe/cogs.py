@@ -52,9 +52,7 @@ class TicCog(commands.Cog):
                 player = temp_player
 
             game: TicTacToeGame = TicTacToeGame(player=player, opponent=opponent, grid_size=grid_size.value)
-
-            timeout_duration: float = 15.0
-            view: TicTacToeView = TicTacToeView(game=game, timeout=timeout_duration)
+            view: TicTacToeView = TicTacToeView(game=game, timeout=15.0)
 
             player_emoji, opponent_emoji = get_player_emojis()
 
@@ -62,11 +60,14 @@ class TicCog(commands.Cog):
             embed.add_field(name="Players", value=f"{player_emoji} {game.get_player().mention}\n{opponent_emoji} {game.get_opponent().mention}", inline=False)
 
             embed.add_field(name="Status", value=f"It's {player_emoji} {game.get_player().mention}'s turn.", inline=False)
+            embed.add_field(name="Timeout", value=view.get_timeout_timestamp(), inline=False)
 
             icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
             embed.set_thumbnail(url=icon_url)
 
             console.log_info(f"/tic-tac-toe: User {interaction.user.display_name} ({interaction.user.id}) started a new {game}.")
+            # CRITICAL: Save the sent message reference to the view so the timeout handler can edit it!
             await interaction.response.send_message(embed=embed, view=view, file=icon)
+            view.message = await interaction.original_response()
         except Exception:
             await messages.handle_error(command="/tic-tac-toe", interaction=interaction, use_followup=False)

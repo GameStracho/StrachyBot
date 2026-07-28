@@ -23,12 +23,15 @@ def get_player_emojis(date: datetime = datetime.now(timezone.utc)) -> Tuple[str,
 
 
 class TicTacToeView(discord.ui.View):
+    _timeout: float
     _game: TicTacToeGame
+    message: discord.Message | None
 
     def __init__(self, game: TicTacToeGame, timeout: float = 15.0):
         super().__init__(timeout=timeout)
 
         self._game = game
+        self._timeout = timeout
 
         for x in range(game.get_grid_size()):
             for y in range(game.get_grid_size()):
@@ -42,6 +45,42 @@ class TicTacToeView(discord.ui.View):
 
     def get_game(self) -> TicTacToeGame:
         return self._game
+
+
+    def reset_timeout(self) -> None:
+        self.timeout = self._timeout
+
+
+    def get_timeout_timestamp(self) -> str:
+        return ui.get_timeout_timestamp(self._timeout) + "⏱️"
+    
+    
+    def disable_buttons(self) -> None:
+        for child in self.children:
+            if isinstance(child, TicTacToeButton):
+                child.disabled = True
+
+        console.log_debug(f"/tic-tac-toe: Buttons disabled for game {self._game.match_id}.")
+
+
+    async def on_timeout(self) -> None:
+        if self._game.has_game_ended() or self.message is None:
+            return
+
+        console.log_info(f"/tic-tac-toe: Game {self._game.match_id} timed out.")
+        self.disable_buttons()
+
+        embed: discord.Embed = self.message.embeds[0]
+        embed.color = ui.TIMEOUT_COLOR
+
+        ui.update_embed_field(embed=embed, name="Status", value="Game timed out! ⏰")
+        ui.remove_embed_field(embed=embed, name="Timeout")
+
+        # hide a second icon appearing above the embed
+        embed.set_thumbnail(url="attachment://icon.png")
+
+        # Edit the original message to show disabled buttons
+        await self.message.edit(embed=embed, view=self)
 
 
 class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
@@ -82,19 +121,23 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
 
                 if not winner:
                     embed.color = ui.DRAW_COLOR
-                    ui.update_embed_field(embed, "Status", "Game ended in draw. 🤝")
+                    ui.update_embed_field(embed=embed, name="Status", value="Game ended in draw. 🤝")
                 elif winner == game.get_player():
                     embed.color = PLAYER_COLOR
-                    ui.update_embed_field(embed, "Status", f"Player {player_emoji} {game.get_player().mention} won. 🎉")
+                    ui.update_embed_field(embed=embed, name="Status", value=f"Player {player_emoji} {game.get_player().mention} won. 🎉")
                 else:
                     embed.color = OPPONENT_COLOR
-                    ui.update_embed_field(embed, "Status", f"Player {opponent_emoji} {game.get_opponent().mention} won. 🎉")
-            elif game.is_players_turn():
-                embed.color = PLAYER_COLOR
-                ui.update_embed_field(embed, "Status", f"It's {player_emoji} {game.get_player().mention}'s turn. ⏳")
+                    ui.update_embed_field(embed=embed, name="Status", value=f"Player {opponent_emoji} {game.get_opponent().mention} won. 🎉")
             else:
-                embed.color = OPPONENT_COLOR
-                ui.update_embed_field(embed, "Status", f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. ⏳")
+                parent_view.reset_timeout()
+                ui.update_embed_field(embed=embed, name="Timeout", value=parent_view.get_timeout_timestamp())
+
+                if game.is_players_turn():
+                    embed.color = PLAYER_COLOR
+                    ui.update_embed_field(embed=embed, name="Status", value=f"It's {player_emoji} {game.get_player().mention}'s turn. ⏳")
+                else:
+                    embed.color = OPPONENT_COLOR
+                    ui.update_embed_field(embed=embed, name="Status", value=f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. ⏳")
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)
