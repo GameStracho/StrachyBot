@@ -28,7 +28,7 @@ class ETriviaCategory(PyEnum):
     VEHICLES = "Vehicles"
     COMICS = "Comics"
     GADGETS = "Gadgets"
-    ANIME_AND_MANGA = "Anime & Manga"
+    ANIME_AND_MANGA = "Japanese Anime & Manga"
     CARTOON_AND_ANIMATION = "Cartoon & Animations"
 
     def __str__(self) -> str:
