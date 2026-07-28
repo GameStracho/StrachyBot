@@ -1,4 +1,4 @@
-from shared import helpers
+from shared import helpers, models
 
 from .models import ETriviaCategory, ETriviaDifficulty
 from .response import TriviaResponse
@@ -42,7 +42,7 @@ class TriviaGame:
         response: TriviaResponse = await helpers.fetch_api(url, TriviaResponse)
 
         if not len(response.results):
-            raise Exception("No API response received.")
+            raise models.NoAPIResponseException()
 
         self._category = response.results[0].category
         self._difficulty = response.results[0].difficulty
