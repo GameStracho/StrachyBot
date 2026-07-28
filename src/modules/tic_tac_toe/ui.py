@@ -121,7 +121,11 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
             self.label = player_emoji if game.is_players_turn() else opponent_emoji
             self.disabled = True
 
-            game.play(position=self._position)
+            success: bool = game.play(position=self._position)
+
+            if not success:
+                interaction.response.send_message("Invalid move! ☹️", ephemeral=True)
+                return
 
             message: discord.Message | None = interaction.message
             assert message is not None
