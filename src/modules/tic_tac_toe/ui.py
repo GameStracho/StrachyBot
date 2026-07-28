@@ -47,10 +47,6 @@ class TicTacToeView(discord.ui.View):
         return self._game
 
 
-    def reset_timeout(self) -> None:
-        self.timeout = self._timeout
-
-
     def get_timeout_timestamp(self) -> str:
         return ui.get_timeout_timestamp(self._timeout) + "⏱️"
     
@@ -61,6 +57,24 @@ class TicTacToeView(discord.ui.View):
                 child.disabled = True
 
         console.log_debug(f"/tic-tac-toe: Buttons disabled for game {self._game.match_id}.")
+
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        try:
+            current_player = self._game.get_player() if self._game.is_players_turn() else self._game.get_opponent()
+
+            if interaction.user.id != current_player.id:
+                console.log_debug(f"Ineligible user {interaction.user.display_name} ({interaction.user.id}) tried to respond to game {self._game.match_id}.")
+
+                await interaction.response.send_message(
+                    "It's not your turn!", 
+                    ephemeral=True
+                )
+                return False  # Aborts processing and DOES NOT reset/extend the view timeout
+
+            return True  # Authorized click; allow execution
+        except Exception:
+            await messages.handle_error(command="/tic-tac-toe", interaction=interaction, use_followup=False)
 
 
     async def on_timeout(self) -> None:
@@ -103,12 +117,6 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
 
             game: TicTacToeGame = parent_view.get_game()
 
-            if ((game.is_players_turn() and interaction.user != game.get_player())
-                or (not game.is_players_turn() and interaction.user != game.get_opponent())):
-                console.log_debug(f"Ineligible user {interaction.user.display_name} ({interaction.user.id}) tried to respond to game {game.match_id}.")
-                await interaction.response.send_message("Please wait for your turn.", ephemeral=True)
-                return
-
             player_emoji, opponent_emoji = get_player_emojis()
             self.label = player_emoji if game.is_players_turn() else opponent_emoji
             self.disabled = True
@@ -136,15 +144,14 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
                     embed.color = OPPONENT_COLOR
                     ui.update_embed_field(embed=embed, name="Status", value=f"Player {opponent_emoji} {game.get_opponent().mention} won. 🎉")
             else:
-                parent_view.reset_timeout()
-                ui.update_embed_field(embed=embed, name="Timeout", value=parent_view.get_timeout_timestamp())
-
                 if game.is_players_turn():
                     embed.color = PLAYER_COLOR
                     ui.update_embed_field(embed=embed, name="Status", value=f"It's {player_emoji} {game.get_player().mention}'s turn. ⏳")
                 else:
                     embed.color = OPPONENT_COLOR
                     ui.update_embed_field(embed=embed, name="Status", value=f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. ⏳")
+
+                ui.update_embed_field(embed=embed, name="Timeout", value=parent_view.get_timeout_timestamp())
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)
