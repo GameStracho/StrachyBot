@@ -114,10 +114,6 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
 
             game: TicTacToeGame = parent_view.get_game()
 
-            player_emoji, opponent_emoji = get_player_emojis()
-            self.label = player_emoji if game.is_players_turn() else opponent_emoji
-            self.disabled = True
-
             success: bool = game.play(position=self._position)
 
             if not success:
@@ -128,6 +124,10 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
             assert message is not None
 
             embed: discord.Embed = message.embeds[0]
+
+            player_emoji, opponent_emoji = get_player_emojis()
+            self.label = player_emoji if game.is_players_turn() else opponent_emoji
+            self.disabled = True
 
             # hide a second icon appearing above the embed
             embed.set_thumbnail(url="attachment://icon.png")

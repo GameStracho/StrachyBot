@@ -31,7 +31,7 @@ class TicTacToeGrid():
         if pos.x < 0 or pos.x >= self._size or pos.y < 0 or pos.y >= self._size:
             return None
 
-        return self._grid[pos.x * self._size + pos.y]
+        return self._grid[pos.y * self._size + pos.x]
 
 
     def set_cell_value(self, pos: Position, value: ETicTacToeCell) -> None:
@@ -41,7 +41,7 @@ class TicTacToeGrid():
         if pos.x < 0 or pos.x >= self._size or pos.y < 0 or pos.y >= self._size:
             return
 
-        self._grid[pos.x * self._size + pos.y] = value
+        self._grid[pos.y * self._size + pos.x] = value
 
 
 class TicTacToeGame():
