@@ -24,15 +24,14 @@ class TriviaCog(commands.Cog):
             game: TriviaGame = TriviaGame(player_id=interaction.user.id, category=category, difficulty=difficulty)
             await game.fetch_api()
 
-            session_factory = self.bot.get_db_session_factory()
+            match_id: int | None = await helpers.execute_db_operation(
+                target=self.bot, db_func=create_match,
+                player_id=game.get_player_id(), category=game.get_category(), difficulty=game.get_difficulty(),
+                question=game.get_question(), correct_answer=game.get_correct_answer()
+            )
 
-            if session_factory:
-                async with session_factory() as session:
-                    game.match_id = await create_match(
-                        session=session, player_id=game.get_player_id(), category=game.get_category(),
-                        difficulty=game.get_difficulty(), question=game.get_question(),
-                        correct_answer=game.get_correct_answer()
-                    )
+            if match_id:
+                game.match_id = match_id
 
             view: TriviaView = TriviaView(game=game, timeout=15.0)
             embed = discord.Embed(color=discord.Color.dark_gold())

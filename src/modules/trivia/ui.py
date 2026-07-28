@@ -2,7 +2,7 @@ from typing import List, Tuple
 import discord
 import random
 
-from shared import console, messages, models, bot, ui
+from shared import console, messages, models, ui, helpers
 from .game import TriviaGame
 from .repository import update_match
 
@@ -75,15 +75,10 @@ class TriviaView(discord.ui.View):
         # hide a second icon appearing above the embed
         embed.set_thumbnail(url="attachment://icon.png")
 
-        strachy_bot = self.message._state._get_client()
-        assert isinstance(strachy_bot, bot.StrachyBot)
-
-        session_factory = strachy_bot.get_db_session_factory()
-
-        if session_factory:
-            async with session_factory() as session:
-                if session:
-                    await update_match(session=session, match_id=self._game.match_id, status=models.EMatchStatus.TIMEOUT)
+        await helpers.execute_db_operation(
+            target=self.message, db_func=update_match,
+            match_id=self._game.match_id, status=models.EMatchStatus.TIMEOUT
+        )
 
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)
@@ -140,14 +135,11 @@ class TriviaButton(discord.ui.Button["TriviaView"]):
                 self.emoji = "✖️"
                 status = models.EMatchStatus.LOSS
 
-            strachy_bot = interaction.client
-            assert isinstance(strachy_bot, bot.StrachyBot)
 
-            session_factory = strachy_bot.get_db_session_factory()
-
-            if session_factory:
-                async with session_factory() as session:
-                    await update_match(session=session, match_id=parent_view.get_game().match_id, status=status)
+            await helpers.execute_db_operation(
+                target=interaction, db_func=update_match,
+                match_id=parent_view.get_game().match_id, status=status
+            )
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)
