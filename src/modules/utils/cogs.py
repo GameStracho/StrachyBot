@@ -1,13 +1,14 @@
-from typing import Optional, List, Tuple
 import datetime
 
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 
-from shared.bot import StrachyBot
 from shared import console, messages
+from shared.bot import StrachyBot
+
 from .helpers import parse_changelog
+
 
 class UtilsCog(commands.Cog):
     def __init__(self, bot: StrachyBot) -> None:
@@ -31,7 +32,7 @@ class UtilsCog(commands.Cog):
             embed.add_field(name="Ping", value=f"{round(interaction.client.latency * 1000)} ms", inline=True)
             embed.add_field(name="Uptime", value=f"{str(uptime).split('.')[0]}", inline=True)
 
-            sections: List[Tuple[str, str]] = parse_changelog()
+            sections: list[tuple[str, str]] = parse_changelog()
 
             for section_name, section_content in sections:
                 embed.add_field(name=section_name, value=section_content, inline=False)
@@ -49,8 +50,8 @@ class UtilsCog(commands.Cog):
     async def announcement(
         self,
         interaction: discord.Interaction,
-        title: Optional[str] = "",
-        message:  Optional[str] = "") -> None:
+        title: str | None = "",
+        message:  str | None = "") -> None:
         console.log_info(f"/announcement: User {interaction.user.display_name} passed title '{title}' and '{message}'.")
     
         try:

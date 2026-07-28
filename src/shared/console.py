@@ -1,12 +1,14 @@
-from typing import TextIO, Any
-from datetime import datetime
-from colorama import Fore, Style
 import sys
+from datetime import datetime, timezone
+from typing import Any, TextIO
+
+from colorama import Fore, Style
+
 
 def current_time() -> str:
     return (
         Fore.LIGHTBLACK_EX + Style.BRIGHT
-        + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + Style.RESET_ALL
+        + datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S") + Style.RESET_ALL
     )
 
 

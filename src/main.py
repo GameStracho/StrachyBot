@@ -1,9 +1,11 @@
-import os
-from dotenv import load_dotenv
 import asyncio
+import os
+
+from dotenv import load_dotenv
 
 from shared import console
 from shared.bot import StrachyBot
+
 
 async def main() -> None:
     profile: str = os.getenv("COMPOSE_PROFILES", "development")

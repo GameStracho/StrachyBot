@@ -1,5 +1,6 @@
-import discord
 import time
+
+import discord
 
 TIMEOUT_COLOR: discord.Color = discord.Color.darker_grey()
 DRAW_COLOR: discord.Color = discord.Color.light_grey()

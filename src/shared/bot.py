@@ -1,15 +1,15 @@
-import os
-from typing import List
-from colorama import Fore
-from datetime import datetime
 import importlib
+import os
+from datetime import datetime
 
 import discord
-from discord.ext import commands
+from colorama import Fore
 from discord import app_commands
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, AsyncEngine
+from discord.ext import commands
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from shared import console, database
+
 
 class StrachyBot(commands.Bot):
     start_time: datetime = discord.utils.utcnow()
@@ -50,7 +50,7 @@ class StrachyBot(commands.Bot):
         console.log_debug("Shared database models loaded.")
 
         # sync commands with Discord
-        synced: List[app_commands.AppCommand] = await self.tree.sync()
+        synced: list[app_commands.AppCommand] = await self.tree.sync()
         synced_commands: str = ""
         for command in synced:
             if len(synced_commands):

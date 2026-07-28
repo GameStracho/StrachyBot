@@ -1,5 +1,6 @@
-from typing import NamedTuple, List
 from enum import Enum
+from typing import NamedTuple
+
 
 class Position(NamedTuple):
     x: int
@@ -26,7 +27,7 @@ class EDirection(Vector, Enum):
 
 
     @classmethod
-    def get_axes(cls) -> List[Vector]:
+    def get_axes(cls) -> list[Vector]:
         """
         Returns pairs of opposing directions to check complete lines passing through a cell.
         (e.g., Horizontal axis = WEST + EAST)

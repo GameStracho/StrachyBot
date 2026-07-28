@@ -1,11 +1,13 @@
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 
-from shared import console, bot, messages, helpers, ui
-from .ui import TicTacToeView, get_player_emojis, PLAYER_COLOR
+from shared import bot, console, helpers, messages, ui
+
 from .game import TicTacToeGame
 from .repository import create_match
+from .ui import PLAYER_COLOR, TicTacToeView, get_player_emojis
+
 
 class TicCog(commands.Cog):
     def __init__(self, bot: bot.StrachyBot) -> None:

@@ -1,9 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from shared.models import Match, EMatchStatus
-import shared.console as console
+from shared import console
+from shared.models import EMatchStatus, Match
+
 from .models import TicTacToeMatch
+
 
 async def create_match(session: AsyncSession, player_id: int, opponent_id: int, grid_size: int) -> int:
     """

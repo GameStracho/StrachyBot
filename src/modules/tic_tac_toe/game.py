@@ -1,9 +1,10 @@
-from typing import List
-import discord
 from enum import Enum
 
+import discord
+
 from shared import console
-from shared.types import Position, EDirection, Vector
+from shared.types import EDirection, Position, Vector
+
 
 class ETicTacToeCell(Enum):
     EMPTY = 0
@@ -11,9 +12,9 @@ class ETicTacToeCell(Enum):
     OPPONENT = 2
 
 
-class TicTacToeGrid():
+class TicTacToeGrid:
     _size: int
-    _grid: List[ETicTacToeCell]
+    _grid: list[ETicTacToeCell]
 
     def __init__(self, size: int):
         self._size = size
@@ -44,7 +45,7 @@ class TicTacToeGrid():
         self._grid[pos.y * self._size + pos.x] = value
 
 
-class TicTacToeGame():
+class TicTacToeGame:
     match_id: int
     _player: discord.User
     _opponent: discord.User

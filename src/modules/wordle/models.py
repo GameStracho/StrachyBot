@@ -1,7 +1,8 @@
-from sqlalchemy import BigInteger, ForeignKey, String, CheckConstraint
+from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.database import Base
+
 
 class WordleMatch(Base):
     __tablename__ = "wordle_match"

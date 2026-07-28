@@ -1,12 +1,13 @@
-from typing import List, Tuple
-import discord
 import random
 
-from shared import console, messages, models, ui, helpers
+import discord
+
+from shared import console, helpers, messages, models, ui
+
 from .game import TriviaGame
 from .repository import update_match
 
-BUTTON_EMOJIS: List[str] = ["🇦", "🇧" , "🇨", "🇩"]
+BUTTON_EMOJIS: list[str] = ["🇦", "🇧" , "🇨", "🇩"]
 
 class TriviaView(discord.ui.View):
     _game: TriviaGame
@@ -17,7 +18,7 @@ class TriviaView(discord.ui.View):
 
         self._game = game
 
-        options: List[Tuple[str, bool]] = [(self._game.get_correct_answer(), True)]
+        options: list[tuple[str, bool]] = [(self._game.get_correct_answer(), True)]
 
         for incorrect_answer in self._game.get_incorrect_answers():
             options.append((incorrect_answer, False))
@@ -48,10 +49,10 @@ class TriviaView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
             try:
                 if interaction.user.id != self._game.get_player_id():
-                    console.log_warning((
+                    console.log_warning(
                         f"/trivia: Ineligible user {interaction.user.display_name} ({interaction.user.id}) "
                         f"responded to game {self._game.match_id}"
-                    ))
+                    )
                     await interaction.response.send_message("You cannot respond to this game.", ephemeral=True)
                     return False  # Aborts processing and DOES NOT reset/extend the view timeout
     
@@ -93,10 +94,10 @@ class TriviaButton(discord.ui.Button["TriviaView"]):
 
         self._is_correct = is_correct
 
-        console.log_debug((
+        console.log_debug(
             f"/trivia: New TriviaButton created for game {game_id}: "
             f"label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
-        ))
+        )
 
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -106,10 +107,10 @@ class TriviaButton(discord.ui.Button["TriviaView"]):
             
             answer_type: str = "Correct" if self._is_correct else "Incorrect"
 
-            console.log_info((
+            console.log_info(
                 f"/trivia: {answer_type} answer ({self.label}) "
                 f"chosen for game {parent_view.get_game().match_id} by user {interaction.user.display_name} ({interaction.user.id})."
-            ))
+            )
 
             message: discord.Message | None = interaction.message
             assert message is not None

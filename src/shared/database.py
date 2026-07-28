@@ -1,6 +1,13 @@
 import os
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession, AsyncEngine
+
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import DeclarativeBase
+
 
 def create_db_engine() -> AsyncEngine:
     """Creates asynchronous engine from the CONNECTION_STRING env variable."""    

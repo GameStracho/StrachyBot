@@ -1,14 +1,14 @@
-from typing import List
-
 from shared import helpers
+
 from .models import ETriviaCategory, ETriviaDifficulty
 from .response import TriviaResponse
 
-class TriviaGame():
+
+class TriviaGame:
     match_id: int
     _player_id: int
     _question: str
-    _incorrect_answers: List[str]
+    _incorrect_answers: list[str]
     _correct_answer: str
     _is_over: bool
     _category: ETriviaCategory
@@ -67,7 +67,7 @@ class TriviaGame():
         return self._question
 
 
-    def get_incorrect_answers(self) -> List[str]:
+    def get_incorrect_answers(self) -> list[str]:
         return self._incorrect_answers
 
 

@@ -1,20 +1,23 @@
-from typing import Tuple
-import discord
 from datetime import datetime, timezone
 
-from shared import console, messages, ui, models, helpers
+import discord
+
+from shared import console, helpers, messages, models, ui
 from shared.types import Position
+
 from .game import TicTacToeGame
-from.repository import update_match
+from .repository import update_match
 
 PLAYER_COLOR: discord.Color = discord.Color.purple()
 OPPONENT_COLOR: discord.Color = discord.Color.orange()
 
 
-def get_player_emojis(date: datetime = datetime.now(timezone.utc)) -> Tuple[str, str]:
+def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
     """
     Returns player's and opponent's emojis based on selected date.
     """
+    if not date:
+        date = datetime.now(timezone.utc)
 
     # Valentine's day
     if date.day == 14 and date.month == 2:
@@ -38,10 +41,10 @@ class TicTacToeView(discord.ui.View):
             for y in range(game.get_grid_size()):
                 self.add_item(TicTacToeButton(game_id=self._game.match_id, position=Position(x, y)))
 
-        console.log_debug((
+        console.log_debug(
             f"/tic-tac-toe: New TicTacToeView created for game {self._game.match_id} "
             f"with {timeout}s timeout."
-        ))
+        )
 
 
     def get_game(self) -> TicTacToeGame:
@@ -108,10 +111,10 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
 
         self._position = position
 
-        console.log_debug((
+        console.log_debug(
             f"/tic-tac-toe: New TicTacToeButton created for game {game_id}: "
             f"pos = {position}."
-        ))
+        )
 
     async def callback(self, interaction: discord.Interaction) -> None:
         try:

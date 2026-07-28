@@ -5,10 +5,10 @@ import discord
 import pytest
 
 from modules.trivia.cogs import TriviaCog
-from shared import bot
 from modules.trivia.game import TriviaGame
 from modules.trivia.models import ETriviaCategory, ETriviaDifficulty
-from modules.trivia.ui import TriviaView, TriviaButton
+from modules.trivia.ui import TriviaButton, TriviaView
+from shared import bot
 from tests import mocks
 
 

@@ -1,15 +1,15 @@
-from typing import cast, Any
 from types import SimpleNamespace
+from typing import Any, cast
 from unittest.mock import AsyncMock
 
 import discord
 import pytest
 
-from shared import helpers
 from modules.trivia.game import TriviaGame
 from modules.trivia.models import ETriviaCategory, ETriviaDifficulty
 from modules.trivia.response import TriviaResponse
-from modules.trivia.ui import TriviaView, TriviaButton
+from modules.trivia.ui import TriviaButton, TriviaView
+from shared import helpers
 from tests import mocks
 
 
