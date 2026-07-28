@@ -26,12 +26,13 @@ class TriviaView(discord.ui.View):
 
         for i, option in enumerate(options):
             label, is_correct = option
-            self.add_item(TriviaButton(
-                game_id=self._game.match_id, player_id=self._game.get_player_id(),
-                label=label, is_correct=is_correct, emoji=BUTTON_EMOJIS[i], row=i
-            ))
+            self.add_item(TriviaButton(game_id=self._game.match_id, label=label, is_correct=is_correct, emoji=BUTTON_EMOJIS[i], row=i))
 
         console.log_debug(f"/trivia: New TriviaView created for game {self._game.match_id} with {timeout}s timeout.")
+
+
+    def get_game(self) -> TriviaGame:
+        return self._game
 
 
     def disable_buttons(self) -> None:
@@ -44,6 +45,22 @@ class TriviaView(discord.ui.View):
         console.log_debug(f"/trivia: Answers revealed for game {self._game.match_id}.")
 
 
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            try:
+                if interaction.user.id != self._game.get_player_id():
+                    console.log_warning((
+                        f"/trivia: Ineligible user {interaction.user.display_name} ({interaction.user.id}) "
+                        f"responded to game {self._game.match_id}"
+                    ))
+                    await interaction.response.send_message("You cannot respond to this game.", ephemeral=True)
+                    return False  # Aborts processing and DOES NOT reset/extend the view timeout
+    
+                return True  # Authorized click; allow execution
+            except Exception:
+                await messages.handle_error(command="/trivia", interaction=interaction, use_followup=False)
+                return False
+
+
     async def on_timeout(self) -> None:
         if self._game.is_over() or self.message is None:
             return
@@ -53,7 +70,7 @@ class TriviaView(discord.ui.View):
 
         embed: discord.Embed = self.message.embeds[0]
         embed.color = ui.TIMEOUT_COLOR
-        embed.description = "" # remove timeout countdown
+        ui.remove_embed_field(embed=embed, name="Timeout")
 
         # hide a second icon appearing above the embed
         embed.set_thumbnail(url="attachment://icon.png")
@@ -74,34 +91,21 @@ class TriviaView(discord.ui.View):
 
 class TriviaButton(discord.ui.Button["TriviaView"]):
     _is_correct: bool
-    _game_id: int
-    _player_id: int
 
     def __init__(
-            self, game_id: int, player_id: int,
-            label: str, is_correct: bool, row: int, emoji: str = ""):
+            self, game_id: int, label: str, is_correct: bool, row: int, emoji: str = ""):
         super().__init__(label=label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row)
 
-        self._game_id = game_id
-        self._player_id = player_id
         self._is_correct = is_correct
 
         console.log_debug((
-            f"/trivia: New TriviaButton created for game {self._game_id}: "
+            f"/trivia: New TriviaButton created for game {game_id}: "
             f"label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
         ))
 
 
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
-            if interaction.user.id != self._player_id:
-                console.log_warning((
-                    f"/trivia: Ineligible user {interaction.user.display_name} ({interaction.user.id}) "
-                    f"responded to game {self._game_id} started by player {self._player_id}"
-                ))
-                await interaction.response.send_message("You cannot respond to this game.", ephemeral=True)
-                return
-            
             parent_view = self.view
             assert isinstance(parent_view, TriviaView)
             
@@ -109,14 +113,14 @@ class TriviaButton(discord.ui.Button["TriviaView"]):
 
             console.log_info((
                 f"/trivia: {answer_type} answer ({self.label}) "
-                f"chosen for game {self._game_id} by user {interaction.user.display_name} ({interaction.user.id})."
+                f"chosen for game {parent_view.get_game().match_id} by user {interaction.user.display_name} ({interaction.user.id})."
             ))
 
             message: discord.Message | None = interaction.message
             assert message is not None
 
             embed: discord.Embed = message.embeds[0]
-            embed.description = "" # remove timeout countdown
+            ui.remove_embed_field(embed=embed, name="Timeout")
 
             # hide a second icon appearing above the embed
             embed.set_thumbnail(url="attachment://icon.png")
@@ -143,7 +147,7 @@ class TriviaButton(discord.ui.Button["TriviaView"]):
 
             if session_factory:
                 async with session_factory() as session:
-                    await update_match(session=session, match_id=self._game_id, status=status)
+                    await update_match(session=session, match_id=parent_view.get_game().match_id, status=status)
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)

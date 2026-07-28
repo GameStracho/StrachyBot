@@ -19,8 +19,11 @@ def remove_embed_field(embed: discord.Embed, name: str) -> None:
             return
 
 
-def get_timeout_timestamp(timeout: float) -> str:
-    # Discord requires an integer Unix timestamp
-    timestamp: int = int(time.time() + timeout)
+def get_timeout_timestamp(view: discord.ui.View) -> str:
+    if not view.timeout:
+        return ""
 
-    return f"<t:{timestamp}:R>"
+    # Discord requires an integer Unix timestamp
+    timestamp: int = int(time.time() + view.timeout)
+
+    return f"<t:{timestamp}:R> ⏱️"

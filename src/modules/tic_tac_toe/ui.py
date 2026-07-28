@@ -45,10 +45,6 @@ class TicTacToeView(discord.ui.View):
 
     def get_game(self) -> TicTacToeGame:
         return self._game
-
-
-    def get_timeout_timestamp(self) -> str:
-        return ui.get_timeout_timestamp(self._timeout) + "⏱️"
     
     
     def disable_buttons(self) -> None:
@@ -158,7 +154,7 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
                     embed.color = OPPONENT_COLOR
                     ui.update_embed_field(embed=embed, name="Status", value=f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. ⏳")
 
-                ui.update_embed_field(embed=embed, name="Timeout", value=parent_view.get_timeout_timestamp())
+                ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view))
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)

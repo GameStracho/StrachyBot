@@ -1,9 +1,8 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import time
 
-from shared import console, messages, bot, helpers
+from shared import console, messages, bot, helpers, ui
 from .ui import TriviaView
 from .game import TriviaGame
 from .models import ETriviaCategory, ETriviaDifficulty
@@ -35,18 +34,13 @@ class TriviaCog(commands.Cog):
                         correct_answer=game.get_correct_answer()
                     )
 
-            timeout_duration: float = 15.0
-            # Discord requires an integer Unix timestamp
-            timeout_timestamp = int(time.time() + timeout_duration)
-
-            view: TriviaView = TriviaView(game=game, timeout=timeout_duration)
-
-            embed = discord.Embed(color=discord.Color.dark_gold(),
-                                  title="Trivia", description=f"Time left: <t:{timeout_timestamp}:R> ⏱️")
+            view: TriviaView = TriviaView(game=game, timeout=15.0)
+            embed = discord.Embed(color=discord.Color.dark_gold())
 
             embed.add_field(name="Category", value=game.get_category(), inline=True)
             embed.add_field(name="Difficulty", value=game.get_difficulty(), inline=True)
             embed.add_field(name="Question", value=game.get_question(), inline=False)
+            embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=view), inline=False)
 
             icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
             embed.set_thumbnail(url=icon_url)

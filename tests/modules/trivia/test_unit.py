@@ -155,14 +155,13 @@ async def test_trivia_button_correct_answer_updates_embed_and_status(monkeypatch
 
 
 @pytest.mark.asyncio
-async def test_trivia_button_rejects_wrong_user(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_trivia_view_rejects_wrong_user(monkeypatch: pytest.MonkeyPatch) -> None:
     game = TriviaGame(player_id=5)
     game.match_id = 21
     game._correct_answer = "Correct"
     game._incorrect_answers = ["Wrong"]
 
     view = TriviaView(game=game, timeout=5.0)
-    button = next(child for child in view.children if isinstance(child, TriviaButton) and child._is_correct)
 
     interaction = mocks.DummyInteraction(user_id=99, username="Other")
     dummy_response = mocks.DummyResponse()
@@ -171,7 +170,7 @@ async def test_trivia_button_rejects_wrong_user(monkeypatch: pytest.MonkeyPatch)
     update_match_mock = AsyncMock(return_value=True)
     monkeypatch.setattr("modules.trivia.ui.update_match", update_match_mock)
 
-    await button.callback(interaction)
+    await view.interaction_check(interaction)
 
     assert dummy_response.send_calls
     assert dummy_response.send_calls[0][1]["ephemeral"] is True

@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-from shared import console, bot, messages, helpers
+from shared import console, bot, messages, helpers, ui
 from .ui import TicTacToeView, get_player_emojis, PLAYER_COLOR
 from .game import TicTacToeGame
 
@@ -41,7 +41,7 @@ class TicCog(commands.Cog):
             embed.add_field(name="Players", value=f"{player_emoji} {game.get_player().mention}\n{opponent_emoji} {game.get_opponent().mention}", inline=False)
 
             embed.add_field(name="Status", value=f"It's {player_emoji} {game.get_player().mention}'s turn.", inline=False)
-            embed.add_field(name="Timeout", value=view.get_timeout_timestamp(), inline=False)
+            embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=view), inline=False)
 
             icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
             embed.set_thumbnail(url=icon_url)
