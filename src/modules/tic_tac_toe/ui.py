@@ -75,6 +75,7 @@ class TicTacToeView(discord.ui.View):
             return True  # Authorized click; allow execution
         except Exception:
             await messages.handle_error(command="/tic-tac-toe", interaction=interaction, use_followup=False)
+            return False
 
 
     async def on_timeout(self) -> None:
@@ -124,7 +125,7 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
             success: bool = game.play(position=self._position)
 
             if not success:
-                interaction.response.send_message("Invalid move! ☹️", ephemeral=True)
+                await interaction.response.send_message("Invalid move! ☹️", ephemeral=True)
                 return
 
             message: discord.Message | None = interaction.message
@@ -137,6 +138,8 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
 
             if game.has_game_ended():
                 winner: discord.User | None = game.get_winner()
+                ui.remove_embed_field(embed=embed, name="Timeout")
+                parent_view.disable_buttons()
 
                 if not winner:
                     embed.color = ui.DRAW_COLOR
