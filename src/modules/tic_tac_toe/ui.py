@@ -98,13 +98,18 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
-            player_emoji, opponent_emoji = get_player_emojis()
-
             parent_view = self.view
             assert isinstance(parent_view, TicTacToeView)
 
             game: TicTacToeGame = parent_view.get_game()
 
+            if ((game.is_players_turn() and interaction.user != game.get_player())
+                or (not game.is_players_turn() and interaction.user != game.get_opponent())):
+                console.log_debug(f"Ineligible user {interaction.user.display_name} ({interaction.user.id}) tried to respond to game {game.match_id}.")
+                await interaction.response.send_message("Please wait for your turn.", ephemeral=True)
+                return
+
+            player_emoji, opponent_emoji = get_player_emojis()
             self.label = player_emoji if game.is_players_turn() else opponent_emoji
             self.disabled = True
 
