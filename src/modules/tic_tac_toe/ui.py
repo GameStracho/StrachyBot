@@ -2,9 +2,10 @@ from typing import Tuple
 import discord
 from datetime import datetime, timezone
 
-from shared import console, messages, ui
+from shared import console, messages, ui, models, helpers
 from shared.types import Position
 from .game import TicTacToeGame
+from.repository import update_match
 
 PLAYER_COLOR: discord.Color = discord.Color.purple()
 OPPONENT_COLOR: discord.Color = discord.Color.orange()
@@ -90,6 +91,11 @@ class TicTacToeView(discord.ui.View):
         # hide a second icon appearing above the embed
         embed.set_thumbnail(url="attachment://icon.png")
 
+        await helpers.execute_db_operation(
+            target=self.message, db_func=update_match,
+            match_id=self._game.match_id, status=models.EMatchStatus.TIMEOUT, total_moves=self._game.get_total_moves()
+        )
+
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)
 
@@ -126,35 +132,50 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
             embed: discord.Embed = message.embeds[0]
 
             player_emoji, opponent_emoji = get_player_emojis()
-            self.label = player_emoji if game.is_players_turn() else opponent_emoji
+            self.label = opponent_emoji if game.is_players_turn() else player_emoji
             self.disabled = True
 
             # hide a second icon appearing above the embed
             embed.set_thumbnail(url="attachment://icon.png")
 
+            status_message: str = ""
+
             if game.has_game_ended():
                 winner: discord.User | None = game.get_winner()
+                status: models.EMatchStatus = models.EMatchStatus.PENDING
+
                 ui.remove_embed_field(embed=embed, name="Timeout")
                 parent_view.disable_buttons()
 
                 if not winner:
                     embed.color = ui.DRAW_COLOR
-                    ui.update_embed_field(embed=embed, name="Status", value="Game ended in draw. 🤝")
+                    status_message = "Game ended in draw. 🤝"
+                    status = models.EMatchStatus.DRAW
                 elif winner == game.get_player():
                     embed.color = PLAYER_COLOR
-                    ui.update_embed_field(embed=embed, name="Status", value=f"Player {player_emoji} {game.get_player().mention} won. 🎉")
+                    status_message = f"Player {player_emoji} {game.get_player().mention} won. 🎉"
+                    status = models.EMatchStatus.WIN
                 else:
                     embed.color = OPPONENT_COLOR
-                    ui.update_embed_field(embed=embed, name="Status", value=f"Player {opponent_emoji} {game.get_opponent().mention} won. 🎉")
+                    status_message = f"Player {opponent_emoji} {game.get_opponent().mention} won. 🎉"
+                    status = models.EMatchStatus.LOSS
+
+                await helpers.execute_db_operation(
+                    target=interaction, db_func=update_match,
+                    match_id=parent_view.get_game().match_id, status=status, total_moves=parent_view.get_game().get_total_moves()
+                )
             else:
                 if game.is_players_turn():
                     embed.color = PLAYER_COLOR
-                    ui.update_embed_field(embed=embed, name="Status", value=f"It's {player_emoji} {game.get_player().mention}'s turn. ⏳")
+                    status_message = f"It's {player_emoji} {game.get_player().mention}'s turn. ⏳"
                 else:
                     embed.color = OPPONENT_COLOR
-                    ui.update_embed_field(embed=embed, name="Status", value=f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. ⏳")
+                    status_message = f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. ⏳"
 
                 ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view))
+
+            assert status_message
+            ui.update_embed_field(embed=embed, name="Status", value=status_message)
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)

@@ -5,6 +5,7 @@ from discord import app_commands
 from shared import console, bot, messages, helpers, ui
 from .ui import TicTacToeView, get_player_emojis, PLAYER_COLOR
 from .game import TicTacToeGame
+from .repository import create_match
 
 class TicCog(commands.Cog):
     def __init__(self, bot: bot.StrachyBot) -> None:
@@ -33,13 +34,20 @@ class TicCog(commands.Cog):
                 player = temp_player
 
             game: TicTacToeGame = TicTacToeGame(player=player, opponent=opponent, grid_size=grid_size.value)
+
+            match_id: int | None = await helpers.execute_db_operation(
+                target=self.bot, db_func=create_match,
+                player_id=game.get_player().id, opponent_id=game.get_opponent().id, grid_size=game.get_grid_size()
+            )
+
+            if match_id:
+                game.match_id = match_id
+
             view: TicTacToeView = TicTacToeView(game=game, timeout=15.0)
-
             player_emoji, opponent_emoji = get_player_emojis()
-
             embed = discord.Embed(color=PLAYER_COLOR, title="Tic-Tac-Toe")
-            embed.add_field(name="Players", value=f"{player_emoji} {game.get_player().mention}\n{opponent_emoji} {game.get_opponent().mention}", inline=False)
 
+            embed.add_field(name="Players", value=f"{player_emoji} {game.get_player().mention}\n{opponent_emoji} {game.get_opponent().mention}", inline=False)
             embed.add_field(name="Status", value=f"It's {player_emoji} {game.get_player().mention}'s turn.", inline=False)
             embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=view), inline=False)
 
