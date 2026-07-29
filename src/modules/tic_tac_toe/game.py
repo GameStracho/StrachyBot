@@ -91,6 +91,103 @@ class TicTacToeGame:
         return self._winner
 
 
+    def is_opponent_bot(self) -> bool:
+        return self._opponent.bot
+
+
+    def calculate_bot_move(self) -> Position | None:
+        """
+            Calculates an intelligent move for the bot opponent.
+            Priority 1: Win in 1 move.
+            Priority 2: Block opponent's win in 1 move.
+            Priority 3: Strategic positional move (center, corners, setup).
+        """
+        grid_size: int = self._grid.get_size()
+        empty_positions: list[Position] = []
+
+        for x in range(grid_size):
+            for y in range(grid_size):
+                pos = Position(x, y)
+
+                if self._grid.get_cell_value(pos) == ETicTacToeCell.EMPTY:
+                    empty_positions.append(pos)
+
+        if not empty_positions:
+            return None
+
+        # Priority 1: Check for immediate winning move for the bot
+        for pos in empty_positions:
+            if self._simulate_win(pos=pos, control_value=ETicTacToeCell.OPPONENT):
+                return pos
+
+        # Priority 2: Check for immediate blocking move against human player
+        for pos in empty_positions:
+            if self._simulate_win(pos=pos, control_value=ETicTacToeCell.PLAYER):
+                return pos
+
+        # Priority 3: Strategic positional selection based on score
+        best_pos: Position = empty_positions[0]
+        best_score: int = -1
+
+        for pos in empty_positions:
+            score: int = self._score_position(pos=pos)
+
+            if score > best_score:
+                best_score = score
+                best_pos = pos
+
+        return best_pos
+
+
+    def _simulate_win(self, pos: Position, control_value: ETicTacToeCell) -> bool:
+        assert self._grid.get_cell_value(pos=pos) == ETicTacToeCell.EMPTY
+
+        self._grid.set_cell_value(pos=pos, value=control_value)
+        is_win: bool = False
+
+        for axis in EDirection.get_axes():
+            if self._check_axis(pos=pos, axis=axis, control_value=control_value):
+                is_win = True
+                break
+
+        self._grid.set_cell_value(pos=pos, value=ETicTacToeCell.EMPTY)
+        return is_win
+
+
+    def _score_position(self, pos: Position) -> int:
+        score: int = 0
+        grid_size: int = self._grid.get_size()
+
+        # Center preference
+        if grid_size % 2 == 1 and pos.x == grid_size // 2 and pos.y == grid_size // 2:
+            score += 4
+
+        # Corner preference
+        if pos.x in (0, grid_size - 1) and pos.y in (0, grid_size - 1):
+            score += 2
+
+        # Check alignment with existing bot cells (creation of threats)
+        for axis in EDirection.get_axes():
+            for start_offset in range(3):
+                opponent_count: int = 0
+                player_count: int = 0
+
+                for i in range(3):
+                    col: int = pos.x + (i - start_offset) * axis.x
+                    row: int = pos.y + (i - start_offset) * axis.y
+                    cell: ETicTacToeCell | None = self._grid.get_cell_value(Position(col, row))
+
+                    if cell == ETicTacToeCell.OPPONENT:
+                        opponent_count += 1
+                    elif cell == ETicTacToeCell.PLAYER:
+                        player_count += 1
+
+                if player_count == 0 and opponent_count > 0:
+                    score += opponent_count * 2
+
+        return score
+
+
     def is_players_turn(self) -> bool:
         return self._total_moves % 2 == 0
 
@@ -157,9 +254,9 @@ class TicTacToeGame:
 
             for i in range(3):
                 # Move in positive direction
-                row: int = pos.x + (i - start_offset) * axis.x
-                col: int = pos.y + (i - start_offset) * axis.y
-                cell_value: ETicTacToeCell | None = self._grid.get_cell_value(Position(row, col))
+                col: int = pos.x + (i - start_offset) * axis.x
+                row: int = pos.y + (i - start_offset) * axis.y
+                cell_value: ETicTacToeCell | None = self._grid.get_cell_value(Position(col, row))
 
                 if cell_value != control_value:
                     connected = False

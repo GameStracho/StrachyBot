@@ -116,6 +116,11 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
             f"pos = {position}."
         )
 
+
+    def get_position(self) -> Position:
+        return self._position
+
+
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
             parent_view = self.view
@@ -140,6 +145,20 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
 
             # hide a second icon appearing above the embed
             embed.set_thumbnail(url="attachment://icon.png")
+
+            # Check if opponent is a bot and should make an automatic counter-move
+            if not game.has_game_ended() and game.is_opponent_bot() and not game.is_players_turn():
+                bot_pos: Position | None = game.calculate_bot_move()
+
+                if bot_pos is not None:
+                    game.play(position=bot_pos)
+
+                    # Disable button played by bot
+                    for child in parent_view.children:
+                        if isinstance(child, TicTacToeButton) and child.get_position() == bot_pos:
+                            child.label = opponent_emoji
+                            child.disabled = True
+                            break
 
             status_message: str = ""
 
