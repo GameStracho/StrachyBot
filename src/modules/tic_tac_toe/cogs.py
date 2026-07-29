@@ -45,7 +45,7 @@ class TicCog(commands.Cog):
             if match_id:
                 game.match_id = match_id
 
-            view: TicTacToeView = TicTacToeView(game=game, timeout=15.0)
+            view: TicTacToeView = TicTacToeView(game=game, timeout=60.0)
             player_emoji, opponent_emoji = get_player_emojis()
             embed = discord.Embed(color=PLAYER_COLOR, title="Tic-Tac-Toe")
 
