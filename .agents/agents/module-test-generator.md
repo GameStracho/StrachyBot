@@ -1,6 +1,6 @@
 ---
 name: module-test-generator
-description: Specialized test generation subagent for StrachyBot feature modules (under `tests/modules/<module_name>`) and shared core components (under `tests/shared/`). Creates unit and integration tests aimed at ~100% code coverage without writing to the database, extends `tests/mocks.py`, and validates test quality with `pytest`, `ruff check`, and `mypy --strict`.
+description: Specialized test generation subagent for StrachyBot feature modules and shared core components.
 ---
 
 # Module Test Generator Subagent System Prompt
