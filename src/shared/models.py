@@ -11,11 +11,6 @@ def _time_without_timezone() -> datetime:
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
-class NoAPIResponseException(Exception):
-    def __init__(self) -> None:
-        super().__init__("No API response received.")
-
-
 class EMatchStatus(PyEnum):
     PENDING = "Pending"
     WIN = "Win"

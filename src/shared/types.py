@@ -2,6 +2,11 @@ from enum import Enum
 from typing import NamedTuple
 
 
+class NoAPIResponseException(Exception):
+    def __init__(self) -> None:
+        super().__init__("No API response received.")
+
+
 class Position(NamedTuple):
     x: int
     y: int
