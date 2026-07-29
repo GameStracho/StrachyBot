@@ -1,3 +1,24 @@
+## [1.2] Tic-Tac-Toe 2.0 - 2026-07-29
+
+### Added
+- Auto-play feature for `Tic-Tac-Toe` mini-game allowing players to play against Discord bots
+- `tic_tac_toe_match` database table for recording `Tic-Tac-Toe` matches
+- Shared types (`Position`, `Vector`, `EDirection`) for grid-based mini-games
+- `FAIL` log level category in console logger
+- Development requirements file (`requirements-dev.txt`) and `ruff` linter configuration in `pyproject.toml`
+
+### Changed
+- Complete rewrite and modernization of `Tic-Tac-Toe` mini-game with database records and timeout handling
+- Renamed `/tic_tac_toe` command to `/tic-tac-toe`
+- Moved `Trivia` module UI components into `src/modules/trivia/ui.py`
+- Simplified execution of database operations via `helpers.execute_db_operation`
+- Updated CI workflow to install packages from `requirements-dev.txt`
+
+### Fixed
+- Linter errors (unordered imports, obsolete types from `types` module, general `Exception` throwing) after a `ruff` update.
+
+---
+
 ## [1.1] Trivia - 2026-07-19
 
 ### Added
