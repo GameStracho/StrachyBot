@@ -4,12 +4,11 @@ from unittest.mock import AsyncMock, Mock
 import discord
 import pytest
 
-from modules.trivia.button import TriviaButton
 from modules.trivia.cogs import TriviaCog
-from shared import bot
 from modules.trivia.game import TriviaGame
 from modules.trivia.models import ETriviaCategory, ETriviaDifficulty
-from modules.trivia.view import TriviaView
+from modules.trivia.ui import TriviaButton, TriviaView
+from shared import bot
 from tests import mocks
 
 
@@ -55,7 +54,7 @@ async def test_view_timeout_disables_buttons_and_updates_match(monkeypatch: pyte
     mock_message._state._get_client = Mock(return_value=bot.StrachyBot())
     view.message = mock_message
 
-    monkeypatch.setattr("modules.trivia.view.update_match", AsyncMock(return_value=True))
+    monkeypatch.setattr("modules.trivia.ui.update_match", AsyncMock(return_value=True))
     await view.on_timeout()
 
     assert game.is_over() is True

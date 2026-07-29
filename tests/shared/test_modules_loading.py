@@ -5,8 +5,8 @@ import pytest
 
 from shared.bot import StrachyBot
 from shared.database import Base
-
 from tests import mocks
+
 
 @pytest.mark.asyncio
 async def test_all_modules_load_and_sync_correctly(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -2,17 +2,18 @@
 
 import html
 import re
+
 from pydantic import BaseModel, field_validator
-from typing import List
 
 from .models import ETriviaCategory, ETriviaDifficulty
+
 
 class TriviaResult(BaseModel):
     difficulty: ETriviaDifficulty
     category: ETriviaCategory
     question: str
     correct_answer: str
-    incorrect_answers: List[str]
+    incorrect_answers: list[str]
 
     # Validate and decode single string fields automatically
     @field_validator("question", "correct_answer", mode="before")
@@ -44,7 +45,7 @@ class TriviaResult(BaseModel):
     # Validate and decode items inside lists (like incorrect answers)
     @field_validator("incorrect_answers", mode="before")
     @classmethod
-    def decode_html_list(cls, value: List[str]) -> List[str]:
+    def decode_html_list(cls, value: list[str]) -> list[str]:
         if isinstance(value, list):
             return [html.unescape(item) if isinstance(item, str) else item for item in value]
 
@@ -57,7 +58,7 @@ class TriviaResult(BaseModel):
             f" incorrect answers = {self.incorrect_answers})")
 
 class TriviaResponse(BaseModel):
-    results: List[TriviaResult]
+    results: list[TriviaResult]
 
     def __str__(self) -> str:
         return str(self.results)

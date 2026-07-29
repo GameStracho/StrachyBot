@@ -1,15 +1,15 @@
-from typing import List, Tuple
 import re
 
 from shared import console
+
 
 def __strip_header(text: str) -> str:
     """"Strips markdown characters (#) from a header"""
     return re.sub(r'^[#]* ', '', text)
 
-def parse_changelog() -> List[Tuple[str, str]]:
+def parse_changelog() -> list[tuple[str, str]]:
     """Parses sections of the newest version in CHANGELOG.md into list of pairs - section names and contents."""
-    sections: List[Tuple[str, str]] = []
+    sections: list[tuple[str, str]] = []
     console.log_debug("utils: Parsing 'CHANGELOG.md' file...")
 
     with open("CHANGELOG.md", "r") as file:

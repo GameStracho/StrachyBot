@@ -57,6 +57,7 @@ Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe* built with **Pyt
     ```bash
     pip install --upgrade pip
     pip install -r requirements.txt
+    pip install -r requirements-dev.txt
     ```
 5. (Optional) *VS Code Configuration:* Ensure your python interpreter is set to the virtual environment. Press `Ctrl+Shift+P` (or `Cmd+Shift+P`), search for **Python: Select Interpreter**, and choose the one inside `./venv/bin/python`.
 6. Run docker services (database and adminer)

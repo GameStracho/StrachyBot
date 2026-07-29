@@ -1,8 +1,10 @@
 from enum import Enum as PyEnum
-from sqlalchemy import BigInteger, ForeignKey, String, Enum
+
+from sqlalchemy import BigInteger, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.database import Base
+
 
 class ETriviaCategory(PyEnum):
     ANY = "Any"
@@ -28,7 +30,7 @@ class ETriviaCategory(PyEnum):
     VEHICLES = "Vehicles"
     COMICS = "Comics"
     GADGETS = "Gadgets"
-    ANIME_AND_MANGA = "Anime & Manga"
+    ANIME_AND_MANGA = "Japanese Anime & Manga"
     CARTOON_AND_ANIMATION = "Cartoon & Animations"
 
     def __str__(self) -> str:

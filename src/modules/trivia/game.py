@@ -1,14 +1,14 @@
-from typing import List
+from shared import helpers, types
 
-from shared import helpers
 from .models import ETriviaCategory, ETriviaDifficulty
 from .response import TriviaResponse
 
-class TriviaGame():
+
+class TriviaGame:
     match_id: int
     _player_id: int
     _question: str
-    _incorrect_answers: List[str]
+    _incorrect_answers: list[str]
     _correct_answer: str
     _is_over: bool
     _category: ETriviaCategory
@@ -42,7 +42,7 @@ class TriviaGame():
         response: TriviaResponse = await helpers.fetch_api(url, TriviaResponse)
 
         if not len(response.results):
-            raise Exception("No API response received.")
+            raise types.NoAPIResponseException()
 
         self._category = response.results[0].category
         self._difficulty = response.results[0].difficulty
@@ -67,7 +67,7 @@ class TriviaGame():
         return self._question
 
 
-    def get_incorrect_answers(self) -> List[str]:
+    def get_incorrect_answers(self) -> list[str]:
         return self._incorrect_answers
 
 

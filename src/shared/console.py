@@ -1,12 +1,14 @@
-from typing import TextIO, Any
-from datetime import datetime
-from colorama import Fore, Style
 import sys
+from datetime import datetime, timezone
+from typing import Any, TextIO
+
+from colorama import Fore, Style
+
 
 def current_time() -> str:
     return (
         Fore.LIGHTBLACK_EX + Style.BRIGHT
-        + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + Style.RESET_ALL
+        + datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S") + Style.RESET_ALL
     )
 
 
@@ -32,6 +34,11 @@ def log_info(message: str) -> None:
 def log_error(message: str) -> None:
     """print ERROR message to stderr"""
     log("ERROR", Fore.RED, message, sys.stderr)
+
+
+def log_fail(message: str) -> None:
+    """print FAIL message to stderr"""
+    log("FAIL", Fore.LIGHTMAGENTA_EX, message, sys.stderr)
 
 
 def log_warning(message: str) -> None:

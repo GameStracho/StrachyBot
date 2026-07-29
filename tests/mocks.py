@@ -1,30 +1,32 @@
-from __future__ import annotations 
+from __future__ import annotations
 
-from typing import Any, List, Dict, Tuple
-from types import SimpleNamespace
+from types import SimpleNamespace, TracebackType
+from typing import Any
 from unittest.mock import AsyncMock
+
 import discord
 
-from shared import models, bot
+from shared import bot, models
+
 
 class DummyStrachyBot(bot.StrachyBot):
     pass
 
-class DummyConnection():
+class DummyConnection:
     async def run_sync(self, fn: Any, *arg: Any, **kw: Any) -> Any:
         return None
 
 
-class DummyTransaction():
+class DummyTransaction:
     async def __aenter__(self) -> DummyConnection:
         return DummyConnection()
 
 
-    async def __aexit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+    async def __aexit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None) -> bool:
         return False
 
 
-class DummyContextManager():
+class DummyContextManager:
     def __init__(self, session: DummySession) -> None:
         self.session = session
 
@@ -33,11 +35,11 @@ class DummyContextManager():
         return self.session
 
 
-    async def __aexit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+    async def __aexit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None) -> bool:
         return False
 
 
-class DummyResult():
+class DummyResult:
     def __init__(self, value: Any) -> None:
         self._value = value
 
@@ -46,10 +48,10 @@ class DummyResult():
         return self._value
 
 
-class DummySession():
+class DummySession:
     def __init__(self, match: models.Match | None = None) -> None:
         self.match = match
-        self.added: List[Any] = []
+        self.added: list[Any] = []
         self.flushed = False
         self.executed = False
 
@@ -74,10 +76,10 @@ class DummySession():
         return DummyResult(self.match)
 
 
-class DummyResponse():
+class DummyResponse:
     def __init__(self) -> None:
-        self.edit_calls: List[Dict[str, Any]] = []
-        self.send_calls: List[Tuple[Any, Dict[str, Any]]] = []
+        self.edit_calls: list[dict[str, Any]] = []
+        self.send_calls: list[tuple[Any, dict[str, Any]]] = []
         self.defer = AsyncMock()
 
 
@@ -102,7 +104,7 @@ class DummyInteraction(discord.Interaction):
         self.response = SimpleNamespace(defer=AsyncMock(), send_message=AsyncMock(), edit_message=AsyncMock())
         self.followup = SimpleNamespace(send=AsyncMock())
         self.original_response_message = None
-        self._followup_sent: Dict[str, Any] | None = None
+        self._followup_sent: dict[str, Any] | None = None
 
 
     @property

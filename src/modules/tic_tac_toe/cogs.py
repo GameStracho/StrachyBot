@@ -1,29 +1,64 @@
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 
-from modules.tic_tac_toe import logic
-from shared.bot import StrachyBot
+from shared import bot, console, helpers, messages, ui
+
+from .game import TicTacToeGame
+from .repository import create_match
+from .ui import PLAYER_COLOR, TicTacToeView, get_player_emojis
+
 
 class TicCog(commands.Cog):
-    def __init__(self, bot: StrachyBot) -> None:
+    def __init__(self, bot: bot.StrachyBot) -> None:
         self.bot = bot
 
+
     @app_commands.command(
-        name="tic_tac_toe", description="Challenge someone in Tic-Tac-Toe")
+        name="tic-tac-toe", description="Challenge someone in a 1v1 Tic-Tac-Toe match")
     @app_commands.choices(grid_size=[
         discord.app_commands.Choice(name="3x3", value=3),
         discord.app_commands.Choice(name="4x4", value=4),
         discord.app_commands.Choice(name="5x5", value=5)
     ])
-    async def tic_play(
-        self, interaction: discord.Interaction, opponent: discord.User,
-        grid_size: app_commands.Choice[int]):
-        user_id: int = interaction.user.id
-        mention: str = self.bot.user.mention if self.bot.user is not None else ""
-        if user_id == opponent.id:
-            await interaction.response.send_message(
-                ephemeral=True,
-                content=f"To play singleplayer choose {mention} as your opponent. - Coming soon")
-        else:
-            await logic.start(interaction, opponent, grid_size.value)
+    async def tic_tac_toe(self, interaction: discord.Interaction, opponent: discord.User,
+                          grid_size: app_commands.Choice[int]) -> None:
+        try:
+            console.log_debug(f"/tic-tac-toe: Command used by user {interaction.user.display_name} ({interaction.user.id})")
+
+            player: discord.User
+
+            if isinstance(interaction.user, discord.User):
+                player = interaction.user
+            else:
+                temp_player: discord.User | None = await self.bot.fetch_user(interaction.user.id)
+                assert temp_player
+                player = temp_player
+
+            game: TicTacToeGame = TicTacToeGame(player=player, opponent=opponent, grid_size=grid_size.value)
+
+            match_id: int | None = await helpers.execute_db_operation(
+                target=self.bot, db_func=create_match,
+                player_id=game.get_player().id, opponent_id=game.get_opponent().id, grid_size=game.get_grid_size()
+            )
+
+            if match_id:
+                game.match_id = match_id
+
+            view: TicTacToeView = TicTacToeView(game=game, timeout=60.0)
+            player_emoji, opponent_emoji = get_player_emojis()
+            embed = discord.Embed(color=PLAYER_COLOR, title="Tic-Tac-Toe")
+
+            embed.add_field(name="Players", value=f"{player_emoji} {game.get_player().mention}\n{opponent_emoji} {game.get_opponent().mention}", inline=False)
+            embed.add_field(name="Status", value=f"It's {player_emoji} {game.get_player().mention}'s turn.", inline=False)
+            embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=view), inline=False)
+
+            icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
+            embed.set_thumbnail(url=icon_url)
+
+            console.log_info(f"/tic-tac-toe: User {interaction.user.display_name} ({interaction.user.id}) started a new {game}.")
+            # CRITICAL: Save the sent message reference to the view so the timeout handler can edit it!
+            await interaction.response.send_message(embed=embed, view=view, file=icon)
+            view.message = await interaction.original_response()
+        except Exception:
+            await messages.handle_error(command="/tic-tac-toe", interaction=interaction, use_followup=False)

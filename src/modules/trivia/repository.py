@@ -1,9 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from shared.models import Match, EMatchStatus
-import shared.console as console
-from .models import TriviaMatch, ETriviaCategory, ETriviaDifficulty
+from shared import console
+from shared.models import EMatchStatus, Match
+
+from .models import ETriviaCategory, ETriviaDifficulty, TriviaMatch
+
 
 async def create_match(
         session: AsyncSession, player_id: int, category: ETriviaCategory, difficulty: ETriviaDifficulty,
@@ -14,10 +16,10 @@ async def create_match(
     Returns id of the created match.
     """
 
-    console.log_debug((
+    console.log_debug(
         f"trivia: Creating a new match (player_id = {player_id}, category = {category}, difficulty = {difficulty}, "
         f"question = {question}, correct_answer = {correct_answer})..."
-    ))
+    )
 
     match_id: int = 0
 
@@ -51,7 +53,7 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
     Returns true on success.
     """
     if status == EMatchStatus.PENDING:
-        console.log_warning(f"trivia: Cannot update match status {status}.")
+        console.log_warning(f"trivia: Cannot update match status to {status}.")
         return False
 
     console.log_debug(f"trivia: Updating match ({match_id}) with status ({status})...")

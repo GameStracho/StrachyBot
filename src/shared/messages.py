@@ -5,6 +5,7 @@ from discord import Color
 
 from shared import console
 
+
 async def handle_error(command: str, interaction: discord.Interaction, use_followup: bool = False) -> None:
     """
     Print error message with details to console and send generic message to user.

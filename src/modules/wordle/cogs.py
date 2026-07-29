@@ -1,9 +1,10 @@
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 
 from modules.wordle import logic
 from shared.bot import StrachyBot
+
 
 class WordleCog(commands.Cog):
     def __init__(self, bot: StrachyBot) -> None:
@@ -11,11 +12,11 @@ class WordleCog(commands.Cog):
 
     @app_commands.command(
         name="wordle_play", description="Try to guess a word in 6 tries.")
-    async def wordle_play(self, interaction: discord.Interaction):
+    async def wordle_play(self, interaction: discord.Interaction) -> None:
         await logic.start(interaction)
 
     @app_commands.command(name="wordle_guess", description="Guess a word in Wordle.")
-    async def wordle_guess(self, interaction: discord.Interaction, word: str):
+    async def wordle_guess(self, interaction: discord.Interaction, word: str) -> None:
         if logic.is_playing(interaction.user.id):
             await logic.guess(word, interaction)
         else:

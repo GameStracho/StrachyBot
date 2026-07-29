@@ -1,2 +1,11 @@
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.ruff]
+exclude = [
+    "src/modules/google.py",
+    "src/modules/stats.py"
+]
+lint.ignore = [
+    "BLE001", # Do not catch blind exception: `Exception`
+]

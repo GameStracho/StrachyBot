@@ -1,7 +1,6 @@
 import json
 import random
 import re
-from typing import Dict, List
 
 import discord
 from discord import Color
@@ -9,9 +8,8 @@ from discord import Color
 from modules import stats
 from shared import console
 
-
-games: Dict[int, dict] = {}
-words: List[str] = []
+games: dict[int, dict] = {}
+words: list[str] = []
 emojis: dict = {}
 
 with open("./src/wordle-words.txt", "r", encoding="utf-8") as file:
@@ -47,10 +45,10 @@ async def start(interaction: discord.Interaction) -> None:
     }
     games[user.id] = game_info
 
-    console.log_info((
+    console.log_info(
         "WORDLE"
         f"{user.display_name} has started a new game. "
-        f"The word is: {searched_word}."))
+        f"The word is: {searched_word}.")
 
     stats.edit(user, "wordle", "games", 1)
     await interaction.response.send_message(file=icon, embed=embed)
