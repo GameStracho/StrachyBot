@@ -1,4 +1,4 @@
-## [1.2] Tic-Tac-Toe 2.0 - 2026-07-29
+## [1.2] Tic-Tac-Toe 2.0 - 2026-07-30
 
 ### Added
 - Auto-play feature for `Tic-Tac-Toe` mini-game allowing players to play against Discord bots
@@ -6,6 +6,9 @@
 - Shared types (`Position`, `Vector`, `EDirection`) for grid-based mini-games
 - `FAIL` log level category in console logger
 - Development requirements file (`requirements-dev.txt`) and `ruff` linter configuration in `pyproject.toml`
+- Project Context & Developer Reference
+- Custom AI agent for creating automated tests
+- 21 *unit* and 3 *integration* tests for `tic_tac_toe` module
 
 ### Changed
 - Complete rewrite and modernization of `Tic-Tac-Toe` mini-game with database records and timeout handling
