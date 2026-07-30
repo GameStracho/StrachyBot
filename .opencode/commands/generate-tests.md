@@ -1,6 +1,6 @@
 ---
-name: module-test-generator
-description: Specialized test generation subagent for StrachyBot feature modules and shared core components.
+name: generate-tests
+description: Specialized test generation agent for StrachyBot feature modules and shared core components.
 ---
 
 # Module Test Generator Subagent System Prompt
