@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from types import SimpleNamespace, TracebackType
-from typing import Any
-from unittest.mock import AsyncMock
+from typing import Any, cast
+from unittest.mock import AsyncMock, MagicMock
 
 import discord
 
@@ -103,7 +103,7 @@ class DummyInteraction(discord.Interaction):
         self.user = SimpleNamespace(id=user_id, display_name=username)
         self.response = SimpleNamespace(defer=AsyncMock(), send_message=AsyncMock(), edit_message=AsyncMock())
         self.followup = SimpleNamespace(send=AsyncMock())
-        self.original_response_message = None
+        self.original_response_message: discord.Message | None = None
         self._followup_sent: dict[str, Any] | None = None
 
 
@@ -122,3 +122,16 @@ class DummyInteraction(discord.Interaction):
 
     async def original_response(self) -> Any:
         return self.original_response_message
+
+
+def create_dummy_user(user_id: int = 1, username: str = "Tester", is_bot: bool = False) -> discord.User:
+    user = MagicMock(spec=discord.User)
+    user.id = user_id
+    user.display_name = username
+    user.mention = f"<@{user_id}>"
+    user.bot = is_bot
+    return cast(discord.User, user)
+
+
+async def dummy_execute_db_operation(target: Any, db_func: Any, *args: Any, **kwargs: Any) -> Any:
+    return await db_func(None, *args, **kwargs)
