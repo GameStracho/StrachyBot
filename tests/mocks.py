@@ -133,5 +133,5 @@ def create_dummy_user(user_id: int = 1, username: str = "Tester", is_bot: bool =
     return cast(discord.User, user)
 
 
-async def execute_db_operation_mock(target: Any, db_func: Any, *args: Any, **kwargs: Any) -> Any:
-        return await db_func(None, *args, **kwargs)
+async def dummy_execute_db_operation(target: Any, db_func: Any, *args: Any, **kwargs: Any) -> Any:
+    return await db_func(None, *args, **kwargs)
