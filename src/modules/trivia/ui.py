@@ -2,7 +2,7 @@ import random
 
 import discord
 
-from shared import console, emojis, helpers, messages, models, ui
+from shared import console, helpers, messages, models, ui
 
 from .game import TriviaGame
 from .repository import update_match
@@ -27,7 +27,7 @@ class TriviaView(discord.ui.View):
         for i, option in enumerate(options):
             label, is_correct = option
             self.add_item(TriviaButton(
-                game_id=self._game.match_id,label=label, is_correct=is_correct, emoji=emojis.EMOJIS[chr(ord("a") + i)], row=i))
+                game_id=self._game.match_id,label=label, is_correct=is_correct, emoji=ui.EMOJIS[chr(ord("a") + i)], row=i))
 
         console.log_debug(f"/trivia: New TriviaView created for game {self._game.match_id} with {timeout}s timeout.")
 
