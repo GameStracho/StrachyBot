@@ -3,10 +3,11 @@ from datetime import date, datetime, timezone
 
 import discord
 
+WHITE_COLOR: discord.Color = discord.Color.from_rgb(255, 255, 255)
+BROWN_COLOR: discord.Color = discord.Color.from_rgb(119, 56, 22)
+
 TIMEOUT_COLOR: discord.Color = discord.Color.darker_grey()
 DRAW_COLOR: discord.Color = discord.Color.light_grey()
-PLAYER_COLOR: discord.Color = discord.Color.purple()
-OPPONENT_COLOR: discord.Color = discord.Color.orange()
 
 EMOJIS: dict[str, str] = {
     "a": "🇦",
@@ -72,6 +73,49 @@ def _calculate_easter_sunday(year: int) -> date:
     return datetime(year, month, day, tzinfo=timezone.utc).date()
 
 
+def get_player_colors(date: datetime | None = None) -> tuple[discord.Color, discord.Color]:
+    """
+        Returns player's and opponent's colors based on selected date.
+    """
+    if not date:
+            date = datetime.now(timezone.utc)
+    
+    # New Year
+    if (date.day == 1 and date.month == 1) or (date.day == 31 and date.month == 12):
+        return (discord.Color.red(), discord.Color.blue())
+
+    # Valentine's day
+    if date.day == 14 and date.month == 2:
+        return (discord.Color.purple(), discord.Color.orange())
+
+    # April fools
+    if date.day == 1 and date.month == 4:
+        return (discord.Color.yellow(), WHITE_COLOR)
+
+    # Easter
+    if abs((date.date() - _calculate_easter_sunday(date.year)).days) <= 7:
+        return (WHITE_COLOR, discord.Color.yellow())
+
+    # Star Wars day
+    if date.day == 4 and date.month == 5:
+        return (discord.Color.blue(), discord.Color.red())
+
+    # Summer (June, July, August)
+    if date.month in (6, 7, 8):
+        return (discord.Color.yellow(), discord.Color.blue())
+        
+    # Halloween (October)
+    if date.month == 10:
+        return (discord.Color.orange(), BROWN_COLOR)
+
+    # Christmas Season (December)
+    if date.month == 12:
+        return (discord.Color.red(), discord.Color.green())
+
+    # Default
+    return (discord.Color.purple(), discord.Color.orange())
+
+
 def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
     """
     Returns player's and opponent's emojis based on selected date.
@@ -81,7 +125,7 @@ def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
 
     # New Year
     if (date.day == 1 and date.month == 1) or (date.day == 31 and date.month == 12):
-        return ("🎇", "🎆")
+        return ("🎉", "🎆")
 
     # Valentine's day
     if date.day == 14 and date.month == 2:
@@ -89,11 +133,15 @@ def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
 
     # April fools
     if date.day == 1 and date.month == 4:
-        return ("🤡", "🤪")
+        return ("🤪", "🤡")
 
     # Easter
     if abs((date.date() - _calculate_easter_sunday(date.year)).days) <= 7:
         return ("🐰", "🐣")
+
+    # Star Wars day
+    if date.day == 4 and date.month == 5:
+        return ("🩵", "❤️")
 
     # Summer (June, July, August)
     if date.month in (6, 7, 8):
@@ -101,11 +149,11 @@ def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
         
     # Halloween (October)
     if date.month == 10:
-        return ("🎃", "👻")
+        return ("👻", "🦉")
 
     # Christmas Season (December)
     if date.month == 12:
-        return ("⛄", "🎄")
+        return ("🎁", "🎄")
 
     # Default
     return ("🟣", "🟠")

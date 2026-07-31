@@ -143,6 +143,7 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
                             break
 
             status_message: str = ""
+            player_color, opponent_color = ui.get_player_colors()
 
             if game.has_game_ended():
                 winner: discord.User | None = game.get_winner()
@@ -156,11 +157,11 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
                     status_message = "Game ended in draw. 🤝"
                     status = models.EMatchStatus.DRAW
                 elif winner == game.get_player():
-                    embed.color = ui.PLAYER_COLOR
+                    embed.color = player_color
                     status_message = f"Player {player_emoji} {game.get_player().mention} won. 🎉"
                     status = models.EMatchStatus.WIN
                 else:
-                    embed.color = ui.OPPONENT_COLOR
+                    embed.color = opponent_color
                     status_message = f"Player {opponent_emoji} {game.get_opponent().mention} won. 🎉"
                     status = models.EMatchStatus.LOSS
 
@@ -170,10 +171,10 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
                 )
             else:
                 if game.is_players_turn():
-                    embed.color = ui.PLAYER_COLOR
+                    embed.color = player_color
                     status_message = f"It's {player_emoji} {game.get_player().mention}'s turn. ⏳"
                 else:
-                    embed.color = ui.OPPONENT_COLOR
+                    embed.color = opponent_color
                     status_message = f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. ⏳"
 
                 ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view))

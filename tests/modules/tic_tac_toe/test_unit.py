@@ -405,8 +405,9 @@ async def test_button_callback_game_ended_win(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setattr("modules.tic_tac_toe.ui.helpers.execute_db_operation", mocks.dummy_execute_db_operation)
 
     await win_button.callback(interaction)
+    player_color, _ = ui.get_player_colors()
 
     assert game.has_game_ended() is True
     assert game.get_winner() == player
-    assert embed.color == ui.PLAYER_COLOR
+    assert embed.color == player_color
     assert update_match_mock.called
