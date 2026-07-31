@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 
 import discord
 
@@ -7,23 +6,6 @@ from shared.types import Position
 
 from .game import TicTacToeGame
 from .repository import update_match
-
-PLAYER_COLOR: discord.Color = discord.Color.purple()
-OPPONENT_COLOR: discord.Color = discord.Color.orange()
-
-
-def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
-    """
-    Returns player's and opponent's emojis based on selected date.
-    """
-    if not date:
-        date = datetime.now(timezone.utc)
-
-    # Valentine's day
-    if date.day == 14 and date.month == 2:
-        return ("💜", "🧡")
-
-    return ("🟣", "🟠")
 
 
 class TicTacToeView(discord.ui.View):
@@ -139,7 +121,7 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
 
             embed: discord.Embed = message.embeds[0]
 
-            player_emoji, opponent_emoji = get_player_emojis()
+            player_emoji, opponent_emoji = ui.get_player_emojis()
             self.label = opponent_emoji if game.is_players_turn() else player_emoji
             self.disabled = True
 
@@ -174,11 +156,11 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
                     status_message = "Game ended in draw. 🤝"
                     status = models.EMatchStatus.DRAW
                 elif winner == game.get_player():
-                    embed.color = PLAYER_COLOR
+                    embed.color = ui.PLAYER_COLOR
                     status_message = f"Player {player_emoji} {game.get_player().mention} won. 🎉"
                     status = models.EMatchStatus.WIN
                 else:
-                    embed.color = OPPONENT_COLOR
+                    embed.color = ui.OPPONENT_COLOR
                     status_message = f"Player {opponent_emoji} {game.get_opponent().mention} won. 🎉"
                     status = models.EMatchStatus.LOSS
 
@@ -188,10 +170,10 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
                 )
             else:
                 if game.is_players_turn():
-                    embed.color = PLAYER_COLOR
+                    embed.color = ui.PLAYER_COLOR
                     status_message = f"It's {player_emoji} {game.get_player().mention}'s turn. ⏳"
                 else:
-                    embed.color = OPPONENT_COLOR
+                    embed.color = ui.OPPONENT_COLOR
                     status_message = f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. ⏳"
 
                 ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view))

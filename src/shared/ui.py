@@ -1,9 +1,12 @@
 import time
+from datetime import datetime, timezone
 
 import discord
 
 TIMEOUT_COLOR: discord.Color = discord.Color.darker_grey()
 DRAW_COLOR: discord.Color = discord.Color.light_grey()
+PLAYER_COLOR: discord.Color = discord.Color.purple()
+OPPONENT_COLOR: discord.Color = discord.Color.orange()
 
 EMOJIS: dict[str, str] = {
     "a": "🇦",
@@ -43,6 +46,20 @@ EMOJIS: dict[str, str] = {
     "8": "8️⃣",
     "9": "9️⃣"
 }
+
+
+def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
+    """
+    Returns player's and opponent's emojis based on selected date.
+    """
+    if not date:
+        date = datetime.now(timezone.utc)
+
+    # Valentine's day
+    if date.day == 14 and date.month == 2:
+        return ("💜", "🧡")
+
+    return ("🟣", "🟠")
 
 
 def update_embed_field(embed: discord.Embed, name: str, value: str) -> None:

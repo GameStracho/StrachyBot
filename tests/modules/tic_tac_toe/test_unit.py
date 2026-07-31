@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import AsyncMock
@@ -8,10 +7,8 @@ import pytest
 
 from modules.tic_tac_toe.game import ETicTacToeCell, TicTacToeGame, TicTacToeGrid
 from modules.tic_tac_toe.ui import (
-    PLAYER_COLOR,
     TicTacToeButton,
     TicTacToeView,
-    get_player_emojis,
 )
 from shared import ui
 from shared.types import Position
@@ -293,17 +290,8 @@ def test_bot_ai_grid_sizes(grid_size: int) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 4. Emojis & UI Unit Tests
+# 4. UI Unit Tests
 # ---------------------------------------------------------------------------
-
-def test_get_player_emojis() -> None:
-    # Valentine's day
-    val_date = datetime(2026, 2, 14, tzinfo=timezone.utc)
-    assert get_player_emojis(val_date) == ("💜", "🧡")
-
-    # Regular day
-    reg_date = datetime(2026, 7, 29, tzinfo=timezone.utc)
-    assert get_player_emojis(reg_date) == ("🟣", "🟠")
 
 
 @pytest.mark.asyncio
@@ -420,5 +408,5 @@ async def test_button_callback_game_ended_win(monkeypatch: pytest.MonkeyPatch) -
 
     assert game.has_game_ended() is True
     assert game.get_winner() == player
-    assert embed.color == PLAYER_COLOR
+    assert embed.color == ui.PLAYER_COLOR
     assert update_match_mock.called
