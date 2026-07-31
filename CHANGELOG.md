@@ -1,3 +1,15 @@
+## [1.3] Wordle 2.0 - 2026-07-31
+
+### Added
+- Expanded the list of seasonal player emojis and colors
+
+### Changed
+- Complete rewrite and modernization of `Wordle` mini-game with database records and timeout handling
+- Combined `/wordle_play` and `/wordle_guess` commands to a single command `/wordle`
+- Moved all used emojis to `shared/ui.py` 
+
+---
+
 ## [1.2] Tic-Tac-Toe 2.0 - 2026-07-30
 
 ### Added
