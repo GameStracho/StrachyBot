@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import discord
 
@@ -47,6 +47,30 @@ EMOJIS: dict[str, str] = {
     "9": "9️⃣"
 }
 
+def _calculate_easter_sunday(year: int) -> date:
+    """
+    Calculates the month and day of Easter Sunday for a given year 
+    using the Anonymous Gregorian Algorithm (Meeus/Jones/Butcher).
+    Returns date of Easter Sunday.
+    """
+    a = year % 19
+    b = year // 100
+    c = year % 100
+    d = b // 4
+    e = b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i = c // 4
+    k = c % 4
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+
+    month = (h + l - 7 * m + 114) // 31
+    day = ((h + l - 7 * m + 114) % 31) + 1
+
+    return datetime(year, month, day, tzinfo=timezone.utc).date()
+
 
 def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
     """
@@ -55,10 +79,35 @@ def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
     if not date:
         date = datetime.now(timezone.utc)
 
+    # New Year
+    if (date.day == 1 and date.month == 1) or (date.day == 31 and date.month == 12):
+        return ("🎇", "🎆")
+
     # Valentine's day
     if date.day == 14 and date.month == 2:
         return ("💜", "🧡")
 
+    # April fools
+    if date.day == 1 and date.month == 4:
+        return ("🤡", "🤪")
+
+    # Easter
+    if abs((date.date() - _calculate_easter_sunday(date.year)).days) <= 7:
+        return ("🐰", "🐣")
+
+    # Summer (June, July, August)
+    if date.month in (6, 7, 8):
+        return ("☀️", "🌊")
+        
+    # Halloween (October)
+    if date.month == 10:
+        return ("🎃", "👻")
+
+    # Christmas Season (December)
+    if date.month == 12:
+        return ("⛄", "🎄")
+
+    # Default
     return ("🟣", "🟠")
 
 
