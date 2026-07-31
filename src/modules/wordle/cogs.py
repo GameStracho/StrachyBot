@@ -3,11 +3,13 @@ from discord import app_commands
 from discord.ext import commands
 
 from modules.wordle import logic
-from shared.bot import StrachyBot
+from shared import bot, console, messages
+
+from .game import WordleGame
 
 
 class WordleCog(commands.Cog):
-    def __init__(self, bot: StrachyBot) -> None:
+    def __init__(self, bot: bot.StrachyBot) -> None:
         self.bot = bot
 
     @app_commands.command(
@@ -22,3 +24,13 @@ class WordleCog(commands.Cog):
         else:
             await interaction.response.send_message(
                 ephemeral=True, content="You have to start a new game first.")
+
+    @app_commands.command(name="wordle", description="Try to guess a word in 6 tries.")
+    async def wordle(self, interaction: discord.Interaction) -> None:
+        try:
+            console.log_debug(f"/wordle: Command used by user {interaction.user.display_name} ({interaction.user.id})")
+
+            _game: WordleGame = WordleGame(player_id=interaction.user.id)
+
+        except Exception:
+            await messages.handle_error(command="/wordle", interaction=interaction, use_followup=False)
