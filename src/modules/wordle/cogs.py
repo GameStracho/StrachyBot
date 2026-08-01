@@ -26,7 +26,7 @@ class WordleCog(commands.Cog):
             await interaction.response.send_message(
                 ephemeral=True, content="You have to start a new game first.")
 
-    @app_commands.command(name="wordle", description="Try to guess a word in 6 tries.")
+    @app_commands.command(name="wordle", description="Try to guess a 5-letter word in 6 tries.")
     async def wordle(self, interaction: discord.Interaction) -> None:
         try:
             console.log_debug(f"/wordle: Command used by user {interaction.user.display_name} ({interaction.user.id})")
@@ -34,15 +34,15 @@ class WordleCog(commands.Cog):
             game: WordleGame = WordleGame(player_id=interaction.user.id)
 
             view: WordleView = WordleView(game=game, timeout=180.0)
-            embed: discord.Embed = discord.Embed(title="Wordle", color=discord.Color.yellow())
+            embed: discord.Embed = discord.Embed(title="Wordle", color=discord.Color.blue())
 
             empty_word: str = ui.EMOJIS["wordle_empty_letter"]
 
-            for i in range(5):
+            for i in range(4):
                 empty_word += " " + ui.EMOJIS["wordle_empty_letter"]
 
             for i in range(6):
-                embed.add_field(name="Guess " + str(i + 1), value=empty_word, inline=False)
+                embed.add_field(name="Guess #" + str(i + 1), value=empty_word, inline=False)
 
             icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
             embed.set_thumbnail(url=icon_url)

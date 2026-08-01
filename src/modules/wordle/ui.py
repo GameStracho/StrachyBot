@@ -13,13 +13,10 @@ class WordleView(discord.ui.View):
         super().__init__(timeout=timeout)
 
         self._game = game
-        self.add_item(WordleGuessButton(self._game.match_id))
-
         console.log_debug(f"/trivia: New WordleView created for game {self._game.match_id} with {timeout}s timeout.")
 
     def get_game(self) -> WordleGame:
         return self._game
-
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
@@ -36,17 +33,62 @@ class WordleView(discord.ui.View):
             await messages.handle_error(command="/wordle", interaction=interaction, use_followup=False)
             return False
 
-
     async def on_timeout(self) -> None:
         if self._game.is_over() or self.message is None:
             return
 
+    @discord.ui.button(label="Enter Guess", style=discord.ButtonStyle.primary, emoji=ui.EMOJIS["wordle_guess_button"])
+    async def enter_guess_button(self, interaction: discord.Interaction, button: discord.ui.Button["WordleView"]) -> None:
+        try:
+            console.log_debug(
+                f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
+                f"pressed the 'Enter Guess' button for game {self._game.match_id}"
+            )
 
-class WordleGuessButton(discord.ui.Button["WordleView"]):
-    def __init__(self, game_id: int) -> None:
-        super().__init__(label="Enter Guess", style=discord.ButtonStyle.primary, emoji=ui.EMOJIS["wordle_guess_button"])
+            modal: WordleGuessModal = WordleGuessModal(parent_view=self)
+            await interaction.response.send_modal(modal)
 
-        console.log_debug(f"/trivia: New WordleGuessButton created for game {game_id}.")
+            console.log_info(
+                f"/wordle: Modal for game {self._game.match_id} "
+                f"sent to User {interaction.user.display_name} ({interaction.user.id}) "
+            )
+        except Exception:
+            await messages.handle_error(command="/wordle", interaction=interaction, use_followup=False)
 
-    async def callback(self, interaction: discord.Interaction) -> None:
-        pass
+
+class WordleGuessModal(discord.ui.Modal):
+    parent_view: WordleView
+
+    def __init__(self, parent_view: WordleView):
+        super().__init__(title="Wordle Guess")
+
+        self.parent_view = parent_view
+        console.log_debug(f"/wordle: New WordleGuessModal created for game {self.parent_view.get_game().match_id}.")
+
+    guess_input: discord.ui.TextInput["WordleGuessModal"] = discord.ui.TextInput(
+        label="Guess",
+        style=discord.TextStyle.short,
+        placeholder="Enter a 5-letter word",
+        min_length=5,
+        max_length=5,
+        required=True
+    )
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        try:
+            console.log_info(
+                f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
+                f"guessed '{self.guess_input.value}' for game {self.parent_view.get_game().match_id}"
+            )
+
+            message: discord.Message | None = interaction.message
+            assert message is not None
+
+            embed: discord.Embed = message.embeds[0]
+
+            # hide a second icon appearing above the embed
+            embed.set_thumbnail(url="attachment://icon.png")
+
+            await interaction.response.edit_message(embed=embed, view=self.parent_view)
+        except Exception:
+            await messages.handle_error(command="/wordle", interaction=interaction, use_followup=False)

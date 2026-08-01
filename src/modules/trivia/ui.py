@@ -85,7 +85,7 @@ class TriviaView(discord.ui.View):
         await self.message.edit(embed=embed, view=self)
 
 
-class TriviaButton(discord.ui.Button["TriviaView"]):
+class TriviaButton(discord.ui.Button[TriviaView]):
     _is_correct: bool
 
     def __init__(

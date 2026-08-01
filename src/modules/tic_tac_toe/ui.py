@@ -85,7 +85,7 @@ class TicTacToeView(discord.ui.View):
         await self.message.edit(embed=embed, view=self)
 
 
-class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
+class TicTacToeButton(discord.ui.Button[TicTacToeView]):
     _position: Position
 
     def __init__(self, game_id: int, position: Position) -> None:
