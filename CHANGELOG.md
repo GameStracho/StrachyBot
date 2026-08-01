@@ -1,7 +1,8 @@
-## [1.3] Wordle 2.0 - 2026-07-31
+## [1.3] Wordle 2.0 - 2026-08-02
 
 ### Added
 - Expanded the list of seasonal player emojis and colors
+- Title and author to `Trivia` mini-game
 
 ### Changed
 - Complete rewrite and modernization of `Wordle` mini-game with database records and timeout handling
