@@ -37,6 +37,7 @@ class TriviaCog(commands.Cog):
 
             view: TriviaView = TriviaView(game=game, timeout=15.0)
             embed: discord.Embed = discord.Embed(title="Trivia", color=discord.Color.dark_gold())
+            embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar)
 
             embed.add_field(name="Category", value=game.get_category(), inline=True)
             embed.add_field(name="Difficulty", value=game.get_difficulty(), inline=True)

@@ -35,6 +35,7 @@ class WordleCog(commands.Cog):
 
             view: WordleView = WordleView(game=game, timeout=180.0)
             embed: discord.Embed = discord.Embed(title="Wordle", color=discord.Color.blue())
+            embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar)
 
             empty_word: str = ui.EMOJIS["wordle_empty_letter"]
 
