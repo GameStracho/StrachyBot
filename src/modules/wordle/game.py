@@ -76,7 +76,7 @@ class WordleGame:
     _dictionary: WordleDictionary
 
     def __init__(self, player_id: int):
-        self._match_id = -1
+        self.match_id = -1
         self._player_id = player_id
         self._guesses = []
         self._available_letters = set(string.ascii_lowercase)
@@ -84,6 +84,12 @@ class WordleGame:
         module_folder: str = re.sub(pattern=r"\/[^\/]*$", repl="/", string=__file__)
         self._dictionary = WordleDictionary(file_path=module_folder + "words.txt")
         self._secret_word = self._dictionary.get_random_word()
+
+
+    def __str__(self) -> str:
+        return (
+            f"Wordle game {self.match_id} for user {self._player_id} - {self._secret_word} (guesses: {self._guesses})"
+        )
 
 
     def get_player_id(self) -> int:
@@ -102,7 +108,7 @@ class WordleGame:
         return self._available_letters
 
 
-    def is_game_over(self) -> bool:
+    def is_over(self) -> bool:
         return len(self._guesses) == 6 or (len(self._guesses) > 0 and self._guesses[len(self._guesses) -1] == self._secret_word)
 
     def guess_word(self, guess: str) -> bool:

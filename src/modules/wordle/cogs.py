@@ -3,9 +3,10 @@ from discord import app_commands
 from discord.ext import commands
 
 from modules.wordle import logic
-from shared import bot, console, messages
+from shared import bot, console, helpers, messages, ui
 
 from .game import WordleGame
+from .ui import WordleView
 
 
 class WordleCog(commands.Cog):
@@ -30,7 +31,26 @@ class WordleCog(commands.Cog):
         try:
             console.log_debug(f"/wordle: Command used by user {interaction.user.display_name} ({interaction.user.id})")
 
-            _game: WordleGame = WordleGame(player_id=interaction.user.id)
+            game: WordleGame = WordleGame(player_id=interaction.user.id)
 
+            view: WordleView = WordleView(game=game, timeout=180.0)
+            embed: discord.Embed = discord.Embed(title="Wordle", color=discord.Color.yellow())
+
+            empty_word: str = ui.EMOJIS["wordle_empty_letter"]
+
+            for i in range(5):
+                empty_word += " " + ui.EMOJIS["wordle_empty_letter"]
+
+            for i in range(6):
+                embed.add_field(name="Guess " + str(i + 1), value=empty_word, inline=False)
+
+            icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
+            embed.set_thumbnail(url=icon_url)
+
+            console.log_info(f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) started a new {game}.")
+            
+            # CRITICAL: Save the sent message reference to the view so the timeout handler can edit it!
+            await interaction.response.send_message(embed=embed, view=view, file=icon)
+            view.message = await interaction.original_response()
         except Exception:
             await messages.handle_error(command="/wordle", interaction=interaction, use_followup=False)
