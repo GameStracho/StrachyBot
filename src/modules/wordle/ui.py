@@ -18,6 +18,12 @@ class WordleView(discord.ui.View):
     def get_game(self) -> WordleGame:
         return self._game
 
+    def disable_buttons(self) -> None:
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                child.disabled = True
+        console.log_debug(f"/wordle: Buttons disabled for game {self._game.match_id}.")
+
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
             if interaction.user.id != self._game.get_player_id():
@@ -115,7 +121,7 @@ class WordleGuessModal(discord.ui.Modal):
                 await interaction.response.edit_message(embed=embed, view=self._parent_view)
                 return
 
-            if not game.guess_word(guess=guess):
+            if game.was_previous_guess(word=guess):
                 console.log_info(
                     f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                     f"entered an already guesses word '{guess}'."
@@ -125,14 +131,30 @@ class WordleGuessModal(discord.ui.Modal):
                 await interaction.response.edit_message(embed=embed, view=self._parent_view)
                 return
 
+            game.add_guess(word=guess)
             console.log_info(
                 f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                 f"guessed '{self.guess_input.value}' for game {self._parent_view.get_game().match_id}."
             )
 
-            ui.update_embed_field(embed=embed, name="Status", value="Valid guess.")
-
             ui.update_embed_field(embed=embed, name=f"Guess #{game.get_guesses_count()}", value=self._get_uncovered_guess())
+
+            if not game.is_over():
+                ui.update_embed_field(embed=embed, name="Status", value="Valid guess.")
+            elif guess == game.get_secret_word():
+                console.log_info(
+                    f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) won game {self._parent_view.get_game().match_id}."
+                )
+                ui.update_embed_field(embed=embed, name="Status", value="You won! " + ui.EMOJIS["game_win"])
+                embed.color = discord.Color.green()
+                self._parent_view.disable_buttons()
+            else:
+                console.log_info(
+                    f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) lost game {self._parent_view.get_game().match_id}."
+                )
+                ui.update_embed_field(embed=embed, name="Status", value=f"You lost! {ui.EMOJIS["game_loss"]} The secret word was '{game.get_secret_word()}'.")
+                embed.color = discord.Color.red()
+                self._parent_view.disable_buttons()
 
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
         except Exception:

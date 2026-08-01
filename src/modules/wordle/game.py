@@ -115,11 +115,8 @@ class WordleGame:
     def is_valid_word(self, word: str) -> bool:
         return self._dictionary.is_valid_word(word)
 
-    def guess_word(self, guess: str) -> bool:
-        if guess in self._guesses:
-            console.log_debug(f"/wordle: Word '{guess}' already guessed in game {self.match_id}.")
-            return False
+    def was_previous_guess(self, word: str) -> bool:
+        return word in self._guesses
 
-        self._guesses.append(guess)
-        console.log_debug(f"/wordle: Valid guess '{guess}' for game {self.match_id}.")
-        return True
+    def add_guess(self, word: str) -> None:
+        self._guesses.append(word)
