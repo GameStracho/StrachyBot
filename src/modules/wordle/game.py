@@ -47,10 +47,11 @@ class WordleDictionary:
 
         with open(file=self._file_path, mode="rb") as file:
             low: int = 0
-            high: int = self._file_size - 1
+            high: int = self._file_size
 
             while low <= high:
                 mid: int = (low + high) // 2
+                mid -= mid % self._line_size # ensure mid is pointing to a start of a line
                 file.seek(mid)
 
                 current_word: str = file.read(5).decode("utf-8").lower()
@@ -59,9 +60,9 @@ class WordleDictionary:
                     console.log_debug(f"/wordle: Word '{word}' is valid.")
                     return True
                 elif current_word < word:
-                    low = mid + 1
+                    low = mid + self._line_size
                 else:
-                    high = mid - 1
+                    high = mid - self._line_size
 
         console.log_debug(f"/wordle: Word '{word}' is invalid.")
         return False
@@ -110,6 +111,9 @@ class WordleGame:
 
     def is_over(self) -> bool:
         return len(self._guesses) == 6 or (len(self._guesses) > 0 and self._guesses[len(self._guesses) -1] == self._secret_word)
+
+    def is_valid_word(self, word: str) -> bool:
+        return self._dictionary.is_valid_word(word)
 
     def guess_word(self, guess: str) -> bool:
         if guess in self._guesses:

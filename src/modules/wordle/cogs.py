@@ -45,6 +45,8 @@ class WordleCog(commands.Cog):
             for i in range(6):
                 embed.add_field(name="Guess #" + str(i + 1), value=empty_word, inline=False)
 
+            embed.add_field(name="Status", value="Game started. You can start guessing.", inline=False)
+
             icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
             embed.set_thumbnail(url=icon_url)
 
