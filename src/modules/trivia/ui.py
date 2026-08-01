@@ -128,12 +128,12 @@ class TriviaButton(discord.ui.Button["TriviaView"]):
             if self._is_correct:
                 embed.color = discord.Color.green()
                 self.style = discord.ButtonStyle.green
-                self.emoji = "✔️"
+                self.emoji = ui.EMOJIS["trivia_correct_answer_selected"]
                 status = models.EMatchStatus.WIN
             else:
                 embed.color = discord.Color.red()
                 self.style = discord.ButtonStyle.red
-                self.emoji = "✖️"
+                self.emoji = ui.EMOJIS["trivia_wrong_answer_selected"]
                 status = models.EMatchStatus.LOSS
 
 
@@ -151,4 +151,4 @@ class TriviaButton(discord.ui.Button["TriviaView"]):
     def disable(self) -> None:
         """Disable the button and reveal whether the answer was correct or wrong."""
         self.disabled = True
-        self.emoji = "✅" if self._is_correct else "❌"
+        self.emoji = ui.EMOJIS["trivia_correct_answer"] if self._is_correct else ui.EMOJIS["trivia_wrong_answer"]

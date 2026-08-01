@@ -89,7 +89,7 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
     _position: Position
 
     def __init__(self, game_id: int, position: Position) -> None:
-        super().__init__(label="⬛", style=discord.ButtonStyle.secondary, row=position.y)
+        super().__init__(label=ui.EMOJIS["tic_empty_cell"], style=discord.ButtonStyle.secondary, row=position.y)
 
         self._position = position
 
@@ -154,15 +154,15 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
 
                 if not winner:
                     embed.color = ui.DRAW_COLOR
-                    status_message = "Game ended in draw. 🤝"
+                    status_message = "Game ended in draw. " + ui.EMOJIS["game_draw"]
                     status = models.EMatchStatus.DRAW
                 elif winner == game.get_player():
                     embed.color = player_color
-                    status_message = f"Player {player_emoji} {game.get_player().mention} won. 🎉"
+                    status_message = f"Player {player_emoji} {game.get_player().mention} won. " + ui.EMOJIS["game_win"]
                     status = models.EMatchStatus.WIN
                 else:
                     embed.color = opponent_color
-                    status_message = f"Player {opponent_emoji} {game.get_opponent().mention} won. 🎉"
+                    status_message = f"Player {opponent_emoji} {game.get_opponent().mention} won. " + ui.EMOJIS["game_win"]
                     status = models.EMatchStatus.LOSS
 
                 await helpers.execute_db_operation(
@@ -172,10 +172,10 @@ class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
             else:
                 if game.is_players_turn():
                     embed.color = player_color
-                    status_message = f"It's {player_emoji} {game.get_player().mention}'s turn. ⏳"
+                    status_message = f"It's {player_emoji} {game.get_player().mention}'s turn. " + ui.EMOJIS["game_turn"]
                 else:
                     embed.color = opponent_color
-                    status_message = f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. ⏳"
+                    status_message = f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. " + ui.EMOJIS["game_turn"]
 
                 ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view))
 

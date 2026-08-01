@@ -45,7 +45,15 @@ EMOJIS: dict[str, str] = {
     "6": "6️⃣",
     "7": "7️⃣",
     "8": "8️⃣",
-    "9": "9️⃣"
+    "9": "9️⃣",
+    "game_draw": "🤝",
+    "game_win": "🎉",
+    "game_turn": "⏳",
+    "trivia_correct_answer": "✅",
+    "trivia_wrong_answer": "❌",
+    "trivia_correct_answer_selected": "✔️",
+    "trivia_wrong_answer_selected": "✖️",
+    "tic_empty_cell": "⬛",
 }
 
 def _calculate_easter_sunday(year: int) -> date:
