@@ -1,13 +1,16 @@
-## [1.3] Wordle 2.0 - 2026-08-02
+## [1.3] Wordle 2.0 - 2026-08-07
 
 ### Added
 - Expanded the list of seasonal player emojis and colors
 - Title and author to `Trivia` mini-game
+- Author to `Tic-Tac-Toe` mini-game indicating who is currently on turn
+- Confirmable `Random Guess` button to `Wordle` mini-game
 
 ### Changed
 - Complete rewrite and modernization of `Wordle` mini-game with database records and timeout handling
 - Combined `/wordle_play` and `/wordle_guess` commands to a single command `/wordle`
-- Moved all used emojis to `shared/ui.py` 
+- Moved all used emojis to `shared/ui.py`
+- Updated `Wordle` mini-game icon to match the new style
 
 ---
 
