@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from modules.wordle import logic
-from shared import bot, console, helpers, messages, ui
+from shared import bot, console, messages
 
 from .game import WordleGame
 from .ui import WordleView
@@ -32,23 +32,8 @@ class WordleCog(commands.Cog):
             console.log_debug(f"/wordle: Command used by user {interaction.user.display_name} ({interaction.user.id})")
 
             game: WordleGame = WordleGame(player_id=interaction.user.id)
-
             view: WordleView = WordleView(game=game, timeout=180.0)
-            embed: discord.Embed = discord.Embed(title="Wordle", color=discord.Color.blue())
-            embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar)
-
-            empty_word: str = ui.EMOJIS["wordle_empty_letter"]
-
-            for i in range(4):
-                empty_word += " " + ui.EMOJIS["wordle_empty_letter"]
-
-            for i in range(6):
-                embed.add_field(name="Guess #" + str(i + 1), value=empty_word, inline=False)
-
-            embed.add_field(name="Status", value="Game started. You can start guessing.", inline=False)
-
-            icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
-            embed.set_thumbnail(url=icon_url)
+            embed, icon = view.build_embed(interaction.user)
 
             console.log_info(f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) started a new {game}.")
             

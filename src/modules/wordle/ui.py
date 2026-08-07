@@ -1,6 +1,6 @@
 import discord
 
-from shared import console, messages, ui
+from shared import console, helpers, messages, ui
 
 from .game import WordleGame
 
@@ -17,6 +17,25 @@ class WordleView(discord.ui.View):
 
     def get_game(self) -> WordleGame:
         return self._game
+
+    def build_embed(self, user: discord.User | discord.Member) -> tuple[discord.Embed, discord.File]:
+        embed: discord.Embed = discord.Embed(title="Wordle", color=discord.Color.blue())
+        embed.set_author(name=user.display_name, icon_url=user.display_avatar)
+
+        empty_word: str = ui.EMOJIS["wordle_empty_letter"]
+
+        for i in range(4):
+            empty_word += " " + ui.EMOJIS["wordle_empty_letter"]
+
+        for i in range(6):
+            embed.add_field(name="Guess #" + str(i + 1), value=empty_word, inline=False)
+
+        embed.add_field(name="Status", value="Game started. You can start guessing.", inline=False)
+
+        icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
+        embed.set_thumbnail(url=icon_url)
+
+        return (embed, icon)
 
     def disable_buttons(self) -> None:
         for child in self.children:
