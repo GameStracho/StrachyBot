@@ -238,5 +238,6 @@ class WordleGuessModal(discord.ui.Modal):
 
             self._parent_view.update_embed(embed=embed, user=interaction.user, default_status="Valid guess.")
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
+            self._parent_view.message = await interaction.original_response()
         except Exception:
             await messages.handle_error(command="/wordle", interaction=interaction, use_followup=False)
