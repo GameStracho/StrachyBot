@@ -56,6 +56,7 @@ EMOJIS: dict[str, str] = {
     "trivia_wrong_answer_selected": "✖️",
     "tic_empty_cell": "⬛",
     "wordle_guess_button": "✏️",
+    "wordle_random_button": "🎲",
     "wordle_empty_letter": "⬜",
     "wordle_correct_letter": "🟩",
     "wordle_misplaced_letter": "🟨",
@@ -195,3 +196,15 @@ def get_timeout_timestamp(view: discord.ui.View) -> str:
     timestamp: int = int(time.time() + view.timeout)
 
     return f"<t:{timestamp}:R> ⏱️"
+
+def extract_embed(interaction: discord.Interaction, index: int, hide_icon: bool) -> discord.Embed:
+    message: discord.Message | None = interaction.message
+    assert message is not None
+    
+    embed: discord.Embed = message.embeds[index]
+
+    if hide_icon:
+        # hide a second icon appearing above the embed
+        embed.set_thumbnail(url="attachment://icon.png")
+
+    return embed

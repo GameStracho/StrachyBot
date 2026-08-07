@@ -23,7 +23,6 @@ class WordleDictionary:
             f"with line size of {self._line_size} B"
         )
 
-
     def get_random_word(self) -> str:
         random_line: int = random.randint(a=0, b=self._file_size // self._line_size)
         result: str = ""
@@ -34,7 +33,6 @@ class WordleDictionary:
 
         console.log_debug(f"/wordle: Found random word '{result}' on line {random_line}.")
         return result
-
 
     def is_valid_word(self, word: str) -> bool:
         if len(word) != 5:
@@ -86,28 +84,28 @@ class WordleGame:
         self._dictionary = WordleDictionary(file_path=module_folder + "words.txt")
         self._secret_word = self._dictionary.get_random_word()
 
-
     def __str__(self) -> str:
         return (
             f"Wordle game {self.match_id} for user {self._player_id} - {self._secret_word} (guesses: {self._guesses})"
         )
 
-
     def get_player_id(self) -> int:
         return self._player_id
-
 
     def get_secret_word(self) -> str:
         return self._secret_word
 
-
     def get_guesses_count(self) -> int:
         return len(self._guesses)
-
 
     def get_available_letters(self) -> set[str]:
         return self._available_letters
 
+    def get_last_guess(self) -> str:
+        if not len(self._guesses):
+            return ""
+
+        return self._guesses[len(self._guesses) - 1]
 
     def is_over(self) -> bool:
         return len(self._guesses) == 6 or (len(self._guesses) > 0 and self._guesses[len(self._guesses) -1] == self._secret_word)
@@ -120,3 +118,12 @@ class WordleGame:
 
     def add_guess(self, word: str) -> None:
         self._guesses.append(word)
+
+    def guess_random_word(self) -> str:
+        random_guess: str = self._dictionary.get_random_word()
+
+        while self.was_previous_guess(random_guess):
+            random_guess = self._dictionary.get_random_word()
+
+        self._guesses.append(random_guess)
+        return random_guess
