@@ -116,17 +116,9 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                 await interaction.response.send_message("Invalid move! ☹️", ephemeral=True)
                 return
 
-            message: discord.Message | None = interaction.message
-            assert message is not None
-
-            embed: discord.Embed = message.embeds[0]
-
             player_emoji, opponent_emoji = ui.get_player_emojis()
             self.label = opponent_emoji if game.is_players_turn() else player_emoji
             self.disabled = True
-
-            # hide a second icon appearing above the embed
-            embed.set_thumbnail(url="attachment://icon.png")
 
             # Check if opponent is a bot and should make an automatic counter-move
             if not game.has_game_ended() and game.is_opponent_bot() and not game.is_players_turn():
@@ -142,8 +134,11 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                             child.disabled = True
                             break
 
+            embed: discord.Embed = ui.extract_embed(interaction=interaction, index=0, hide_icon=True)
             status_message: str = ""
             player_color, opponent_color = ui.get_player_colors()
+            player: discord.User = game.get_player()
+            opponent: discord.User = game.get_opponent()
 
             if game.has_game_ended():
                 winner: discord.User | None = game.get_winner()
@@ -154,15 +149,18 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
 
                 if not winner:
                     embed.color = ui.DRAW_COLOR
+                    embed.set_author(name="", icon_url="")
                     status_message = "Game ended in draw. " + ui.EMOJIS["game_draw"]
                     status = models.EMatchStatus.DRAW
                 elif winner == game.get_player():
                     embed.color = player_color
-                    status_message = f"Player {player_emoji} {game.get_player().mention} won. " + ui.EMOJIS["game_win"]
+                    embed.set_author(name=player.display_name, icon_url=player.display_avatar)
+                    status_message = f"Player {player_emoji} {player.mention} won. " + ui.EMOJIS["game_win"]
                     status = models.EMatchStatus.WIN
                 else:
                     embed.color = opponent_color
-                    status_message = f"Player {opponent_emoji} {game.get_opponent().mention} won. " + ui.EMOJIS["game_win"]
+                    embed.set_author(name=opponent.display_name, icon_url=player.display_avatar)
+                    status_message = f"Player {opponent_emoji} {opponent.mention} won. " + ui.EMOJIS["game_win"]
                     status = models.EMatchStatus.LOSS
 
                 await helpers.execute_db_operation(
@@ -172,10 +170,12 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
             else:
                 if game.is_players_turn():
                     embed.color = player_color
-                    status_message = f"It's {player_emoji} {game.get_player().mention}'s turn. " + ui.EMOJIS["game_turn"]
+                    embed.set_author(name=player.display_name, icon_url=player.display_avatar)
+                    status_message = f"It's {player_emoji} {player.mention}'s turn. " + ui.EMOJIS["game_turn"]
                 else:
                     embed.color = opponent_color
-                    status_message = f"It's {opponent_emoji} {game.get_opponent().mention}'s turn. " + ui.EMOJIS["game_turn"]
+                    embed.set_author(name=opponent.display_name, icon_url=opponent.display_avatar)
+                    status_message = f"It's {opponent_emoji} {opponent.mention}'s turn. " + ui.EMOJIS["game_turn"]
 
                 ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view))
 

@@ -49,6 +49,7 @@ class TicCog(commands.Cog):
             player_emoji, opponent_emoji = ui.get_player_emojis()
             player_color, _ = ui.get_player_colors()
             embed = discord.Embed(color=player_color, title="Tic-Tac-Toe")
+            embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar)
 
             embed.add_field(name="Players", value=f"{player_emoji} {game.get_player().mention}\n{opponent_emoji} {game.get_opponent().mention}", inline=False)
             embed.add_field(name="Status", value=f"It's {player_emoji} {game.get_player().mention}'s turn.", inline=False)
