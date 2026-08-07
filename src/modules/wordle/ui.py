@@ -114,21 +114,35 @@ class WordleView(discord.ui.View):
     @discord.ui.button(label="Random Guess", style=discord.ButtonStyle.secondary, emoji=ui.EMOJIS["wordle_random_button"])
     async def random_guess_button(self, interaction: discord.Interaction, button: discord.ui.Button["WordleView"]) -> None:
         try:
-            console.log_debug(
-                f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
-                f"pressed the 'Random Guess' button for game {self._game.match_id}."
+            async def handle_random_guess(confirm_interaction: discord.Interaction) -> None:
+                console.log_debug(
+                    f"/wordle: User {confirm_interaction.user.display_name} ({confirm_interaction.user.id}) "
+                    f"pressed the 'Random Guess' button for game {self._game.match_id}."
+                )
+
+                assert self.message is not None
+                embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
+
+                random_guess: str = self._game.guess_random_word()
+                console.log_info(
+                    f"/wordle: User {confirm_interaction.user.display_name} ({confirm_interaction.user.id}) "
+                    f"guessed random word '{random_guess}' in game {self._game.match_id}."
+                )
+
+                self.update_embed(embed=embed, user=confirm_interaction.user, default_status="Used random guess.")
+                await self.message.edit(embed=embed, view=self)
+
+            timeout: float = min(self.timeout, 30.0) if self.timeout else 30.0
+            confirm_view: ui.ConfirmView = ui.ConfirmView(
+                interaction=interaction,
+                on_confirm=handle_random_guess,
+                confirm_label="Yes",
+                cancel_label="No",
+                timeout=timeout
             )
+            confirm_embed, confirm_icon = confirm_view.build_embed(question="Are you sure you want to use a random guess?")
 
-            embed: discord.Embed = ui.extract_embed(interaction=interaction, index=0, hide_icon=True)
-
-            random_guess: str = self._game.guess_random_word()
-            console.log_debug(
-                f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
-                f"guessed random word '{random_guess}' in game {self._game.match_id}."
-            )
-
-            self.update_embed(embed=embed, user=interaction.user, default_status="Used random guess.")
-            await interaction.response.edit_message(embed=embed, view=self)
+            await interaction.response.send_message(embed=confirm_embed, view=confirm_view, file=confirm_icon, ephemeral=True)
         except Exception:
             await messages.handle_error(command="/wordle", interaction=interaction, use_followup=False)
 
