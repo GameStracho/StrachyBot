@@ -70,7 +70,7 @@ class TicTacToeView(discord.ui.View):
         embed: discord.Embed = self.message.embeds[0]
         embed.color = ui.TIMEOUT_COLOR
 
-        ui.update_embed_field(embed=embed, name="Status", value="Game timed out! ⏰")
+        ui.update_embed_field(embed=embed, name="Status", value="Game timed out! " + ui.EMOJIS["game_timeout"])
         ui.remove_embed_field(embed=embed, name="Timeout")
 
         # hide a second icon appearing above the embed

@@ -30,7 +30,8 @@ class WordleView(discord.ui.View):
         for i in range(6):
             embed.add_field(name="Guess #" + str(i + 1), value=empty_word, inline=False)
 
-        embed.add_field(name="Status", value="Game started. You can start guessing.", inline=False)
+        embed.add_field(name="Status", value="Game started. You can start guessing.", inline=True)
+        embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(self), inline=True)
 
         icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
         embed.set_thumbnail(url=icon_url)
@@ -76,7 +77,11 @@ class WordleView(discord.ui.View):
         
         if not self._game.is_over():
             ui.update_embed_field(embed=embed, name="Status", value=default_status)
+            ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
             return
+
+        self.disable_buttons()
+        ui.remove_embed_field(embed=embed, name="Timeout")
 
         if last_guess == self._game.get_secret_word():
             console.log_info(
@@ -90,8 +95,6 @@ class WordleView(discord.ui.View):
             )
             ui.update_embed_field(embed=embed, name="Status", value=f"You lost! {ui.EMOJIS["game_loss"]} The secret word was '{self._game.get_secret_word()}'.")
             embed.color = discord.Color.red()
-
-        self.disable_buttons()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
@@ -112,6 +115,16 @@ class WordleView(discord.ui.View):
         if self._game.is_over() or self.message is None:
             return
 
+        console.log_info(f"/wordle: Game {self._game.match_id} timed out.")
+        self.disable_buttons()
+
+        embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
+        ui.remove_embed_field(embed=embed, name="Timeout")
+        ui.update_embed_field(embed=embed, name="Status", value="Game timed out! " + ui.EMOJIS["game_timeout"])
+
+        # Edit the original message to show disabled buttons
+        await self.message.edit(embed=embed, view=self)
+
     @discord.ui.button(label="Enter Guess", style=discord.ButtonStyle.primary, emoji=ui.EMOJIS["wordle_guess_button"])
     async def enter_guess_button(self, interaction: discord.Interaction, button: discord.ui.Button["WordleView"]) -> None:
         try:
@@ -119,6 +132,11 @@ class WordleView(discord.ui.View):
                 f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                 f"pressed the 'Enter Guess' button for game {self._game.match_id}."
             )
+
+            assert self.message is not None
+            embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
+            ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
+            await self.message.edit(embed=embed, view=self)
 
             modal: WordleGuessModal = WordleGuessModal(parent_view=self)
             await interaction.response.send_modal(modal)
@@ -150,6 +168,11 @@ class WordleView(discord.ui.View):
 
                 self.update_embed(embed=embed, user=confirm_interaction.user, default_status="Used random guess.")
                 await self.message.edit(embed=embed, view=self)
+
+            assert self.message is not None
+            wordle_embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
+            ui.update_embed_field(embed=wordle_embed, name="Timeout", value=ui.get_timeout_timestamp(self))
+            await self.message.edit(embed=wordle_embed, view=self)
 
             timeout: float = min(self.timeout, 30.0) if self.timeout else 30.0
             confirm_view: ui.ConfirmView = ui.ConfirmView(
