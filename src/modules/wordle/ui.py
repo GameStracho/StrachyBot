@@ -82,6 +82,7 @@ class WordleView(discord.ui.View):
 
         self.disable_buttons()
         ui.remove_embed_field(embed=embed, name="Timeout")
+        self.stop()
 
         if last_guess == self._game.get_secret_word():
             console.log_info(
@@ -120,7 +121,11 @@ class WordleView(discord.ui.View):
 
         embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
         ui.remove_embed_field(embed=embed, name="Timeout")
-        ui.update_embed_field(embed=embed, name="Status", value="Game timed out! " + ui.EMOJIS["game_timeout"])
+        ui.update_embed_field(
+            embed=embed,
+            name="Status",
+            value=f"Game timed out! {ui.EMOJIS["game_timeout"]} The secret word was '{self._game.get_secret_word()}'."
+        )
 
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)

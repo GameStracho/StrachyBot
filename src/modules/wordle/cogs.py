@@ -18,7 +18,7 @@ class WordleCog(commands.Cog):
             console.log_debug(f"/wordle: Command used by user {interaction.user.display_name} ({interaction.user.id})")
 
             game: WordleGame = WordleGame(player_id=interaction.user.id)
-            view: WordleView = WordleView(game=game, timeout=180.0)
+            view: WordleView = WordleView(game=game, timeout=300.0)
             embed, icon = view.build_embed(interaction.user)
 
             console.log_info(f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) started a new {game}.")
