@@ -123,7 +123,7 @@ class WordleView(discord.ui.View):
             console.log_info(
                 f"/wordle: User {user.display_name} ({user.id}) lost game {self._game.match_id}."
             )
-            ui.update_embed_field(embed=embed, name="Status", value=f"You lost! {ui.EMOJIS["game_loss"]} The secret word was '{self._game.get_secret_word()}'.")
+            ui.update_embed_field(embed=embed, name="Status", value=f"You lost! {ui.EMOJIS['game_loss']} The secret word was '{self._game.get_secret_word()}'.")
             embed.color = discord.Color.red()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -153,7 +153,7 @@ class WordleView(discord.ui.View):
         ui.update_embed_field(
             embed=embed,
             name="Status",
-            value=f"Game timed out! {ui.EMOJIS["game_timeout"]} The secret word was '{self._game.get_secret_word()}'."
+            value=f"Game timed out! {ui.EMOJIS['game_timeout']} The secret word was '{self._game.get_secret_word()}'."
         )
 
         # Edit the original message to show disabled buttons
