@@ -61,7 +61,7 @@ EMOJIS: dict[str, str] = {
     "tic_empty_cell": "⬛",
     "wordle_guess_button": "✏️",
     "wordle_random_button": "🎲",
-    "wordle_empty_letter": "⬜",
+    "wordle_unused_letter": "⬜",
     "wordle_correct_letter": "🟩",
     "wordle_misplaced_letter": "🟨",
     "wordle_incorrect_letter": "⬛",

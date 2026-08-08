@@ -2,7 +2,7 @@ import discord
 
 from shared import console, helpers, messages, ui
 
-from .game import WordleGame
+from .game import WordleGame, WordleLetterCategory
 
 
 class WordleView(discord.ui.View):
@@ -22,14 +22,15 @@ class WordleView(discord.ui.View):
         embed: discord.Embed = discord.Embed(title="Wordle", color=discord.Color.blue())
         embed.set_author(name=user.display_name, icon_url=user.display_avatar)
 
-        empty_word: str = ui.EMOJIS["wordle_empty_letter"]
+        empty_word: str = ui.EMOJIS["wordle_unused_letter"]
 
         for i in range(4):
-            empty_word += " " + ui.EMOJIS["wordle_empty_letter"]
+            empty_word += " " + ui.EMOJIS["wordle_unused_letter"]
 
         for i in range(6):
             embed.add_field(name="Guess #" + str(i + 1), value=empty_word, inline=False)
 
+        embed.add_field(name="Used letters", value=self._color_available_letters(), inline=False)
         embed.add_field(name="Status", value="Game started. You can start guessing.", inline=True)
         embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(self), inline=True)
 
@@ -44,36 +45,64 @@ class WordleView(discord.ui.View):
                 child.disabled = True
         console.log_debug(f"/wordle: Buttons disabled for game {self._game.match_id}.")
 
+    def _get_letter_category_emoji(self, category: WordleLetterCategory) -> str:
+        match category:
+            case WordleLetterCategory.CORRECT:
+                return ui.EMOJIS["wordle_correct_letter"]
+            case WordleLetterCategory.MISPLACED:
+                return ui.EMOJIS["wordle_misplaced_letter"]
+            case WordleLetterCategory.INCORRECT:
+                return ui.EMOJIS["wordle_incorrect_letter"]
+            case WordleLetterCategory.UNUSED:
+                return ui.EMOJIS["wordle_unused_letter"]
+            case _:
+                raise ValueError(category)
+
     def _uncover_word(self, word: str) -> str:
         """
             Turns every letter of a given word into emojis and adds color coded line under the word
             signalling whether the guessed letter is in a correct spot, misplaced or completely missing
-            based on the games secret word.
+            based on the game's secret word.
 
             Returns the color coded word.
         """
-        secret_word: str = self._game.get_secret_word()
+        categorized_word: list[tuple[str, WordleLetterCategory]] = self._game.categorize_word(word=word)
         uncovered_letters: str = ""
         uncovered_colors: str = ""
 
-        for i, letter in enumerate(word):
+        for letter, category in categorized_word:
             uncovered_letters += ui.EMOJIS[letter] + " "
-            sw_count: int = secret_word.count(letter)
-
-            if letter == secret_word[i]:
-                uncovered_colors += ui.EMOJIS["wordle_correct_letter"] + " "
-                continue
-            
-            elif letter in secret_word and word[:i].count(letter) < sw_count and word[i:].count(letter) <= sw_count:
-                uncovered_colors += ui.EMOJIS["wordle_misplaced_letter"] + " "
-            else:
-                uncovered_colors += ui.EMOJIS["wordle_incorrect_letter"] + " "
+            uncovered_colors += self._get_letter_category_emoji(category=category) + " "
 
         return uncovered_letters.rstrip() + "\n" + uncovered_colors.rstrip()
+
+    def _color_available_letters(self) -> str:
+        """
+            Turns every letter from available letters into emojis and adds color coded line under them
+            signalling their category.
+
+            Returns the color coded available letters.
+        """
+        available_letters: dict[str, WordleLetterCategory] = self._game.get_available_letters()
+        uncovered_letters: str = ""
+        uncovered_colors: str = ""
+        result: str = ""
+
+        for letter, category in available_letters.items():
+            uncovered_letters += ui.EMOJIS[letter] + " "
+            uncovered_colors += self._get_letter_category_emoji(category=category) + " "
+
+            if len(uncovered_letters) == len(available_letters):
+                result += f"\n\n{uncovered_letters.rstrip()}\n{uncovered_colors}"
+                uncovered_letters = "" 
+                uncovered_colors = ""
+
+        return result + f"\n\n{uncovered_letters.rstrip()}\n{uncovered_colors}"
 
     def update_embed(self, embed: discord.Embed, user: discord.User | discord.Member, default_status: str) -> None:
         last_guess: str = self._game.get_last_guess()
         ui.update_embed_field(embed=embed, name=f"Guess #{self._game.get_guesses_count()}", value=self._uncover_word(word=last_guess))
+        ui.update_embed_field(embed=embed, name="Used letters", value=self._color_available_letters())
         
         if not self._game.is_over():
             ui.update_embed_field(embed=embed, name="Status", value=default_status)

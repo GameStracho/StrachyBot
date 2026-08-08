@@ -5,6 +5,7 @@
 - Title and author to `Trivia` mini-game
 - Author to `Tic-Tac-Toe` mini-game indicating who is currently on turn
 - Confirmable `Random Guess` button to `Wordle` mini-game
+- Showcase of used letters in `Wordle` mini-game
 
 ### Changed
 - Complete rewrite and modernization of `Wordle` mini-game with database records and timeout handling

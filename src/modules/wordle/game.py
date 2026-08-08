@@ -2,9 +2,19 @@ import os
 import random
 import re
 import string
+from enum import Enum
 
 from shared import console
 
+
+class WordleLetterCategory(Enum):
+    UNUSED = 0
+    INCORRECT = 1
+    MISPLACED = 2
+    CORRECT = 3
+
+    def __int__(self) -> int:
+        return self.value
 
 class WordleDictionary:
     _secret_words_path: str
@@ -90,14 +100,18 @@ class WordleGame:
     _player_id: int
     _secret_word: str
     _guesses: list[str]
-    _available_letters: set[str]
+    _available_letters: dict[str, WordleLetterCategory]
     _dictionary: WordleDictionary
 
     def __init__(self, player_id: int):
         self.match_id = -1
         self._player_id = player_id
         self._guesses = []
-        self._available_letters = set(string.ascii_lowercase)
+
+        self._available_letters = {}
+
+        for letter in string.ascii_lowercase:
+            self._available_letters[letter] = WordleLetterCategory.UNUSED
 
         module_folder: str = re.sub(pattern=r"\/[^\/]*$", repl="/", string=__file__)
         self._dictionary = WordleDictionary(
@@ -120,7 +134,7 @@ class WordleGame:
     def get_guesses_count(self) -> int:
         return len(self._guesses)
 
-    def get_available_letters(self) -> set[str]:
+    def get_available_letters(self) -> dict[str, WordleLetterCategory]:
         return self._available_letters
 
     def get_last_guess(self) -> str:
@@ -149,3 +163,28 @@ class WordleGame:
 
         self._guesses.append(random_guess)
         return random_guess
+
+    def categorize_word(self, word: str) -> list[tuple[str, WordleLetterCategory]]:
+        """
+            Categorizes each letter of the word based on the it's position relative to the secret word
+            and updates the categories of available letters.
+
+            Returns each letter of the word with it's categorization
+        """
+        result: list[tuple[str, WordleLetterCategory]] = []
+
+        for i, letter in enumerate(word):
+            sw_count: int = self._secret_word.count(letter)
+            category: WordleLetterCategory = WordleLetterCategory.INCORRECT
+
+            if letter == self._secret_word[i]:
+                category = WordleLetterCategory.CORRECT
+            elif letter in self._secret_word and word[:i].count(letter) < sw_count and word[i:].count(letter) <= sw_count:
+                category = WordleLetterCategory.MISPLACED
+
+            result.append((letter, category))
+
+            if int(category) > int(self._available_letters[letter]):
+                self._available_letters[letter] = category
+
+        return result
