@@ -7,32 +7,65 @@ from shared import console
 
 
 class WordleDictionary:
-    _file_path: str
-    _file_size: int
+    _secret_words_path: str
+    _secret_words_size: int
+    _allowed_guesses_path: str
+    _allowed_guesses_size: int
     _line_size: int
 
-    def __init__(self, file_path: str):
-        self._file_path = file_path
-        self._file_size = os.path.getsize(file_path)
+    def __init__(self, answers_path: str, allowed_guesses_path: str):
+        self._secret_words_path = answers_path
+        self._secret_words_size = os.path.getsize(answers_path)
 
-        with open(file=file_path, mode="rb") as file:
+        self._allowed_guesses_path = allowed_guesses_path
+        self._allowed_guesses_size = os.path.getsize(allowed_guesses_path)
+
+        with open(file=answers_path, mode="rb") as file:
             self._line_size = len(file.readline())
 
         console.log_debug(
-            f"/wordle: Initialized dictionary from file '{self._file_path}' ({self._file_size} B) "
+            f"/wordle: Initialized dictionary from answers file '{self._secret_words_path}' ({self._secret_words_size} B) "
+            f"and allowed guesses file '{self._allowed_guesses_path}' ({self._allowed_guesses_size} B)"
             f"with line size of {self._line_size} B"
         )
 
-    def get_random_word(self) -> str:
-        random_line: int = random.randint(a=0, b=self._file_size // self._line_size)
+    def _get_random_word(self, file_path: str, file_size: int) -> str:
+        random_line: int = random.randint(a=0, b=file_size // self._line_size)
         result: str = ""
 
-        with open(file=self._file_path, mode="rb") as file:
+        with open(file=file_path, mode="rb") as file:
             file.seek(random_line * self._line_size)
             result = file.read(5).decode("utf-8").lower()
 
-        console.log_debug(f"/wordle: Found random word '{result}' on line {random_line}.")
+        console.log_debug(f"/wordle: Found random word '{result}' on line {random_line} in file '{file_path}'.")
         return result
+
+    def get_random_secret_word(self) -> str:
+        return self._get_random_word(file_path=self._secret_words_path, file_size=self._secret_words_size)
+
+    def get_random_allowed_guess(self) -> str:
+        return self._get_random_word(file_path=self._allowed_guesses_path, file_size=self._allowed_guesses_size)
+
+    def _find_word(self, word: str, file_path: str, file_size: int) -> bool:
+        with open(file=file_path, mode="rb") as file:
+            low: int = 0
+            high: int = file_size
+
+            while low <= high:
+                mid: int = (low + high) // 2
+                mid -= mid % self._line_size # ensure mid is pointing to a start of a line
+                file.seek(mid)
+
+                current_word: str = file.read(5).decode("utf-8").lower()
+
+                if current_word == word:
+                    return True
+                elif current_word < word:
+                    low = mid + self._line_size
+                else:
+                    high = mid - self._line_size
+
+        return False
 
     def is_valid_word(self, word: str) -> bool:
         if len(word) != 5:
@@ -43,27 +76,13 @@ class WordleDictionary:
             console.log_debug(f"/wordle: Word '{word}' contains invalid characters. Only letters are allowed.")
             return False
 
-        with open(file=self._file_path, mode="rb") as file:
-            low: int = 0
-            high: int = self._file_size
+        if not (self._find_word(word=word, file_path=self._secret_words_path, file_size=self._secret_words_size) 
+            or self._find_word(word=word, file_path=self._allowed_guesses_path, file_size=self._allowed_guesses_size)):
+            console.log_debug(f"/wordle: Word '{word}' is invalid.")
+            return False
 
-            while low <= high:
-                mid: int = (low + high) // 2
-                mid -= mid % self._line_size # ensure mid is pointing to a start of a line
-                file.seek(mid)
-
-                current_word: str = file.read(5).decode("utf-8").lower()
-
-                if current_word == word:
-                    console.log_debug(f"/wordle: Word '{word}' is valid.")
-                    return True
-                elif current_word < word:
-                    low = mid + self._line_size
-                else:
-                    high = mid - self._line_size
-
-        console.log_debug(f"/wordle: Word '{word}' is invalid.")
-        return False
+        console.log_debug(f"/wordle: Word '{word}' is valid.")
+        return True
 
 
 class WordleGame:
@@ -81,8 +100,11 @@ class WordleGame:
         self._available_letters = set(string.ascii_lowercase)
 
         module_folder: str = re.sub(pattern=r"\/[^\/]*$", repl="/", string=__file__)
-        self._dictionary = WordleDictionary(file_path=module_folder + "words.txt")
-        self._secret_word = self._dictionary.get_random_word()
+        self._dictionary = WordleDictionary(
+            answers_path=module_folder + "secret-words.txt",
+            allowed_guesses_path=module_folder + "allowed-guesses.txt"
+        )
+        self._secret_word = self._dictionary.get_random_secret_word()
 
     def __str__(self) -> str:
         return (
@@ -120,10 +142,10 @@ class WordleGame:
         self._guesses.append(word)
 
     def guess_random_word(self) -> str:
-        random_guess: str = self._dictionary.get_random_word()
+        random_guess: str = self._dictionary.get_random_allowed_guess()
 
         while self.was_previous_guess(random_guess):
-            random_guess = self._dictionary.get_random_word()
+            random_guess = self._dictionary.get_random_allowed_guess()
 
         self._guesses.append(random_guess)
         return random_guess
