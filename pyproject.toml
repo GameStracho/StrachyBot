@@ -4,8 +4,14 @@ pythonpath = ["src"]
 [tool.ruff]
 exclude = [
     "src/modules/google.py",
-    "src/modules/stats.py"
+    "src/modules/stats.py",
+    "migrations",
 ]
 lint.ignore = [
     "BLE001", # Do not catch blind exception: `Exception`
+]
+
+[tool.mypy]
+exclude = [
+    '^migrations/',
 ]
