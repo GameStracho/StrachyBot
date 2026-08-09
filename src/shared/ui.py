@@ -54,6 +54,7 @@ EMOJIS: dict[str, str] = {
     "game_loss": "🥀",
     "game_turn": "⏳",
     "game_timeout": "⏰",
+    "game_surrender": "🏳️",
     "trivia_correct_answer": "✅",
     "trivia_wrong_answer": "❌",
     "trivia_correct_answer_selected": "✔️",

@@ -183,8 +183,18 @@ class WordleGame:
         self.add_guess(word=random_guess)
 
     def handle_timeout(self) -> None:
+        if self._status != models.EMatchStatus.PENDING:
+            return
+
         console.log_info(f"/wordle: Game {self.match_id} timed out.")
         self._status = models.EMatchStatus.TIMEOUT
+
+    def handle_surrender(self) -> None:
+        if self._status != models.EMatchStatus.PENDING:
+                    return
+        
+        console.log_info(f"/wordle: Player '{self._player_id}' gave up game {self.match_id}.")
+        self._status = models.EMatchStatus.SURRENDER
 
     def categorize_word(self, word: str) -> list[tuple[str, WordleLetterCategory]]:
         """

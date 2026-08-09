@@ -17,6 +17,7 @@ class EMatchStatus(PyEnum):
     LOSS = "Loss"
     TIMEOUT = "Timeout"
     DRAW = "Draw"
+    SURRENDER = "Surrender"
 
 class Match(Base):
     __tablename__ = "match"

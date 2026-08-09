@@ -115,6 +115,9 @@ class WordleView(discord.ui.View):
             case models.EMatchStatus.LOSS:
                 ui.update_embed_field(embed=embed, name="Status", value=f"You lost! {ui.EMOJIS['game_loss']} The secret word was '{self._game.get_secret_word()}'.")
                 embed.color = discord.Color.red()
+            case models.EMatchStatus.SURRENDER:
+                ui.update_embed_field(embed=embed, name="Status", value=f"You gave up! {ui.EMOJIS['game_surrender']} The secret word was '{self._game.get_secret_word()}'.")
+                embed.color = ui.WHITE_COLOR
             case _:
                 raise ValueError(self._game.get_status())
 
@@ -208,6 +211,41 @@ class WordleView(discord.ui.View):
                 timeout=timeout
             )
             confirm_embed, confirm_icon = confirm_view.build_embed(question="Are you sure you want to use a random guess?")
+
+            await interaction.response.send_message(embed=confirm_embed, view=confirm_view, file=confirm_icon, ephemeral=True)
+        except Exception:
+            await messages.handle_error(command="/wordle", interaction=interaction, use_followup=False)
+
+    @discord.ui.button(label="Give up", style=discord.ButtonStyle.secondary, emoji=ui.EMOJIS["game_surrender"])
+    async def give_up_button(self, interaction: discord.Interaction, button: discord.ui.Button["WordleView"]) -> None:
+        try:
+            async def handle_surrender(confirm_interaction: discord.Interaction) -> None:
+                console.log_debug(
+                    f"/wordle: User {confirm_interaction.user.display_name} ({confirm_interaction.user.id}) "
+                    f"pressed the 'Give up' button for game {self._game.match_id}."
+                )
+
+                assert self.message is not None
+                embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
+
+                self._game.handle_surrender()
+                self.update_embed(embed=embed, user=confirm_interaction.user, default_status="Used random guess.")
+                await self.message.edit(embed=embed, view=self)
+
+            assert self.message is not None
+            wordle_embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
+            ui.update_embed_field(embed=wordle_embed, name="Timeout", value=ui.get_timeout_timestamp(self))
+            await self.message.edit(embed=wordle_embed, view=self)
+
+            timeout: float = min(self.timeout, 30.0) if self.timeout else 30.0
+            confirm_view: ui.ConfirmView = ui.ConfirmView(
+                interaction=interaction,
+                on_confirm=handle_surrender,
+                confirm_label="Yes",
+                cancel_label="No",
+                timeout=timeout
+            )
+            confirm_embed, confirm_icon = confirm_view.build_embed(question="Are you sure you want to give up?")
 
             await interaction.response.send_message(embed=confirm_embed, view=confirm_view, file=confirm_icon, ephemeral=True)
         except Exception:
