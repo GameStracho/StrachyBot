@@ -26,7 +26,7 @@ class WordleView(discord.ui.View):
         title: str = "Wordle"
 
         if self._game.is_daily():
-            title += f" {datetime.now(tz=timezone.utc).date().strftime("%Y-%m-%d")}"
+            title += f" {datetime.now(tz=timezone.utc).date().strftime('%Y-%m-%d')}"
 
         embed: discord.Embed = discord.Embed(title=title, color=discord.Color.blue())
         embed.set_author(name=user.display_name, icon_url=user.display_avatar)
