@@ -4,7 +4,7 @@ import re
 import string
 from enum import Enum
 
-from shared import console
+from shared import console, models
 
 
 class WordleLetterCategory(Enum):
@@ -97,6 +97,7 @@ class WordleDictionary:
 
 class WordleGame:
     match_id: int
+    _status: models.EMatchStatus
     _player_id: int
     _secret_word: str
     _guesses: list[str]
@@ -107,6 +108,7 @@ class WordleGame:
         self.match_id = -1
         self._player_id = player_id
         self._guesses = []
+        self._status = models.EMatchStatus.PENDING
 
         self._available_letters = {}
 
@@ -143,26 +145,46 @@ class WordleGame:
 
         return self._guesses[len(self._guesses) - 1]
 
-    def is_over(self) -> bool:
-        return len(self._guesses) == 6 or (len(self._guesses) > 0 and self._guesses[len(self._guesses) -1] == self._secret_word)
+    def get_status(self) -> models.EMatchStatus:
+        return self._status
 
     def is_valid_word(self, word: str) -> bool:
         return self._dictionary.is_valid_word(word)
 
-    def was_previous_guess(self, word: str) -> bool:
+    def is_previous_guess(self, word: str) -> bool:
         return word in self._guesses
 
     def add_guess(self, word: str) -> None:
-        self._guesses.append(word)
+        if self._status != models.EMatchStatus.PENDING:
+            return
 
-    def guess_random_word(self) -> str:
+        self._guesses.append(word)
+        console.log_info(f"/wordle: User '{self._player_id}' guessed word '{word}' in game {self.match_id}.")
+
+        if word == self._secret_word:
+            console.log_info(f"/wordle: User '{self._player_id}' won game {self.match_id}.")
+            self._status = models.EMatchStatus.WIN
+            return
+
+        if len(self._guesses) == 6:
+            console.log_info(
+                f"/wordle: User '{self._player_id}' lost game {self.match_id}."
+            )
+            self._status = models.EMatchStatus.LOSS
+
+    def guess_random_word(self) -> None:
         random_guess: str = self._dictionary.get_random_allowed_guess()
 
-        while self.was_previous_guess(random_guess):
+        while self.is_previous_guess(random_guess):
             random_guess = self._dictionary.get_random_allowed_guess()
 
-        self._guesses.append(random_guess)
-        return random_guess
+        console.log_info(f"/wordle: generated random word '{random_guess}' for game {self.match_id}")
+
+        self.add_guess(word=random_guess)
+
+    def handle_timeout(self) -> None:
+        console.log_info(f"/wordle: Game {self.match_id} timed out.")
+        self._status = models.EMatchStatus.TIMEOUT
 
     def categorize_word(self, word: str) -> list[tuple[str, WordleLetterCategory]]:
         """

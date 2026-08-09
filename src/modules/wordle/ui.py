@@ -1,6 +1,6 @@
 import discord
 
-from shared import console, helpers, messages, ui
+from shared import console, helpers, messages, models, ui
 
 from .game import WordleGame, WordleLetterCategory
 
@@ -103,28 +103,24 @@ class WordleView(discord.ui.View):
         last_guess: str = self._game.get_last_guess()
         ui.update_embed_field(embed=embed, name=f"Guess #{self._game.get_guesses_count()}", value=self._uncover_word(word=last_guess))
         ui.update_embed_field(embed=embed, name="Used letters", value=self._color_available_letters())
-        
-        if not self._game.is_over():
-            ui.update_embed_field(embed=embed, name="Status", value=default_status)
-            ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
-            return
+
+        match self._game.get_status():
+            case models.EMatchStatus.PENDING:
+                ui.update_embed_field(embed=embed, name="Status", value=default_status)
+                ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
+                return
+            case models.EMatchStatus.WIN:    
+                ui.update_embed_field(embed=embed, name="Status", value="You won! " + ui.EMOJIS["game_win"])
+                embed.color = discord.Color.green()
+            case models.EMatchStatus.LOSS:
+                ui.update_embed_field(embed=embed, name="Status", value=f"You lost! {ui.EMOJIS['game_loss']} The secret word was '{self._game.get_secret_word()}'.")
+                embed.color = discord.Color.red()
+            case _:
+                raise ValueError(self._game.get_status())
 
         self.disable_buttons()
         ui.remove_embed_field(embed=embed, name="Timeout")
         self.stop()
-
-        if last_guess == self._game.get_secret_word():
-            console.log_info(
-                f"/wordle: User {user.display_name} ({user.id}) won game {self._game.match_id}."
-            )
-            ui.update_embed_field(embed=embed, name="Status", value="You won! " + ui.EMOJIS["game_win"])
-            embed.color = discord.Color.green()
-        else:
-            console.log_info(
-                f"/wordle: User {user.display_name} ({user.id}) lost game {self._game.match_id}."
-            )
-            ui.update_embed_field(embed=embed, name="Status", value=f"You lost! {ui.EMOJIS['game_loss']} The secret word was '{self._game.get_secret_word()}'.")
-            embed.color = discord.Color.red()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
@@ -142,10 +138,10 @@ class WordleView(discord.ui.View):
             return False
 
     async def on_timeout(self) -> None:
-        if self._game.is_over() or self.message is None:
+        if self._game.get_status() != models.EMatchStatus.TIMEOUT or self.message is None:
             return
 
-        console.log_info(f"/wordle: Game {self._game.match_id} timed out.")
+        self._game.handle_timeout()
         self.disable_buttons()
 
         embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
@@ -159,12 +155,12 @@ class WordleView(discord.ui.View):
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)
 
-    @discord.ui.button(label="Enter Guess", style=discord.ButtonStyle.primary, emoji=ui.EMOJIS["wordle_guess_button"])
+    @discord.ui.button(label="Enter guess", style=discord.ButtonStyle.primary, emoji=ui.EMOJIS["wordle_enter_guess_button"])
     async def enter_guess_button(self, interaction: discord.Interaction, button: discord.ui.Button["WordleView"]) -> None:
         try:
             console.log_debug(
                 f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
-                f"pressed the 'Enter Guess' button for game {self._game.match_id}."
+                f"pressed the 'Enter guess' button for game {self._game.match_id}."
             )
 
             assert self.message is not None
@@ -182,24 +178,19 @@ class WordleView(discord.ui.View):
         except Exception:
             await messages.handle_error(command="/wordle", interaction=interaction, use_followup=False)
 
-    @discord.ui.button(label="Random Guess", style=discord.ButtonStyle.secondary, emoji=ui.EMOJIS["wordle_random_button"])
+    @discord.ui.button(label="Random guess", style=discord.ButtonStyle.secondary, emoji=ui.EMOJIS["wordle_random_guess_button"])
     async def random_guess_button(self, interaction: discord.Interaction, button: discord.ui.Button["WordleView"]) -> None:
         try:
             async def handle_random_guess(confirm_interaction: discord.Interaction) -> None:
                 console.log_debug(
                     f"/wordle: User {confirm_interaction.user.display_name} ({confirm_interaction.user.id}) "
-                    f"pressed the 'Random Guess' button for game {self._game.match_id}."
+                    f"pressed the 'Random guess' button for game {self._game.match_id}."
                 )
 
                 assert self.message is not None
                 embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
 
-                random_guess: str = self._game.guess_random_word()
-                console.log_info(
-                    f"/wordle: User {confirm_interaction.user.display_name} ({confirm_interaction.user.id}) "
-                    f"guessed random word '{random_guess}' in game {self._game.match_id}."
-                )
-
+                self._game.guess_random_word()
                 self.update_embed(embed=embed, user=confirm_interaction.user, default_status="Used random guess.")
                 await self.message.edit(embed=embed, view=self)
 
@@ -277,7 +268,7 @@ class WordleGuessModal(discord.ui.Modal):
                 await interaction.response.edit_message(embed=embed, view=self._parent_view)
                 return
 
-            if game.was_previous_guess(word=guess):
+            if game.is_previous_guess(word=guess):
                 console.log_info(
                     f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                     f"entered an already guesses word '{guess}'."
