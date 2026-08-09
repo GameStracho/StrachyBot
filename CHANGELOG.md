@@ -8,6 +8,7 @@
 - Showcase of used letters and daily challenge mode to the `Wordle` mini-game
 - New `surrender` match status
 - Guesses and *is_daily* tag to the `wordle_match` database table
+- 29 *unit* and 5 *integration* tests for `wordle` module
 
 ### Changed
 - Complete rewrite and modernization of the `Wordle` mini-game with database records and timeout handling
@@ -20,6 +21,7 @@
 - Bot session closure and database engine disposal on shutdown
 - Detection of changes to enum values during database migration generation
 - Excluded `migrations` directory from linting and type checking
+- Added permissions to test-writing agent
 
 ---
 
