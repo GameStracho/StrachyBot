@@ -2,9 +2,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from shared import bot, console, messages
+from shared import bot, console, helpers, messages
 
 from .game import WordleGame
+from .repository import has_played_daily_challenge
 from .ui import WordleView
 
 
@@ -13,11 +14,16 @@ class WordleCog(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="wordle", description="Try to guess a 5-letter word in 6 tries.")
-    async def wordle(self, interaction: discord.Interaction) -> None:
+    async def wordle(self, interaction: discord.Interaction, daily_challenge: bool = False) -> None:
         try:
             console.log_debug(f"/wordle: Command used by user {interaction.user.display_name} ({interaction.user.id})")
 
-            game: WordleGame = WordleGame(player_id=interaction.user.id)
+            if daily_challenge and await helpers.execute_db_operation(target=self.bot, db_func=has_played_daily_challenge, player_id=interaction.user.id):
+                console.log_info(f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) already played the daily challenge.")
+                await interaction.response.send_message(content="You already played today's daily challenge.", ephemeral=True)
+                return
+
+            game: WordleGame = WordleGame(player_id=interaction.user.id, is_daily=daily_challenge)
             await game.connect_database(bot=self.bot)
             view: WordleView = WordleView(game=game, timeout=300.0)
             embed, icon = view.build_embed(interaction.user)

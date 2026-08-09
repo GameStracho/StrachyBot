@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import discord
 
 from shared import console, helpers, messages, models, ui
@@ -7,19 +9,26 @@ from .game import WordleGame, WordleLetterCategory
 
 class WordleView(discord.ui.View):
     _game: WordleGame
+    _spoiler: str
     message: discord.Message | None
 
     def __init__(self, game: WordleGame, timeout: float = 180):
         super().__init__(timeout=timeout)
 
         self._game = game
+        self._spoiler = "||" if game.is_daily() else ""
         console.log_debug(f"/trivia: New WordleView created for game {self._game.get_match_id()} with {timeout}s timeout.")
 
     def get_game(self) -> WordleGame:
         return self._game
 
     def build_embed(self, user: discord.User | discord.Member) -> tuple[discord.Embed, discord.File]:
-        embed: discord.Embed = discord.Embed(title="Wordle", color=discord.Color.blue())
+        title: str = "Wordle"
+
+        if self._game.is_daily():
+            title += f" {datetime.now(tz=timezone.utc).date().strftime("%Y-%m-%d")}"
+
+        embed: discord.Embed = discord.Embed(title=title, color=discord.Color.blue())
         embed.set_author(name=user.display_name, icon_url=user.display_avatar)
 
         empty_word: str = ui.EMOJIS["wordle_unused_letter"]
@@ -74,7 +83,7 @@ class WordleView(discord.ui.View):
             uncovered_letters += ui.EMOJIS[letter] + " "
             uncovered_colors += self._get_letter_category_emoji(category=category) + " "
 
-        return uncovered_letters.rstrip() + "\n" + uncovered_colors.rstrip()
+        return f"{self._spoiler}{uncovered_letters.rstrip()}{self._spoiler}\n{uncovered_colors.rstrip()}"
 
     def _color_available_letters(self) -> str:
         """
@@ -93,11 +102,11 @@ class WordleView(discord.ui.View):
             uncovered_colors += self._get_letter_category_emoji(category=category) + " "
 
             if len(uncovered_letters) == len(available_letters):
-                result += f"\n\n{uncovered_letters.rstrip()}\n{uncovered_colors}"
+                result += f"\n\n{uncovered_letters.rstrip()}\n{self._spoiler}{uncovered_colors}{self._spoiler}"
                 uncovered_letters = "" 
                 uncovered_colors = ""
 
-        return result + f"\n\n{uncovered_letters.rstrip()}\n{uncovered_colors}"
+        return result
 
     def update_embed(self, embed: discord.Embed, user: discord.User | discord.Member, default_status: str) -> None:
         last_guess: str = self._game.get_last_guess()
@@ -109,15 +118,29 @@ class WordleView(discord.ui.View):
                 ui.update_embed_field(embed=embed, name="Status", value=default_status)
                 ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
                 return
-            case models.EMatchStatus.WIN:    
-                ui.update_embed_field(embed=embed, name="Status", value="You won! " + ui.EMOJIS["game_win"])
+            case models.EMatchStatus.WIN: 
                 embed.color = discord.Color.green()
+                ui.update_embed_field(embed=embed, name="Status", value="You won! " + ui.EMOJIS["game_win"])
             case models.EMatchStatus.LOSS:
-                ui.update_embed_field(embed=embed, name="Status", value=f"You lost! {ui.EMOJIS['game_loss']} The secret word was '{self._game.get_secret_word()}'.")
                 embed.color = discord.Color.red()
+                ui.update_embed_field(
+                    embed=embed,
+                    name="Status",
+                    value=(
+                        f"You lost! {ui.EMOJIS['game_loss']} "
+                        f"The secret word was '{self._spoiler}{self._game.get_secret_word()}{self._spoiler}'."
+                    )
+                )
             case models.EMatchStatus.SURRENDER:
-                ui.update_embed_field(embed=embed, name="Status", value=f"You gave up! {ui.EMOJIS['game_surrender']} The secret word was '{self._game.get_secret_word()}'.")
                 embed.color = ui.WHITE_COLOR
+                ui.update_embed_field(
+                    embed=embed,
+                    name="Status",
+                    value=(
+                        f"You gave up! {ui.EMOJIS['game_surrender']} "
+                        f"The secret word was '{self._spoiler}{self._game.get_secret_word()}{self._spoiler}'."
+                    )
+                )
             case _:
                 raise ValueError(self._game.get_status())
 

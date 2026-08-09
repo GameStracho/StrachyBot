@@ -2,6 +2,7 @@ import os
 import random
 import re
 import string
+from datetime import date, datetime, timezone
 from enum import Enum
 
 from shared import bot, console, helpers, models
@@ -58,6 +59,31 @@ class WordleDictionary:
     def get_random_allowed_guess(self) -> str:
         return self._get_random_word(file_path=self._allowed_guesses_path, file_size=self._allowed_guesses_size)
 
+    def get_daily_secret_word(self, target_date: date | None = None) -> str:
+        """
+        Returns a deterministic secret word based on the provided date (or today's date).
+        Everyone calling this method on the same day will get the exact same word.
+        """
+        if target_date is None:
+            target_date = datetime.now(tz=timezone.utc).date().today()
+
+        # Seed random generator with the date string (e.g. "2026-08-09")
+        date_seed: str = target_date.strftime("%Y-%m-%d")
+        rng = random.Random(date_seed)
+
+        total_words: int = self._secret_words_size // self._line_size
+        line_index: int = rng.randint(0, total_words - 1)
+
+        result: str = ""
+        with open(file=self._secret_words_path, mode="rb") as file:
+            file.seek(line_index * self._line_size)
+            result = file.read(5).decode("utf-8").lower()
+
+        console.log_debug(
+            f"/wordle: Daily challenge word '{result}' (line {line_index}) selected for date {date_seed}."
+        )
+        return result
+
     def _find_word(self, word: str, file_path: str, file_size: int) -> bool:
         with open(file=file_path, mode="rb") as file:
             low: int = 0
@@ -103,14 +129,16 @@ class WordleGame:
     _status: models.EMatchStatus
     _player_id: int
     _secret_word: str
+    _is_daily: bool
     _guesses: list[str]
     _available_letters: dict[str, WordleLetterCategory]
     _dictionary: WordleDictionary
 
-    def __init__(self, player_id: int) -> None:
+    def __init__(self, player_id: int, is_daily: bool) -> None:
         self._bot = None
         self._match_id = -1
         self._player_id = player_id
+        self._is_daily = is_daily
         self._guesses = []
         self._status = models.EMatchStatus.PENDING
 
@@ -124,11 +152,16 @@ class WordleGame:
             answers_path=module_folder + "secret-words.txt",
             allowed_guesses_path=module_folder + "allowed-guesses.txt"
         )
-        self._secret_word = self._dictionary.get_random_secret_word()
+
+        if self._is_daily:
+            self._secret_word = self._dictionary.get_daily_secret_word()
+        else:
+            self._secret_word = self._dictionary.get_random_secret_word()
 
     def __str__(self) -> str:
         return (
-            f"Wordle game {self._match_id} for user {self._player_id} - {self._secret_word} (guesses: {self._guesses})"
+            f"Wordle game {self._match_id} for user {self._player_id} "
+            f"(secret_word: {self._secret_word}, guesses: {self._guesses}, is_daily: {self._is_daily})"
         )
 
     async def _update_database_record(self) -> None:
@@ -137,17 +170,21 @@ class WordleGame:
 
         await helpers.execute_db_operation(
             target=self._bot, db_func=update_match,
-            match_id=self._match_id, status=self._status, guesses=len(self._guesses)
+            match_id=self._match_id, status=self._status,
+            guesses_count=len(self._guesses), guesses=self._guesses
         )
+
+    def get_match_id(self) -> int:
+            return self._match_id
 
     def get_player_id(self) -> int:
         return self._player_id
 
-    def get_match_id(self) -> int:
-        return self._match_id
-
     def get_secret_word(self) -> str:
         return self._secret_word
+
+    def is_daily(self) -> bool:
+        return self._is_daily
 
     def get_guesses_count(self) -> int:
         return len(self._guesses)
@@ -176,7 +213,8 @@ class WordleGame:
         match_id: int | None = await helpers.execute_db_operation(
             target=self._bot, db_func=create_match,
             player_id=self._player_id,
-            secret_word=self._secret_word
+            secret_word=self._secret_word,
+            is_daily=self._is_daily
         )
 
         if match_id:
