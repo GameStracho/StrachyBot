@@ -2,8 +2,8 @@
 
 ### Added
 - Expanded the list of seasonal player emojis and colors
-- Title and author to the `Trivia` mini-game
-- Author to the `Tic-Tac-Toe` mini-game indicating who is currently on turn
+- Title and author of the `Trivia` mini-game
+- Author of the `Tic-Tac-Toe` mini-game, indicating who is currently on turn
 - Confirmable `Random guess` and `Give up` buttons to the `Wordle` mini-game
 - Showcase of used letters and daily challenge mode to the `Wordle` mini-game
 - New `surrender` match status
