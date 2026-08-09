@@ -271,9 +271,9 @@ class ConfirmView(discord.ui.View):
 
     def build_embed(self, question: str) -> tuple[discord.Embed, discord.File]:
         console.log_debug(f"Building embed for ConfirmView ({self.id}, question = '{question}')...")
-        embed: discord.Embed = discord.Embed(color=discord.Color.yellow(), title="Confirmation", description=question)
+        embed: discord.Embed = discord.Embed(color=discord.Color.blue(), title="Confirmation", description=question)
 
-        icon, icon_url = helpers.load_attachment(path=__file__, filename="warning.png", sub_dir="images")
+        icon, icon_url = helpers.load_attachment(path=__file__, filename="question.png", sub_dir="images")
         embed.set_thumbnail(url=icon_url)
         embed.add_field(name="Timeout", value=get_timeout_timestamp(self), inline=False)
 
