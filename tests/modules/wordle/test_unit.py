@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 import discord
 import pytest
 
+import modules.wordle.game as game_mod
 from modules.wordle.game import WordleDictionary, WordleGame, WordleLetterCategory
 from modules.wordle.ui import WordleGuessModal, WordleView
 from shared import models, ui
@@ -26,8 +27,6 @@ def test_wordle_letter_category_int(category: WordleLetterCategory, expected_int
 
 
 def test_wordle_dictionary_initialization() -> None:
-    import modules.wordle.game as game_mod
-
     # Find the real files
     module_folder = re.sub(pattern=r"\/[^\/]*$", repl="/", string=game_mod.__file__)
     answers_path = module_folder + "secret-words.txt"
@@ -41,8 +40,6 @@ def test_wordle_dictionary_initialization() -> None:
 
 
 def test_wordle_dictionary_validation() -> None:
-    import modules.wordle.game as game_mod
-
     module_folder = re.sub(pattern=r"\/[^\/]*$", repl="/", string=game_mod.__file__)
     answers_path = module_folder + "secret-words.txt"
     guesses_path = module_folder + "allowed-guesses.txt"
@@ -62,8 +59,6 @@ def test_wordle_dictionary_validation() -> None:
 
 
 def test_wordle_dictionary_random_selections() -> None:
-    import modules.wordle.game as game_mod
-
     module_folder = re.sub(pattern=r"\/[^\/]*$", repl="/", string=game_mod.__file__)
     answers_path = module_folder + "secret-words.txt"
     guesses_path = module_folder + "allowed-guesses.txt"
@@ -80,8 +75,6 @@ def test_wordle_dictionary_random_selections() -> None:
 
 
 def test_wordle_dictionary_daily_secret_word() -> None:
-    import modules.wordle.game as game_mod
-
     module_folder = re.sub(pattern=r"\/[^\/]*$", repl="/", string=game_mod.__file__)
     answers_path = module_folder + "secret-words.txt"
     guesses_path = module_folder + "allowed-guesses.txt"
@@ -252,19 +245,9 @@ def test_wordle_game_categorize_word() -> None:
     game = WordleGame(player_id=123, is_daily=False)
     game._secret_word = "apple"
 
-    # Exact match
-    res1 = game.categorize_word("apple")
-    assert res1 == [
-        ("a", WordleLetterCategory.CORRECT),
-        ("p", WordleLetterCategory.CORRECT),
-        ("p", WordleLetterCategory.CORRECT),
-        ("l", WordleLetterCategory.CORRECT),
-        ("e", WordleLetterCategory.CORRECT),
-    ]
-
     # Some misplaced, some incorrect
-    res2 = game.categorize_word("pears")
-    assert res2 == [
+    res1 = game.categorize_word("pears")
+    assert res1 == [
         ("p", WordleLetterCategory.MISPLACED),
         ("e", WordleLetterCategory.MISPLACED),
         ("a", WordleLetterCategory.MISPLACED),
@@ -272,24 +255,52 @@ def test_wordle_game_categorize_word() -> None:
         ("s", WordleLetterCategory.INCORRECT),
     ]
 
+    # Verify available letters updates
+    avail = game.get_available_letters()
+    assert avail["p"] == WordleLetterCategory.MISPLACED
+    assert avail["e"] == WordleLetterCategory.MISPLACED
+    assert avail["a"] == WordleLetterCategory.MISPLACED
+    assert avail["r"] == WordleLetterCategory.INCORRECT
+    assert avail["s"] == WordleLetterCategory.INCORRECT
+    assert avail["z"] == WordleLetterCategory.UNUSED
+
     # Double letter count check (Guess has three p's: 'paper')
-    res3 = game.categorize_word("paper")
-    assert res3 == [
+    res2 = game.categorize_word("paper")
+    assert res2 == [
         ("p", WordleLetterCategory.MISPLACED),
         ("a", WordleLetterCategory.MISPLACED),
         ("p", WordleLetterCategory.CORRECT),
-        ("e", WordleLetterCategory.CORRECT),
+        ("e", WordleLetterCategory.MISPLACED),
         ("r", WordleLetterCategory.INCORRECT),
     ]
 
     # Verify available letters updates
     avail = game.get_available_letters()
     assert avail["p"] == WordleLetterCategory.CORRECT
-    assert avail["e"] == WordleLetterCategory.CORRECT
+    assert avail["e"] == WordleLetterCategory.MISPLACED
     assert avail["a"] == WordleLetterCategory.MISPLACED
     assert avail["r"] == WordleLetterCategory.INCORRECT
+    assert avail["s"] == WordleLetterCategory.INCORRECT
     assert avail["z"] == WordleLetterCategory.UNUSED
 
+    # Exact match
+    res3 = game.categorize_word("apple")
+    assert res3 == [
+        ("a", WordleLetterCategory.CORRECT),
+        ("p", WordleLetterCategory.CORRECT),
+        ("p", WordleLetterCategory.CORRECT),
+        ("l", WordleLetterCategory.CORRECT),
+        ("e", WordleLetterCategory.CORRECT),
+    ]
+
+    # Verify available letters updates
+    avail = game.get_available_letters()
+    assert avail["p"] == WordleLetterCategory.CORRECT
+    assert avail["e"] == WordleLetterCategory.CORRECT
+    assert avail["a"] == WordleLetterCategory.CORRECT
+    assert avail["r"] == WordleLetterCategory.INCORRECT
+    assert avail["s"] == WordleLetterCategory.INCORRECT
+    assert avail["z"] == WordleLetterCategory.UNUSED
 
 def test_wordle_view_build_embed() -> None:
     game = WordleGame(player_id=123, is_daily=False)
@@ -299,7 +310,7 @@ def test_wordle_view_build_embed() -> None:
     embed, file = view.build_embed(user)
     assert embed.title == "Wordle"
     assert embed.author.name == "Alice"
-    assert len(embed.fields) == 8
+    assert len(embed.fields) == 9
     assert file.filename == "icon.png"
 
     # Daily challenge title contains date
@@ -483,7 +494,9 @@ async def test_wordle_view_enter_guess_button(monkeypatch: pytest.MonkeyPatch) -
     interaction = mocks.DummyInteraction(user_id=123, username="Alice")
 
     # Happy path
-    await view.enter_guess_button(interaction, view.children[0])
+    callback = view.enter_guess_button.callback
+    assert callback is not None
+    await callback(interaction)
     assert message_mock.edit.called
     assert interaction.response.send_modal.called
 
@@ -491,7 +504,9 @@ async def test_wordle_view_enter_guess_button(monkeypatch: pytest.MonkeyPatch) -
     error_mock = AsyncMock()
     monkeypatch.setattr("modules.wordle.ui.messages.handle_error", error_mock)
     message_mock.edit.side_effect = Exception("Failed")
-    await view.enter_guess_button(interaction, view.children[0])
+    callback_err = view.enter_guess_button.callback
+    assert callback_err is not None
+    await callback_err(interaction)
     error_mock.assert_called_once()
 
 
@@ -518,7 +533,9 @@ async def test_wordle_view_random_guess_button(monkeypatch: pytest.MonkeyPatch) 
 
     monkeypatch.setattr(ui.ConfirmView, "__init__", mock_confirm_init)
 
-    await view.random_guess_button(interaction, view.children[1])
+    callback = view.random_guess_button.callback
+    assert callback is not None
+    await callback(interaction)
 
     assert message_mock.edit.called
     assert interaction.response.send_message.called
@@ -540,7 +557,9 @@ async def test_wordle_view_random_guess_button(monkeypatch: pytest.MonkeyPatch) 
     error_mock = AsyncMock()
     monkeypatch.setattr("modules.wordle.ui.messages.handle_error", error_mock)
     view.message = None
-    await view.random_guess_button(interaction, view.children[1])
+    callback_err = view.random_guess_button.callback
+    assert callback_err is not None
+    await callback_err(interaction)
     error_mock.assert_called_once()
 
 
@@ -567,7 +586,9 @@ async def test_wordle_view_give_up_button(monkeypatch: pytest.MonkeyPatch) -> No
 
     monkeypatch.setattr(ui.ConfirmView, "__init__", mock_confirm_init)
 
-    await view.give_up_button(interaction, view.children[2])
+    callback = view.give_up_button.callback
+    assert callback is not None
+    await callback(interaction)
 
     assert message_mock.edit.called
     assert interaction.response.send_message.called
@@ -589,7 +610,9 @@ async def test_wordle_view_give_up_button(monkeypatch: pytest.MonkeyPatch) -> No
     error_mock = AsyncMock()
     monkeypatch.setattr("modules.wordle.ui.messages.handle_error", error_mock)
     view.message = None
-    await view.give_up_button(interaction, view.children[2])
+    callback_err = view.give_up_button.callback
+    assert callback_err is not None
+    await callback_err(interaction)
     error_mock.assert_called_once()
 
 
@@ -598,7 +621,7 @@ def test_wordle_guess_modal_get_uncovered_guess() -> None:
     game._secret_word = "apple"
     view = WordleView(game=game)
     modal = WordleGuessModal(parent_view=view)
-    modal.guess_input.value = "pears"
+    cast(Any, modal.guess_input)._value = "pears"
 
     val = modal._get_uncovered_guess()
     assert val is not None
@@ -619,7 +642,7 @@ async def test_wordle_guess_modal_on_submit(monkeypatch: pytest.MonkeyPatch) -> 
 
     # 1. Invalid word path
     modal = WordleGuessModal(parent_view=view)
-    modal.guess_input.value = "xxxxx"
+    cast(Any, modal.guess_input)._value = "xxxxx"
     await modal.on_submit(interaction)
     assert "invalid word" in cast(str, embed.fields[0].value)
     assert interaction.response.edit_message.called
@@ -629,7 +652,7 @@ async def test_wordle_guess_modal_on_submit(monkeypatch: pytest.MonkeyPatch) -> 
     # 2. Already guessed path
     game._guesses = ["pears"]
     modal2 = WordleGuessModal(parent_view=view)
-    modal2.guess_input.value = "pears"
+    cast(Any, modal2.guess_input)._value = "pears"
     await modal2.on_submit(interaction)
     assert "already guessed" in cast(str, embed.fields[0].value)
     assert interaction.response.edit_message.called
@@ -642,10 +665,10 @@ async def test_wordle_guess_modal_on_submit(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(game, "add_guess", add_guess_mock)
 
     msg_mock = AsyncMock()
-    interaction.original_response = AsyncMock(return_value=msg_mock)
+    monkeypatch.setattr(interaction, "original_response", AsyncMock(return_value=msg_mock))
 
     modal3 = WordleGuessModal(parent_view=view)
-    modal3.guess_input.value = "pears"
+    cast(Any, modal3.guess_input)._value = "pears"
     await modal3.on_submit(interaction)
 
     add_guess_mock.assert_called_once_with(word="pears")
@@ -658,3 +681,4 @@ async def test_wordle_guess_modal_on_submit(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr("modules.wordle.ui.ui.extract_embed", MagicMock(side_effect=Exception("Failed")))
     await modal3.on_submit(interaction)
     error_mock.assert_called_once()
+

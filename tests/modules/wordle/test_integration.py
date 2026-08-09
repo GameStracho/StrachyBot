@@ -107,6 +107,7 @@ async def test_wordle_view_timeout_disables_buttons_and_updates_db(monkeypatch: 
     game = WordleGame(player_id=8, is_daily=False)
     game._match_id = 55
     game._secret_word = "apple"
+    game._bot = mocks.DummyStrachyBot()
 
     view = WordleView(game=game, timeout=1.0)
 

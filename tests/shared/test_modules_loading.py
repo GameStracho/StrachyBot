@@ -18,7 +18,10 @@ async def test_all_modules_load_and_sync_correctly(monkeypatch: pytest.MonkeyPat
     ]
 
     # 2. Act: Instantiate the bot and run custom dynamic setup hook
-    mock_engine = type("EngineStub", (), {"begin": lambda self: mocks.DummyTransaction()})()
+    mock_engine = type("EngineStub", (), {
+        "begin": lambda self: mocks.DummyTransaction(),
+        "dispose": AsyncMock()
+    })()
     bot = StrachyBot()
     bot.create_db_session_factory(mock_engine)
     monkeypatch.setattr(bot.tree, "sync", AsyncMock(return_value=[]))
