@@ -18,6 +18,7 @@ class WordleCog(commands.Cog):
             console.log_debug(f"/wordle: Command used by user {interaction.user.display_name} ({interaction.user.id})")
 
             game: WordleGame = WordleGame(player_id=interaction.user.id)
+            await game.connect_database(bot=self.bot)
             view: WordleView = WordleView(game=game, timeout=300.0)
             embed, icon = view.build_embed(interaction.user)
 

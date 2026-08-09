@@ -144,7 +144,7 @@ class WordleView(discord.ui.View):
         if self._game.get_status() != models.EMatchStatus.TIMEOUT or self.message is None:
             return
 
-        self._game.handle_timeout()
+        await self._game.handle_timeout()
         self.disable_buttons()
 
         embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
@@ -193,7 +193,7 @@ class WordleView(discord.ui.View):
                 assert self.message is not None
                 embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
 
-                self._game.guess_random_word()
+                await self._game.guess_random_word()
                 self.update_embed(embed=embed, user=confirm_interaction.user, default_status="Used random guess.")
                 await self.message.edit(embed=embed, view=self)
 
@@ -228,7 +228,7 @@ class WordleView(discord.ui.View):
                 assert self.message is not None
                 embed: discord.Embed = ui.extract_embed_from_message(message=self.message, index=0, hide_icon=True)
 
-                self._game.handle_surrender()
+                await self._game.handle_surrender()
                 self.update_embed(embed=embed, user=confirm_interaction.user, default_status="Used random guess.")
                 await self.message.edit(embed=embed, view=self)
 
@@ -316,7 +316,7 @@ class WordleGuessModal(discord.ui.Modal):
                 await interaction.response.edit_message(embed=embed, view=self._parent_view)
                 return
 
-            game.add_guess(word=guess)
+            await game.add_guess(word=guess)
             console.log_info(
                 f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                 f"guessed '{self.guess_input.value}' in game {self._parent_view.get_game().match_id}."
