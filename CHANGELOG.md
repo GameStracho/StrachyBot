@@ -1,3 +1,30 @@
+## [1.3] Wordle 2.0 - 2026-08-09
+
+### Added
+- Expanded the list of seasonal player emojis and colors
+- Title and author of the `Trivia` mini-game
+- Author of the `Tic-Tac-Toe` mini-game, indicating who is currently on turn
+- Confirmable `Random guess` and `Give up` buttons to the `Wordle` mini-game
+- Showcase of used letters and daily challenge mode to the `Wordle` mini-game
+- New `surrender` match status
+- Guesses and *is_daily* tag to the `wordle_match` database table
+- 29 *unit* and 5 *integration* tests for `wordle` module
+
+### Changed
+- Complete rewrite and modernization of the `Wordle` mini-game with database records and timeout handling
+- Combined `/wordle_play` and `/wordle_guess` commands to a single command `/wordle`
+- Moved all used emojis to `shared/ui.py`
+- Updated the `Wordle` mini-game icon to match the new style
+
+### Fixed
+- Centered the `Trivia` mini-game icon
+- Bot session closure and database engine disposal on shutdown
+- Detection of changes to enum values during database migration generation
+- Excluded `migrations` directory from linting and type checking
+- Added permissions to test-writing agent
+
+---
+
 ## [1.2] Tic-Tac-Toe 2.0 - 2026-07-30
 
 ### Added
@@ -119,7 +146,7 @@
 ### Added
 - Docker support and list of required packages
 - Git utility (.gitignore, [README.md](README.md), LICENSE)
-- CI/CD pipeline running linters, type checks and unit tests
+- CI/CD pipeline running linters, type checks, and unit tests
 
 ### Fixed
 - Added type annotations and resolved type difference issues
@@ -129,7 +156,7 @@
 ## [1.0] Initial Release - 2023-02-17
 
 ### Added
-- New `Wordle`, `Tic-Tac-Toe` and `Quote Guess` mini games
+- New `Wordle`, `Tic-Tac-Toe` and `Quote Guess` mini-games
 - New `/announcement` command for creating pretty announcements
 - User stats tracking played games and achieved wins
 - Backups of user stats on Google Drive

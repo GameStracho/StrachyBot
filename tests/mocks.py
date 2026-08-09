@@ -101,7 +101,7 @@ class DummyInteraction(discord.Interaction):
     def __init__(self, user_id: int = 1, username: str = "Tester") -> None:
         # Avoid running full discord.Interaction internal state machine logic during raw unit tests
         self.user = SimpleNamespace(id=user_id, display_name=username)
-        self.response = SimpleNamespace(defer=AsyncMock(), send_message=AsyncMock(), edit_message=AsyncMock())
+        self.response = SimpleNamespace(defer=AsyncMock(), send_message=AsyncMock(), edit_message=AsyncMock(), send_modal=AsyncMock())
         self.followup = SimpleNamespace(send=AsyncMock())
         self.original_response_message: discord.Message | None = None
         self._followup_sent: dict[str, Any] | None = None
@@ -122,6 +122,11 @@ class DummyInteraction(discord.Interaction):
 
     async def original_response(self) -> Any:
         return self.original_response_message
+
+
+class TestException(Exception):
+    def __init__(self, *args: Any) -> None:
+        super().__init__(*args)
 
 
 def create_dummy_user(user_id: int = 1, username: str = "Tester", is_bot: bool = False) -> discord.User:

@@ -2,23 +2,36 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from modules.wordle import logic
-from shared.bot import StrachyBot
+from shared import bot, console, helpers, messages
+
+from .game import WordleGame
+from .repository import has_played_daily_challenge
+from .ui import WordleView
 
 
 class WordleCog(commands.Cog):
-    def __init__(self, bot: StrachyBot) -> None:
+    def __init__(self, bot: bot.StrachyBot) -> None:
         self.bot = bot
 
-    @app_commands.command(
-        name="wordle_play", description="Try to guess a word in 6 tries.")
-    async def wordle_play(self, interaction: discord.Interaction) -> None:
-        await logic.start(interaction)
+    @app_commands.command(name="wordle", description="Try to guess a 5-letter word in 6 tries.")
+    async def wordle(self, interaction: discord.Interaction, daily_challenge: bool = False) -> None:
+        try:
+            console.log_debug(f"/wordle: Command used by user {interaction.user.display_name} ({interaction.user.id})")
 
-    @app_commands.command(name="wordle_guess", description="Guess a word in Wordle.")
-    async def wordle_guess(self, interaction: discord.Interaction, word: str) -> None:
-        if logic.is_playing(interaction.user.id):
-            await logic.guess(word, interaction)
-        else:
-            await interaction.response.send_message(
-                ephemeral=True, content="You have to start a new game first.")
+            if daily_challenge and await helpers.execute_db_operation(target=self.bot, db_func=has_played_daily_challenge, player_id=interaction.user.id):
+                console.log_info(f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) already played the daily challenge.")
+                await interaction.response.send_message(content="You already played today's daily challenge.", ephemeral=True)
+                return
+
+            game: WordleGame = WordleGame(player_id=interaction.user.id, is_daily=daily_challenge)
+            await game.connect_database(bot=self.bot)
+            view: WordleView = WordleView(game=game, timeout=300.0)
+            embed, icon = view.build_embed(interaction.user)
+
+            console.log_info(f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) started a new {game}.")
+            
+            # CRITICAL: Save the sent message reference to the view so the timeout handler can edit it!
+            await interaction.response.send_message(embed=embed, view=view, file=icon)
+            view.message = await interaction.original_response()
+        except Exception:
+            await messages.handle_error(command="/wordle", interaction=interaction, use_followup=False)

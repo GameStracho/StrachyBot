@@ -11,14 +11,14 @@ from shared import console
 from shared.bot import StrachyBot
 
 
-def load_attachment(path: str, filename: str) -> tuple[discord.File, str]:
+def load_attachment(path: str, filename: str, sub_dir: str = "") -> tuple[discord.File, str]:
     """
-        Loads attachment 'filename' from 'path'.
+        Loads attachment 'filename' from 'path/sub_dir/filename'.
 
         Returns loaded the attachment and its url.
     """
     
-    attachment_path: str = re.sub(pattern=r"[^\/]*$", repl="", string=path) + filename
+    attachment_path: str = re.sub(pattern=r"[^\/]*$", repl="", string=path) + f"/{sub_dir}/{filename}"
     attachment: discord.File = discord.File(fp=attachment_path, filename=filename)
 
     console.log_debug(f"Attachment '{attachment_path}' loaded.")

@@ -6,7 +6,7 @@ from shared import bot, console, helpers, messages, ui
 
 from .game import TicTacToeGame
 from .repository import create_match
-from .ui import PLAYER_COLOR, TicTacToeView, get_player_emojis
+from .ui import TicTacToeView
 
 
 class TicCog(commands.Cog):
@@ -46,8 +46,10 @@ class TicCog(commands.Cog):
                 game.match_id = match_id
 
             view: TicTacToeView = TicTacToeView(game=game, timeout=60.0)
-            player_emoji, opponent_emoji = get_player_emojis()
-            embed = discord.Embed(color=PLAYER_COLOR, title="Tic-Tac-Toe")
+            player_emoji, opponent_emoji = ui.get_player_emojis()
+            player_color, _ = ui.get_player_colors()
+            embed = discord.Embed(color=player_color, title="Tic-Tac-Toe")
+            embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar)
 
             embed.add_field(name="Players", value=f"{player_emoji} {game.get_player().mention}\n{opponent_emoji} {game.get_opponent().mention}", inline=False)
             embed.add_field(name="Status", value=f"It's {player_emoji} {game.get_player().mention}'s turn.", inline=False)

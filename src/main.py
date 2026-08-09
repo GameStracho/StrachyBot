@@ -22,10 +22,15 @@ async def main() -> None:
 
     bot = StrachyBot()
     bot.create_db_session_factory()
-    await bot.start(token)
+
+    try:
+        await bot.start(token)
+    except asyncio.CancelledError:
+        console.log_info("Shutdown requested. Closing bot...")
+    finally:
+        if not bot.is_closed():
+            console.log_info("Closing bot HTTP session and active connections...")
+            await bot.close()
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        console.log_info("Shutdown requested. Closing bot...")
+    asyncio.run(main())

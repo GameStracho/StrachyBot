@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, String
+from sqlalchemy import ARRAY, BigInteger, CheckConstraint, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.database import Base
@@ -12,4 +12,6 @@ class WordleMatch(Base):
 
     match_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("match.match_id", ondelete="CASCADE"), primary_key=True)
     secret_word: Mapped[str] = mapped_column(String(5), nullable=False)
-    guesses: Mapped[int] = mapped_column(nullable=False, default=0)
+    guesses_count: Mapped[int] = mapped_column(nullable=False, default=0)
+    is_daily: Mapped[bool] = mapped_column(nullable=False, default=False)
+    guesses: Mapped[list[str]] = mapped_column(ARRAY(String(5)), nullable=False, default=list)

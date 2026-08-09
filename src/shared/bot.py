@@ -14,6 +14,7 @@ from shared import console, database
 class StrachyBot(commands.Bot):
     start_time: datetime = discord.utils.utcnow()
     _db_session_factory: async_sessionmaker[AsyncSession] | None
+    _db_engine: AsyncEngine | None
 
     def __init__(self) -> None:
         # Setup intents
@@ -23,6 +24,7 @@ class StrachyBot(commands.Bot):
         super().__init__(command_prefix="!", case_insensitive=True, intents=intents)
 
         self._db_session_factory = None
+        self._db_engine = None
 
 
     def create_db_session_factory(self, db_engine: AsyncEngine | None = None) -> None:
@@ -34,12 +36,22 @@ class StrachyBot(commands.Bot):
 
         assert db_engine
 
+        self._db_engine = db_engine
         self._db_session_factory = database.create_session_factory(db_engine)
 
 
     def get_db_session_factory(self) -> async_sessionmaker[AsyncSession] | None:
         return self._db_session_factory
 
+
+    async def close(self) -> None:
+        """Called when the bot shuts down. Handles resource cleanup."""
+        if self._db_engine is not None:
+            console.log_info("Disposing database engine connection pool...")
+            await self._db_engine.dispose()
+            console.log_debug("Database engine successfully disposed.")
+
+        await super().close()
 
     async def setup_hook(self) -> None:
         """Called before the bot logs in."""
