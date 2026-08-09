@@ -164,7 +164,7 @@ class WordleView(discord.ui.View):
             return False
 
     async def on_timeout(self) -> None:
-        if self._game.get_status() != models.EMatchStatus.TIMEOUT or self.message is None:
+        if self._game.get_status() != models.EMatchStatus.PENDING or self.message is None:
             return
 
         await self._game.handle_timeout()
