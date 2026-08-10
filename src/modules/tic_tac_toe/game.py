@@ -2,7 +2,7 @@ from enum import Enum
 
 import discord
 
-from shared import console
+import console
 from shared.types import EDirection, Position, Vector
 
 

@@ -8,7 +8,8 @@ from discord import app_commands
 from discord.ext import commands
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
-from shared import console, database
+import console
+from shared import database
 
 
 class StrachyBot(commands.Bot):

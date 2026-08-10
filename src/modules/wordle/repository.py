@@ -3,7 +3,7 @@ from datetime import UTC, date, datetime, time
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from shared import console
+import console
 from shared.models import EMatchStatus, Match
 
 from .models import WordleMatch

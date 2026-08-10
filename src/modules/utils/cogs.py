@@ -4,7 +4,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from shared import console, ui
+import console
+from shared import ui
 from shared.bot import StrachyBot
 
 from .helpers import parse_changelog

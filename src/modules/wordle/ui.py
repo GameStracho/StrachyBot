@@ -2,7 +2,8 @@ from datetime import UTC, datetime
 
 import discord
 
-from shared import console, models, ui
+import console
+from shared import models, ui
 
 from .game import WordleGame, WordleLetterCategory
 

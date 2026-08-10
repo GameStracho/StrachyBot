@@ -2,7 +2,8 @@ import random
 
 import discord
 
-from shared import console, helpers, models, ui
+import console
+from shared import helpers, models, ui
 
 from .game import TriviaGame
 from .repository import update_match

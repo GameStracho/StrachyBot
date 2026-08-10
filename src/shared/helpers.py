@@ -6,7 +6,7 @@ import discord
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from shared import console
+import console
 from shared.bot import StrachyBot
 
 # Define a TypeVar bound to Pydantic's BaseModel

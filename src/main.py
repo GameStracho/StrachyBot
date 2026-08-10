@@ -3,7 +3,7 @@ import os
 
 from dotenv import load_dotenv
 
-from shared import console
+import console
 from shared.bot import StrachyBot
 
 

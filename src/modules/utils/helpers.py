@@ -1,6 +1,6 @@
 import re
 
-from shared import console
+import console
 
 
 def __strip_header(text: str) -> str:

@@ -5,7 +5,8 @@ import string
 from datetime import UTC, date, datetime
 from enum import Enum
 
-from shared import bot, console, helpers, models
+import console
+from shared import bot, helpers, models
 
 from .repository import create_match, update_match
 

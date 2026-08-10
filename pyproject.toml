@@ -23,7 +23,7 @@ ignore = [
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-single-line = false
-known-first-party = ["shared", "modules"] # Treat these as local imports
+known-first-party = ["shared", "modules", "console"] # Treat these as local imports
 
 [tool.ruff.format]
 quote-style = "double"       # "double" or "single"

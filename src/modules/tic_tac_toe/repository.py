@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from shared import console
+import console
 from shared.models import EMatchStatus, Match
 
 from .models import TicTacToeMatch

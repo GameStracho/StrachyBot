@@ -1,6 +1,7 @@
 import discord
 
-from shared import console, helpers, models, ui
+import console
+from shared import helpers, models, ui
 from shared.types import Position
 
 from .game import TicTacToeGame

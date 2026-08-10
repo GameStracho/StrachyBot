@@ -6,7 +6,8 @@ from datetime import UTC, date, datetime
 
 import discord
 
-from shared import console, ui
+import console
+from shared import ui
 
 WHITE_COLOR: discord.Color = discord.Color.from_rgb(255, 255, 255)
 BROWN_COLOR: discord.Color = discord.Color.from_rgb(119, 56, 22)

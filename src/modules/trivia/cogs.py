@@ -2,7 +2,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from shared import bot, console, helpers, ui
+import console
+from shared import bot, helpers, ui
 
 from .game import TriviaGame
 from .models import ETriviaCategory, ETriviaDifficulty
