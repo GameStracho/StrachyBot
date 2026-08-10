@@ -64,7 +64,7 @@ class ConfirmView(discord.ui.View):
             color=discord.Color.blue(), title="Confirmation", description=question
         )
 
-        icon, icon_url = load_attachment(path=__file__, filename="question.png", sub_dir="images")
+        icon, icon_url = load_attachment(path=__file__, filename="question.png", sub_dir="../images")
         embed.set_thumbnail(url=icon_url)
         embed.add_field(name="Timeout", value=get_timeout_timestamp(self), inline=False)
 
