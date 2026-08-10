@@ -2,14 +2,33 @@
 pythonpath = ["src"]
 
 [tool.ruff]
-exclude = [
-    "src/modules/google.py",
-    "src/modules/stats.py",
-    "migrations",
+line-length = 100
+target-version = "py311"
+exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors (line length, spacing, etc.)
+    "W",     # pycodestyle warnings
+    "F",     # Pyflakes (unused imports, undefined variables)
+    "I",     # isort (import order)
+    "N",     # pep8-naming (naming conventions)
+    "UP",    # pyupgrade (modern Python syntax)
 ]
-lint.ignore = [
+ignore = [
+    # "E501",  # Optional: ignore line-length linter warning if relying on 'ruff format'
     "BLE001", # Do not catch blind exception: `Exception`
 ]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-single-line = false
+known-first-party = ["shared", "modules"] # Treat these as local imports
+
+[tool.ruff.format]
+quote-style = "double"       # "double" or "single"
+indent-style = "space"        # "space" or "tab"
+docstring-code-format = true  # Formats Python code blocks inside docstrings!
 
 [tool.mypy]
 exclude = [
