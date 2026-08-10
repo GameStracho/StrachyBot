@@ -118,7 +118,7 @@ async def test_wordle_game_connect_database(monkeypatch: pytest.MonkeyPatch) -> 
     async def mock_execute(*args: Any, **kwargs: Any) -> int:
         return 999
 
-    monkeypatch.setattr("modules.wordle.game.helpers.execute_db_operation", mock_execute)
+    monkeypatch.setattr("modules.wordle.game.execute_db_operation", mock_execute)
 
     await game.connect_database(bot_mock)
     assert game.get_match_id() == 999
@@ -133,7 +133,7 @@ async def test_wordle_game_add_guess_win(monkeypatch: pytest.MonkeyPatch) -> Non
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.helpers.execute_db_operation", update_mock)
+    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
 
     await game.add_guess("apple")
 
@@ -152,7 +152,7 @@ async def test_wordle_game_add_guess_loss(monkeypatch: pytest.MonkeyPatch) -> No
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.helpers.execute_db_operation", update_mock)
+    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
 
     # 5 wrong guesses
     for _ in range(5):
@@ -209,7 +209,7 @@ async def test_wordle_game_handle_timeout(monkeypatch: pytest.MonkeyPatch) -> No
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.helpers.execute_db_operation", update_mock)
+    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
 
     await game.handle_timeout()
     assert game.get_status() == models.EMatchStatus.TIMEOUT
@@ -229,7 +229,7 @@ async def test_wordle_game_handle_surrender(monkeypatch: pytest.MonkeyPatch) -> 
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.helpers.execute_db_operation", update_mock)
+    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
 
     await game.handle_surrender()
     assert game.get_status() == models.EMatchStatus.SURRENDER
@@ -301,6 +301,7 @@ def test_wordle_game_categorize_word() -> None:
     assert avail["r"] == WordleLetterCategory.INCORRECT
     assert avail["s"] == WordleLetterCategory.INCORRECT
     assert avail["z"] == WordleLetterCategory.UNUSED
+
 
 def test_wordle_view_build_embed() -> None:
     game = WordleGame(player_id=123, is_daily=False)
@@ -377,12 +378,12 @@ def test_wordle_view_update_embed() -> None:
 
     # 1. PENDING
     game._guesses = ["apple"]
-    view.update_embed(embed, mocks.create_dummy_user(), "Keep playing")
+    view.update_embed(embed, "Keep playing")
     assert any(field.name == "Timeout" for field in embed.fields)
 
     # 2. WIN
     game._status = models.EMatchStatus.WIN
-    view.update_embed(embed, mocks.create_dummy_user(), "Won")
+    view.update_embed(embed, "Won")
     assert embed.color == discord.Color.green()
     assert not any(field.name == "Timeout" for field in embed.fields)
 
@@ -395,7 +396,7 @@ def test_wordle_view_update_embed() -> None:
 
     game._status = models.EMatchStatus.LOSS
     view2 = WordleView(game=game)
-    view2.update_embed(embed2, mocks.create_dummy_user(), "Lost")
+    view2.update_embed(embed2, "Lost")
     assert embed2.color == discord.Color.red()
 
     # 4. SURRENDER
@@ -407,14 +408,14 @@ def test_wordle_view_update_embed() -> None:
 
     game._status = models.EMatchStatus.SURRENDER
     view3 = WordleView(game=game)
-    view3.update_embed(embed3, mocks.create_dummy_user(), "Gave up")
-    assert embed3.color == ui.WHITE_COLOR
+    view3.update_embed(embed3, "Gave up")
+    assert embed3.color == ui.COLORS["white"]
 
     # 5. Invalid Status
     game._status = models.EMatchStatus.TIMEOUT
     view4 = WordleView(game=game)
     with pytest.raises(ValueError):
-        view4.update_embed(embed3, mocks.create_dummy_user(), "Error")
+        view4.update_embed(embed3, "Error")
 
 
 @pytest.mark.asyncio
@@ -434,7 +435,7 @@ async def test_wordle_view_interaction_check(monkeypatch: pytest.MonkeyPatch) ->
     # Exception
     monkeypatch.setattr(game, "get_player_id", MagicMock(side_effect=Exception("Failed")))
     error_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.ui.messages.handle_error", error_mock)
+    monkeypatch.setattr("modules.wordle.ui.ui.handle_error", error_mock)
 
     interaction_err = mocks.DummyInteraction(user_id=123, username="Alice")
     assert await view.interaction_check(interaction_err) is False
@@ -471,7 +472,7 @@ async def test_wordle_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     view.message = message_mock
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.helpers.execute_db_operation", update_mock)
+    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
 
     await view.on_timeout()
 
@@ -502,7 +503,7 @@ async def test_wordle_view_enter_guess_button(monkeypatch: pytest.MonkeyPatch) -
 
     # Exception path
     error_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.ui.messages.handle_error", error_mock)
+    monkeypatch.setattr("modules.wordle.ui.ui.handle_error", error_mock)
     message_mock.edit.side_effect = Exception("Failed")
     callback_err = view.enter_guess_button.callback
     assert callback_err is not None
@@ -555,7 +556,7 @@ async def test_wordle_view_random_guess_button(monkeypatch: pytest.MonkeyPatch) 
 
     # Exception path
     error_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.ui.messages.handle_error", error_mock)
+    monkeypatch.setattr("modules.wordle.ui.ui.handle_error", error_mock)
     view.message = None
     callback_err = view.random_guess_button.callback
     assert callback_err is not None
@@ -608,7 +609,7 @@ async def test_wordle_view_give_up_button(monkeypatch: pytest.MonkeyPatch) -> No
 
     # Exception path
     error_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.ui.messages.handle_error", error_mock)
+    monkeypatch.setattr("modules.wordle.ui.ui.handle_error", error_mock)
     view.message = None
     callback_err = view.give_up_button.callback
     assert callback_err is not None
@@ -638,7 +639,7 @@ async def test_wordle_guess_modal_on_submit(monkeypatch: pytest.MonkeyPatch) -> 
     interaction = mocks.DummyInteraction(user_id=123, username="Alice")
     interaction.user = mocks.create_dummy_user(123, "Alice")
 
-    monkeypatch.setattr("modules.wordle.ui.ui.extract_embed", lambda *args, **kwargs: embed)
+    monkeypatch.setattr("modules.wordle.ui.ui.embed.extract", lambda *args, **kwargs: embed)
 
     # 1. Invalid word path
     modal = WordleGuessModal(parent_view=view)
@@ -677,8 +678,9 @@ async def test_wordle_guess_modal_on_submit(monkeypatch: pytest.MonkeyPatch) -> 
 
     # 4. Exception path
     error_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.ui.messages.handle_error", error_mock)
-    monkeypatch.setattr("modules.wordle.ui.ui.extract_embed", MagicMock(side_effect=Exception("Failed")))
+    monkeypatch.setattr("modules.wordle.ui.ui.handle_error", error_mock)
+    monkeypatch.setattr(
+        "modules.wordle.ui.ui.embed.extract", MagicMock(side_effect=Exception("Failed"))
+    )
     await modal3.on_submit(interaction)
     error_mock.assert_called_once()
-

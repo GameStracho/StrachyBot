@@ -1,20 +1,24 @@
 import re
 
-from shared import console
+import console
 
 
 def __strip_header(text: str) -> str:
-    """"Strips markdown characters (#) from a header"""
-    return re.sub(r'^[#]* ', '', text)
+    """Strips markdown characters (#) from a header"""
+    return re.sub(r"^[#]* ", "", text)
+
 
 def parse_changelog() -> list[tuple[str, str]]:
-    """Parses sections of the newest version in CHANGELOG.md into list of pairs - section names and contents."""
+    """
+    Parses sections of the newest version in CHANGELOG.md into list of pairs
+    - section names and contents.
+    """
     sections: list[tuple[str, str]] = []
     console.log_debug("utils: Parsing 'CHANGELOG.md' file...")
 
-    with open("CHANGELOG.md", "r") as file:
+    with open("CHANGELOG.md") as file:
         line: str = file.readline()
-        
+
         # parse version
         sections.append(("Version", __strip_header(line).strip()))
 
@@ -33,15 +37,14 @@ def parse_changelog() -> list[tuple[str, str]]:
                     sections.append((section_name, section_content))
                     indented_content: str = re.sub(r"\n", "\n\t", section_content)
                     console.log_debug(
-                        f"utils: {section_name} section parsed with content: \n"
-                        f"\t{indented_content}"
+                        f"utils: {section_name} section parsed with content: \n\t{indented_content}"
                     )
                     section_name = ""
                     section_content = ""
 
                 line = file.readline()
                 continue
-            
+
             # start section
             if not section_name:
                 section_name = __strip_header(line).strip()
@@ -51,7 +54,7 @@ def parse_changelog() -> list[tuple[str, str]]:
             # parse section content
             section_content += line
             line = file.readline()
-    
+
     console.log_success("utils: All sections parsed.")
 
     return sections

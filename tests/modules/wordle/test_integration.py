@@ -19,8 +19,12 @@ async def test_wordle_cog_starts_game_and_sends_embed(monkeypatch: pytest.Monkey
     async def fake_create_match(*args: Any, **kwargs: Any) -> int:
         return 42
 
-    monkeypatch.setattr("modules.wordle.game.helpers.execute_db_operation", mocks.dummy_execute_db_operation)
-    monkeypatch.setattr("modules.wordle.cogs.helpers.execute_db_operation", mocks.dummy_execute_db_operation)
+    monkeypatch.setattr(
+        "modules.wordle.game.execute_db_operation", mocks.dummy_execute_db_operation
+    )
+    monkeypatch.setattr(
+        "modules.wordle.cogs.execute_db_operation", mocks.dummy_execute_db_operation
+    )
     monkeypatch.setattr("modules.wordle.game.create_match", fake_create_match)
 
     mock_msg = AsyncMock(spec=discord.Message)
@@ -40,15 +44,17 @@ async def test_wordle_cog_daily_challenge_not_played(monkeypatch: pytest.MonkeyP
     interaction = mocks.DummyInteraction(user_id=13, username="Alice")
     interaction.user = mocks.create_dummy_user(13, "Alice")
 
-    async def fake_execute_db_operation(target: Any, db_func: Any, *args: Any, **kwargs: Any) -> Any:
+    async def fake_execute_db_operation(
+        target: Any, db_func: Any, *args: Any, **kwargs: Any
+    ) -> Any:
         if db_func.__name__ == "has_played_daily_challenge":
             return False
         if db_func.__name__ == "create_match":
             return 42
         return await db_func(None, *args, **kwargs)
 
-    monkeypatch.setattr("modules.wordle.cogs.helpers.execute_db_operation", fake_execute_db_operation)
-    monkeypatch.setattr("modules.wordle.game.helpers.execute_db_operation", fake_execute_db_operation)
+    monkeypatch.setattr("modules.wordle.cogs.execute_db_operation", fake_execute_db_operation)
+    monkeypatch.setattr("modules.wordle.game.execute_db_operation", fake_execute_db_operation)
 
     cog = WordleCog(bot=bot.StrachyBot())
     wordle_callback = cast(Any, cog.wordle.callback)
@@ -63,12 +69,14 @@ async def test_wordle_cog_daily_challenge_already_played(monkeypatch: pytest.Mon
     interaction = mocks.DummyInteraction(user_id=13, username="Alice")
     interaction.user = mocks.create_dummy_user(13, "Alice")
 
-    async def fake_execute_db_operation(target: Any, db_func: Any, *args: Any, **kwargs: Any) -> Any:
+    async def fake_execute_db_operation(
+        target: Any, db_func: Any, *args: Any, **kwargs: Any
+    ) -> Any:
         if db_func.__name__ == "has_played_daily_challenge":
             return True
         return None
 
-    monkeypatch.setattr("modules.wordle.cogs.helpers.execute_db_operation", fake_execute_db_operation)
+    monkeypatch.setattr("modules.wordle.cogs.execute_db_operation", fake_execute_db_operation)
 
     cog = WordleCog(bot=bot.StrachyBot())
     wordle_callback = cast(Any, cog.wordle.callback)
@@ -87,12 +95,12 @@ async def test_wordle_cog_error_handling(monkeypatch: pytest.MonkeyPatch) -> Non
     interaction.user = mocks.create_dummy_user(13, "Alice")
 
     async def fake_execute_db_operation(*args: Any, **kwargs: Any) -> Any:
-        raise mocks.TestException("DB Error")
+        raise mocks.TestError("DB Error")
 
-    monkeypatch.setattr("modules.wordle.cogs.helpers.execute_db_operation", fake_execute_db_operation)
+    monkeypatch.setattr("modules.wordle.cogs.execute_db_operation", fake_execute_db_operation)
 
     error_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.cogs.messages.handle_error", error_mock)
+    monkeypatch.setattr("modules.wordle.cogs.ui.handle_error", error_mock)
 
     cog = WordleCog(bot=bot.StrachyBot())
     wordle_callback = cast(Any, cog.wordle.callback)
@@ -103,7 +111,9 @@ async def test_wordle_cog_error_handling(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 @pytest.mark.asyncio
-async def test_wordle_view_timeout_disables_buttons_and_updates_db(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_wordle_view_timeout_disables_buttons_and_updates_db(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     game = WordleGame(player_id=8, is_daily=False)
     game._match_id = 55
     game._secret_word = "apple"
@@ -123,7 +133,9 @@ async def test_wordle_view_timeout_disables_buttons_and_updates_db(monkeypatch: 
     view.message = mock_message
 
     update_match_mock = AsyncMock(return_value=True)
-    monkeypatch.setattr("modules.wordle.game.helpers.execute_db_operation", mocks.dummy_execute_db_operation)
+    monkeypatch.setattr(
+        "modules.wordle.game.execute_db_operation", mocks.dummy_execute_db_operation
+    )
     monkeypatch.setattr("modules.wordle.game.update_match", update_match_mock)
 
     await view.on_timeout()

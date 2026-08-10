@@ -20,7 +20,7 @@ This document provides a comprehensive overview of the **StrachyBot** codebase, 
 ### 2. Async Database Infrastructure
 - **ORM & Driver**: Uses SQLAlchemy 2.0 async ORM with `asyncpg`.
 - **Session Factory**: Created during bot initialization (`bot.create_db_session_factory()`).
-- **Database Operations**: Database interactions are routed asynchronously using `shared.helpers.execute_db_operation()` to ensure safe session management and context scope.
+- **Database Operations**: Database interactions are routed asynchronously using `shared.execute_db_operation()` to ensure safe session management and context scope.
 - **Migrations**: Database schema changes are managed via **Alembic** (`alembic.ini` and `migrations/`).
 
 ### 3. Shared Core (`src/shared/`)
@@ -28,9 +28,10 @@ This document provides a comprehensive overview of the **StrachyBot** codebase, 
 - `database.py`: Defines the async engine creator, `async_sessionmaker`, and the SQLAlchemy `Base` declarative base class.
 - `models.py`: Shared database models (e.g., base `Match` table, `EMatchStatus` enum) and common exceptions (`NoAPIResponseException`).
 - `helpers.py`: Utility helper for executing DB transactions (`execute_db_operation`) and loading discord asset attachments.
-- `console.py`: Colorized logging framework built with `colorama`.
-- `messages.py`: Standardized error handling and user notification wrappers.
-- `ui.py`: UI helpers for Discord components (e.g., dynamic timestamp formatting).
+- `ui/`: UI helpers for Discord components (e.g., dynamic timestamp formatting, constants, views, standardized error handling).
+
+### 4. Logging module (`src/console/`)
+- `logs.py`: Colorized logging framework built with `colorama`.
 
 ---
 
@@ -45,15 +46,9 @@ StrachyBot/
 ├── scripts/                      # Utility scripts
 │   └── backup.sh                 # Cron script for dumping Postgres DB & committing to Git
 ├── src/                          # Main application source code
+│   ├── console/                  # Standardized console logs
 │   ├── main.py                   # Application entry point
-│   ├── cz_words.txt              # Czech word dictionary for Wordle
-│   ├── wordle-words.txt          # Wordle target words dictionary
-│   ├── words.txt                 # English word dictionary
-│   ├── emojis.json               # Custom emoji definitions
-│   ├── stats.json / user_data.json # Data storage files
 │   ├── modules/                  # Modular feature extensions
-│   │   ├── google.py             # Google API Integration / authentication helpers
-│   │   ├── stats.py              # Statistics tracking module
 │   │   ├── tic_tac_toe/          # Tic-Tac-Toe mini-game module (cogs, game logic, UI, repo)
 │   │   ├── trivia/               # Trivia mini-game module (Open Trivia DB API integration)
 │   │   ├── utils/                # General utilities (/info, /announcement)
@@ -93,11 +88,12 @@ Defined in `src/shared/models.py`:
   - `player_id` (BigInteger, Discord User ID)
   - `start_time` (DateTime UTC)
   - `end_time` (DateTime UTC, optional)
-  - `status` (`EMatchStatus` Enum: `PENDING`, `WIN`, `LOSS`, `TIMEOUT`, `DRAW`)
+  - `status` (`EMatchStatus` Enum: `PENDING`, `WIN`, `LOSS`, `TIMEOUT`, `DRAW`, `SURRENDER`)
 
 ### Module Models
 - **Tic-Tac-Toe**: Extends match data for two-player grid records.
 - **Trivia**: Stores category, difficulty, question text, and correct answer associated with match logs.
+- **Wordle**: Stores secret word, guesses and guess count.
 
 ### Database Migrations (Alembic)
 - Migration scripts live in `migrations/versions/`.
@@ -140,10 +136,10 @@ When building new features or mini-games for StrachyBot, follow these convention
 
 1. **Module Structure**: Create a new folder under `src/modules/<module_name>/`.
    - `cogs.py`: Inherit from `commands.Cog` and implement commands using `@app_commands.command`.
-   - `models.py` (optional): Inherit from `shared.database.Base` or establish relations to `Match`.
+   - `models.py` (optional): Inherit from `shared.models.Base` or establish relations to `Match`.
    - `repository.py` (optional): Encapsulate database query functions.
    - `ui.py` (optional): Implement `discord.ui.View` or `discord.ui.Button` components.
-2. **Database Access**: Always use `helpers.execute_db_operation(target=self.bot, db_func=your_func, ...)` to perform operations against the async database session factory.
-3. **Error Handling**: Wrap command logic in `try...except` blocks and call `messages.handle_error()` on failures.
+2. **Database Access**: Always use `execute_db_operation(target=self.bot, db_func=your_func, ...)` to perform operations against the async database session factory.
+3. **Error Handling**: Wrap command logic in `try...except` blocks and call `ui.handle_error()` on failures.
 4. **UI View Message References**: When creating dynamic Discord views with timeouts, save the initial message reference (`view.message = await interaction.original_response()`) so the view's `on_timeout` method can update the UI.
 5. **Testing**: Add corresponding test suites under `tests/modules/<module_name>/`. Ensure all tests pass with `.venv/bin/python -m pytest`.

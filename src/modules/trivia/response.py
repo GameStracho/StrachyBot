@@ -38,7 +38,9 @@ class TriviaResult(BaseModel):
     @classmethod
     def decode_category(cls, value: str) -> str:
         if isinstance(value, str):
-            return re.sub(pattern="^(Entertainment|Science): ", repl="", string=html.unescape(value))
+            return re.sub(
+                pattern="^(Entertainment|Science): ", repl="", string=html.unescape(value)
+            )
 
         return value
 
@@ -55,7 +57,9 @@ class TriviaResult(BaseModel):
         return (
             f"(difficulty = {self.difficulty}, category = {self.category}, "
             f"question = {self.question}, correct_answer = {self.correct_answer}, "
-            f" incorrect answers = {self.incorrect_answers})")
+            f" incorrect answers = {self.incorrect_answers})"
+        )
+
 
 class TriviaResponse(BaseModel):
     results: list[TriviaResult]

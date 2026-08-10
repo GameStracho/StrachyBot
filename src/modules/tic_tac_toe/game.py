@@ -2,7 +2,7 @@ from enum import Enum
 
 import discord
 
-from shared import console
+import console
 from shared.types import EDirection, Position, Vector
 
 
@@ -20,24 +20,21 @@ class TicTacToeGrid:
         self._size = size
         self._grid = [ETicTacToeCell.EMPTY for _ in range(pow(size, 2))]
 
-
     def get_size(self) -> int:
         return self._size
 
-
     def get_cell_value(self, pos: Position) -> ETicTacToeCell | None:
         """
-            Returns value of cell at position (row, col) or None if position is out of bounds.
+        Returns value of cell at position (row, col) or None if position is out of bounds.
         """
         if pos.x < 0 or pos.x >= self._size or pos.y < 0 or pos.y >= self._size:
             return None
 
         return self._grid[pos.y * self._size + pos.x]
 
-
     def set_cell_value(self, pos: Position, value: ETicTacToeCell) -> None:
         """
-            Sets value of cell at a valid position (row, col).
+        Sets value of cell at a valid position (row, col).
         """
         if pos.x < 0 or pos.x >= self._size or pos.y < 0 or pos.y >= self._size:
             return
@@ -63,44 +60,38 @@ class TicTacToeGame:
         self._is_over = False
         self._winner = None
 
-
     def __str__(self) -> str:
         return (
-            f"Tic-Tac-Toe game {self.match_id} for player {self._player.id} against opponent {self._opponent.id} "
-            f"(total moves: {self._total_moves}, grid_size: {self._grid.get_size()}, is_over: {self._is_over}, winner: {self._winner})."
+            f"Tic-Tac-Toe game {self.match_id} for player {self._player.id} "
+            f"against opponent {self._opponent.id} "
+            f"(total moves: {self._total_moves}, grid_size: {self._grid.get_size()}, "
+            f"is_over: {self._is_over}, winner: {self._winner})."
         )
-
 
     def get_player(self) -> discord.User:
         return self._player
 
-
     def get_opponent(self) -> discord.User:
         return self._opponent
-
 
     def get_total_moves(self) -> int:
         return self._total_moves
 
-
     def get_grid_size(self) -> int:
         return self._grid.get_size()
-
 
     def get_winner(self) -> discord.User | None:
         return self._winner
 
-
     def is_opponent_bot(self) -> bool:
         return self._opponent.bot
 
-
     def calculate_bot_move(self) -> Position | None:
         """
-            Calculates an intelligent move for the bot opponent.
-            Priority 1: Win in 1 move.
-            Priority 2: Block opponent's win in 1 move.
-            Priority 3: Strategic positional move (center, corners, setup).
+        Calculates an intelligent move for the bot opponent.
+        Priority 1: Win in 1 move.
+        Priority 2: Block opponent's win in 1 move.
+        Priority 3: Strategic positional move (center, corners, setup).
         """
         grid_size: int = self._grid.get_size()
         empty_positions: list[Position] = []
@@ -138,7 +129,6 @@ class TicTacToeGame:
 
         return best_pos
 
-
     def _simulate_win(self, pos: Position, control_value: ETicTacToeCell) -> bool:
         assert self._grid.get_cell_value(pos=pos) == ETicTacToeCell.EMPTY
 
@@ -152,7 +142,6 @@ class TicTacToeGame:
 
         self._grid.set_cell_value(pos=pos, value=ETicTacToeCell.EMPTY)
         return is_win
-
 
     def _score_position(self, pos: Position) -> int:
         score: int = 0
@@ -187,38 +176,45 @@ class TicTacToeGame:
 
         return score
 
-
     def is_players_turn(self) -> bool:
         return self._total_moves % 2 == 0
-
 
     def has_game_ended(self) -> bool:
         return self._is_over
 
-
     def play(self, position: Position) -> bool:
         """
-            Perform a move by a player who is currently on turn.
+        Perform a move by a player who is currently on turn.
 
-            Returns True if move is valid, False otherwise.
+        Returns True if move is valid, False otherwise.
         """
 
         if self._is_over or self._winner:
-            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - the game already finished.")
+            console.log_fail(
+                f"/tic-tac-toe: Invalid move for game {self.match_id} - the game already finished."
+            )
             return False
 
         old_value: ETicTacToeCell | None = self._grid.get_cell_value(pos=position)
 
         if not old_value:
-            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - position {position} out of bounds.")
+            console.log_fail(
+                f"/tic-tac-toe: Invalid move for game {self.match_id} "
+                f"- position {position} out of bounds."
+            )
             return False
 
         if old_value != ETicTacToeCell.EMPTY:
-            console.log_fail(f"/tic-tac-toe: Invalid move for game {self.match_id} - cell at position {position} is occupied ({old_value}).")
+            console.log_fail(
+                f"/tic-tac-toe: Invalid move for game {self.match_id} "
+                f"- cell at position {position} is occupied ({old_value})."
+            )
             return False
 
         current_player: discord.User = self._player if self.is_players_turn() else self._opponent
-        cell_value: ETicTacToeCell = ETicTacToeCell.PLAYER if self.is_players_turn() else ETicTacToeCell.OPPONENT
+        cell_value: ETicTacToeCell = (
+            ETicTacToeCell.PLAYER if self.is_players_turn() else ETicTacToeCell.OPPONENT
+        )
 
         self._grid.set_cell_value(pos=position, value=cell_value)
         self._total_moves += 1
@@ -226,10 +222,11 @@ class TicTacToeGame:
 
         return True
 
-
-    def _end_game(self, pos: Position, current_player: discord.User, control_value: ETicTacToeCell) -> None:
+    def _end_game(
+        self, pos: Position, current_player: discord.User, control_value: ETicTacToeCell
+    ) -> None:
         """
-            Determines whether the game has ended and assigns a winner.
+        Determines whether the game has ended and assigns a winner.
         """
         assert not self._is_over and not self._winner
 
@@ -242,10 +239,9 @@ class TicTacToeGame:
         # Check for draw
         self._is_over = self._total_moves == pow(self._grid.get_size(), 2)
 
-
     def _check_axis(self, pos: Position, axis: Vector, control_value: ETicTacToeCell) -> bool:
         """
-            Checks axis for 3 connected cells passing through given position.
+        Checks axis for 3 connected cells passing through given position.
         """
         assert control_value != ETicTacToeCell.EMPTY
 

@@ -1,22 +1,26 @@
-from datetime import date, datetime, time, timezone
+from datetime import UTC, date, datetime, time
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from shared import console
+import console
 from shared.models import EMatchStatus, Match
 
 from .models import WordleMatch
 
 
-async def create_match(session: AsyncSession, player_id: int, secret_word: str, is_daily: bool) -> int:
+async def create_match(
+    session: AsyncSession, player_id: int, secret_word: str, is_daily: bool
+) -> int:
     """
     Creates a new wordle match record in the database.
-    
+
     Returns id of the created match.
     """
 
-    console.log_debug(f"wordle: Creating a new match (player_id = {player_id}, secret_word = {secret_word})...")
+    console.log_debug(
+        f"wordle: Creating a new match (player_id = {player_id}, secret_word = {secret_word})..."
+    )
     match_id: int = 0
 
     async with session.begin():
@@ -28,9 +32,7 @@ async def create_match(session: AsyncSession, player_id: int, secret_word: str, 
         await session.flush()
 
         child_match: WordleMatch = WordleMatch(
-            match_id=parent_match.match_id,
-            secret_word=secret_word,
-            is_daily=is_daily
+            match_id=parent_match.match_id, secret_word=secret_word, is_daily=is_daily
         )
         session.add(child_match)
 
@@ -40,7 +42,13 @@ async def create_match(session: AsyncSession, player_id: int, secret_word: str, 
     return match_id
 
 
-async def update_match(session: AsyncSession, match_id: int, status: EMatchStatus, guesses_count: int, guesses: list[str]) -> bool:
+async def update_match(
+    session: AsyncSession,
+    match_id: int,
+    status: EMatchStatus,
+    guesses_count: int,
+    guesses: list[str],
+) -> bool:
     """
     Updates an pending wordle match record in the database.
 
@@ -50,16 +58,19 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
         console.log_warning(f"wordle: Cannot update match status {status}.")
         return False
 
-    console.log_debug(f"wordle: Updating match ({match_id}) with status ({status}) and guesses ({guesses_count})...")
+    console.log_debug(
+        f"wordle: Updating match ({match_id}) "
+        f"with status ({status}) and {guesses_count} guesses ({guesses})..."
+    )
 
     async with session.begin():
-        parent_match: Match | None = (await session.execute(
-            select(Match).where(Match.match_id == match_id)
-        )).scalar_one_or_none()
+        parent_match: Match | None = (
+            await session.execute(select(Match).where(Match.match_id == match_id))
+        ).scalar_one_or_none()
 
-        child_match: WordleMatch | None = (await session.execute(
-            select(WordleMatch).where(WordleMatch.match_id == match_id)
-        )).scalar_one_or_none()
+        child_match: WordleMatch | None = (
+            await session.execute(select(WordleMatch).where(WordleMatch.match_id == match_id))
+        ).scalar_one_or_none()
 
         if not parent_match or not child_match:
             console.log_error(f"wordle: Match ({match_id}) not found, update aborted.")
@@ -77,16 +88,15 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
 
     return True
 
+
 async def has_played_daily_challenge(
-    session: AsyncSession, 
-    player_id: int, 
-    target_date: date | None = None
+    session: AsyncSession, player_id: int, target_date: date | None = None
 ) -> bool:
     """
     Checks whether a player has already started or played the daily challenge on a specific date.
     """
     if target_date is None:
-        target_date = datetime.now(tz=timezone.utc).date()
+        target_date = datetime.now(tz=UTC).date()
 
     start_of_day = datetime.combine(target_date, time.min)
     end_of_day = datetime.combine(target_date, time.max)

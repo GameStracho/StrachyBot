@@ -24,7 +24,9 @@ from tests import mocks
         (ETriviaDifficulty.HARD, "Hard"),
     ],
 )
-def test_trivia_enums_convert_to_strings(value: ETriviaCategory | ETriviaDifficulty, expected: str) -> None:
+def test_trivia_enums_convert_to_strings(
+    value: ETriviaCategory | ETriviaDifficulty, expected: str
+) -> None:
     assert str(value) == expected
 
 
@@ -66,7 +68,9 @@ def test_trivia_response_parses_html_and_normalizes_values() -> None:
 
 
 @pytest.mark.asyncio
-async def test_fetch_api_builds_expected_url_and_populates_game(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_fetch_api_builds_expected_url_and_populates_game(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     async def fake_fetch_api(url: str, model_class: TriviaResponse) -> TriviaResponse:
         assert url == "https://opentdb.com/api.php?amount=1&type=multiple&category=9"
         return TriviaResponse.model_validate(
@@ -97,7 +101,9 @@ async def test_fetch_api_builds_expected_url_and_populates_game(monkeypatch: pyt
 
 
 @pytest.mark.asyncio
-async def test_fetch_api_raises_when_api_returns_no_results(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_fetch_api_raises_when_api_returns_no_results(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     async def fake_fetch_api(_url: str, _model_class: TriviaResponse) -> TriviaResponse:
         return TriviaResponse(results=[])
 
@@ -108,7 +114,9 @@ async def test_fetch_api_raises_when_api_returns_no_results(monkeypatch: pytest.
         await game.fetch_api()
 
 
-def test_trivia_view_initializes_buttons_with_expected_labels(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_trivia_view_initializes_buttons_with_expected_labels(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr("modules.trivia.ui.random.shuffle", lambda items: items.reverse())
 
     game = TriviaGame(player_id=5, category=ETriviaCategory.ANY, difficulty=ETriviaDifficulty.ANY)
@@ -125,7 +133,9 @@ def test_trivia_view_initializes_buttons_with_expected_labels(monkeypatch: pytes
 
 
 @pytest.mark.asyncio
-async def test_trivia_button_correct_answer_updates_embed_and_status(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_trivia_button_correct_answer_updates_embed_and_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     game = TriviaGame(player_id=5)
     game.match_id = 21
     game._question = "Question"
@@ -133,11 +143,13 @@ async def test_trivia_button_correct_answer_updates_embed_and_status(monkeypatch
     game._incorrect_answers = ["Wrong"]
 
     view = TriviaView(game=game, timeout=5.0)
-    button = next(child for child in view.children if isinstance(child, TriviaButton) and child._is_correct)
+    button = next(
+        child for child in view.children if isinstance(child, TriviaButton) and child._is_correct
+    )
 
     embed = discord.Embed(title="Trivia")
     message = SimpleNamespace(embeds=[embed])
-    
+
     interaction = mocks.DummyInteraction(user_id=5, username="Tester")
     dummy_response = mocks.DummyResponse()
     interaction.response = cast(Any, dummy_response)

@@ -30,7 +30,7 @@ async def test_trivia_cog_creates_game_and_sends_embed(monkeypatch: pytest.Monke
     monkeypatch.setattr("modules.trivia.cogs.create_match", fake_create_match)
 
     cog = TriviaCog(bot=bot.StrachyBot())
-    
+
     trivia_callback = cast(Any, cog.trivia.callback)
     await trivia_callback(cog, interaction, ETriviaCategory.ANY, ETriviaDifficulty.ANY)
 
@@ -39,7 +39,9 @@ async def test_trivia_cog_creates_game_and_sends_embed(monkeypatch: pytest.Monke
 
 
 @pytest.mark.asyncio
-async def test_view_timeout_disables_buttons_and_updates_match(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_view_timeout_disables_buttons_and_updates_match(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     game = TriviaGame(player_id=8)
     game.match_id = 55
     game._question = "Question"

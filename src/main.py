@@ -3,8 +3,8 @@ import os
 
 from dotenv import load_dotenv
 
-from shared import console
-from shared.bot import StrachyBot
+import console
+from shared import StrachyBot
 
 
 async def main() -> None:
@@ -31,6 +31,7 @@ async def main() -> None:
         if not bot.is_closed():
             console.log_info("Closing bot HTTP session and active connections...")
             await bot.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

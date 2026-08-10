@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, TextIO
 
 from colorama import Fore, Style
@@ -7,8 +7,10 @@ from colorama import Fore, Style
 
 def current_time() -> str:
     return (
-        Fore.LIGHTBLACK_EX + Style.BRIGHT
-        + datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S") + Style.RESET_ALL
+        Fore.LIGHTBLACK_EX
+        + Style.BRIGHT
+        + datetime.now(tz=UTC).strftime("%Y-%m-%d %H:%M:%S")
+        + Style.RESET_ALL
     )
 
 
@@ -20,9 +22,9 @@ def log(category: str, color: str, message: str, file: TextIO | Any = sys.stdout
     while len(padded_category) < 10:
         padded_category += " "
 
-    print(current_time() + color + Style.BRIGHT + padded_category
-        + Style.RESET_ALL + message,
-        file=file
+    print(
+        current_time() + color + Style.BRIGHT + padded_category + Style.RESET_ALL + message,
+        file=file,
     )
 
 

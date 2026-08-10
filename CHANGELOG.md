@@ -1,4 +1,25 @@
-## [1.3] Wordle 2.0 - 2026-08-09
+## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-10
+
+### Added
+- [TODO.md](TODO.md) to-do list
+
+### Changed
+- Renamed custom AI agent
+- Updated `ruff` configuration - check line length, spacing, import order, naming style, etc.
+- Formatted source code
+- Moved console log functions to separate module `console`
+- Restructured `shared` module and simplified `shared` imports
+- Moved `src/images` to `src/shared/images`
+
+### Removed
+- Google Drive backups
+- User statistics recorded into JSON files
+- Files that are not used anymore
+- member `_timeout` from `TicTacToeView`
+
+---
+
+## [1.3.0] Wordle 2.0 - 2026-08-09
 
 ### Added
 - Expanded the list of seasonal player emojis and colors
@@ -25,7 +46,7 @@
 
 ---
 
-## [1.2] Tic-Tac-Toe 2.0 - 2026-07-30
+## [1.2.0] Tic-Tac-Toe 2.0 - 2026-07-30
 
 ### Added
 - Auto-play feature for `Tic-Tac-Toe` mini-game allowing players to play against Discord bots
@@ -49,7 +70,7 @@
 
 ---
 
-## [1.1] Trivia - 2026-07-19
+## [1.1.0] Trivia - 2026-07-19
 
 ### Added
 - `Trivia` mini-game where a player must answer a question (fetched from the *Open Trivia Database* API with 25 *category* and 4 *difficulty* settings) by selecting the correct answer from 4 options
@@ -153,7 +174,7 @@
 
 ---
 
-## [1.0] Initial Release - 2023-02-17
+## [1.0.0] Initial Release - 2023-02-17
 
 ### Added
 - New `Wordle`, `Tic-Tac-Toe` and `Quote Guess` mini-games

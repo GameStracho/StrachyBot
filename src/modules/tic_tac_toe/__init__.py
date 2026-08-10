@@ -1,6 +1,6 @@
 # Tic-Tac-Toe module
 
-from shared.bot import StrachyBot
+from shared import StrachyBot
 
 from .cogs import TicCog
 
