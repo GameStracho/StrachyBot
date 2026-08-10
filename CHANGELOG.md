@@ -1,7 +1,7 @@
 ## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-10
 
 ### Added
-- TODO.md to-do list
+- [TODO.md](TODO.md) to-do list
 
 ### Changed
 - Renamed custom AI agent
