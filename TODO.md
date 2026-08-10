@@ -1,22 +1,15 @@
 ## [2.0.0] Harder, Better, Faster, Stronger
 
-### Refactoring
-- odstranit stats.py, stats.json, user_data.json a další nepotřebné soubory
-- zmenšit mezery mezi metodami na 1 (+ přidat pravidla pro ruff na omezení délky řádků a počtu řádků mezi funkcemi a metodami)
-- přesunout funkci `handle_error` (z `shared/messages`) a `load_attachment` (z `shared/helpers`) do `shared/ui`
-- přesunout obrázky z `src/images` do `src/shared/images`
-- přidat do všech views metodu `build_embed`, která vytvoří základní embed
-- odstranit membera `_timeout` z `TicTacToeView`
-
 ### Polishing
+- přesunout volání databázových funkcí z `ui.py` do `game.py` u všech mini-her
+- přidat do všech views metodu `build_embed` a `update_embed`, která vytvoří základní embed
+- zastavit timeout timery v `Trivia` a `Tic-Tac-Toe` zavoláním self.stop na konci hry
 - přesunout `alembic-postgresql-enum` z `requirements-dev` do `requirements`
 - odstranit `/announcement` command a přejmenovat `utils` modul na `info`
 - přebarvit `/info` command na barvu `teal`
 - vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)
 - přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných
-- zastavit timeout timery v `Trivia` a `Tic-Tac-Toe` zavoláním self.stop na konci hry
 - Dát `timeout` vpravo od `status`u v `TicTacToeView`
-- zastavit časovače v Trivia a TicTacToe při konci hry (výhra, konec, remíza)
 - zapnout `strict` type checking v CI
 - přidat chybějící testy pro moduly: Wordle, Trivia a Shared + zkontrolovat testy pro Tic-Tac-Toe a Wordle
 - přidat příkaz `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
@@ -26,7 +19,7 @@
 - logovat zprávy přímo do databáze
 - přidat možnosti pro vypnutí logování do databáze, vypnutí vypisování logů do konzole, nastavení log levelu (debug, info, success, atd.) - přidat ke každé zprávě parametr "module" (ten bude značit, ke kterému modulu zpráva patří)
 - přidat více info a debug logů ke stávajícím modulům
-- zlepšit error handling (pomocí overridu 'on_error' metod v custom button a view třídách)
+- zlepšit error handling (pomocí override 'on_error' metod v custom button a view třídách)
 
 --
 
