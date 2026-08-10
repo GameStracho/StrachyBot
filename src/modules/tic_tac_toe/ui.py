@@ -9,7 +9,6 @@ from .repository import update_match
 
 
 class TicTacToeView(discord.ui.View):
-    _timeout: float
     _game: TicTacToeGame
     message: discord.Message | None
 
@@ -17,7 +16,6 @@ class TicTacToeView(discord.ui.View):
         super().__init__(timeout=timeout)
 
         self._game = game
-        self._timeout = timeout
 
         for x in range(game.get_grid_size()):
             for y in range(game.get_grid_size()):
