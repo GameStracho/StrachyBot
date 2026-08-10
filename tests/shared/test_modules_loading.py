@@ -3,8 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from shared.bot import StrachyBot
-from shared.database import Base
+from shared import StrachyBot, models
 from tests import mocks
 
 
@@ -41,7 +40,7 @@ async def test_all_modules_load_and_sync_correctly(monkeypatch: pytest.MonkeyPat
 
     # 4. Assert: Verify SQLAlchemy successfully mapped all database models
     # Base.metadata.tables is a dictionary of all registered tables in memory
-    registered_tables = Base.metadata.tables.keys()
+    registered_tables = models.Base.metadata.tables.keys()
     print(f"Registered tables found: {list(registered_tables)}")
 
     # Verify core table exists

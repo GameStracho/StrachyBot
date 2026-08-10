@@ -124,30 +124,30 @@ class WordleView(discord.ui.View):
         self, embed: discord.Embed, user: discord.User | discord.Member, default_status: str
     ) -> None:
         last_guess: str = self._game.get_last_guess()
-        ui.update_embed_field(
+        ui.embed.update_field(
             embed=embed,
             name=f"Guess #{self._game.get_guesses_count()}",
             value=self._uncover_word(word=last_guess),
         )
-        ui.update_embed_field(
+        ui.embed.update_field(
             embed=embed, name="Used letters", value=self._color_available_letters()
         )
 
         match self._game.get_status():
             case models.EMatchStatus.PENDING:
-                ui.update_embed_field(embed=embed, name="Status", value=default_status)
-                ui.update_embed_field(
+                ui.embed.update_field(embed=embed, name="Status", value=default_status)
+                ui.embed.update_field(
                     embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self)
                 )
                 return
             case models.EMatchStatus.WIN:
                 embed.color = discord.Color.green()
-                ui.update_embed_field(
+                ui.embed.update_field(
                     embed=embed, name="Status", value="You won! " + ui.EMOJIS["game_win"]
                 )
             case models.EMatchStatus.LOSS:
                 embed.color = discord.Color.red()
-                ui.update_embed_field(
+                ui.embed.update_field(
                     embed=embed,
                     name="Status",
                     value=(
@@ -157,8 +157,8 @@ class WordleView(discord.ui.View):
                     ),
                 )
             case models.EMatchStatus.SURRENDER:
-                embed.color = ui.WHITE_COLOR
-                ui.update_embed_field(
+                embed.color = ui.COLORS["white"]
+                ui.embed.update_field(
                     embed=embed,
                     name="Status",
                     value=(
@@ -171,7 +171,7 @@ class WordleView(discord.ui.View):
                 raise ValueError(self._game.get_status())
 
         self.disable_buttons()
-        ui.remove_embed_field(embed=embed, name="Timeout")
+        ui.embed.remove_field(embed=embed, name="Timeout")
         self.stop()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -199,11 +199,11 @@ class WordleView(discord.ui.View):
         await self._game.handle_timeout()
         self.disable_buttons()
 
-        embed: discord.Embed = ui.extract_embed_from_message(
+        embed: discord.Embed = ui.embed.extract_from_message(
             message=self.message, index=0, hide_icon=True
         )
-        ui.remove_embed_field(embed=embed, name="Timeout")
-        ui.update_embed_field(
+        ui.embed.remove_field(embed=embed, name="Timeout")
+        ui.embed.update_field(
             embed=embed,
             name="Status",
             value=(
@@ -230,10 +230,10 @@ class WordleView(discord.ui.View):
             )
 
             assert self.message is not None
-            embed: discord.Embed = ui.extract_embed_from_message(
+            embed: discord.Embed = ui.embed.extract_from_message(
                 message=self.message, index=0, hide_icon=True
             )
-            ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
+            ui.embed.update_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
             await self.message.edit(embed=embed, view=self)
 
             modal: WordleGuessModal = WordleGuessModal(parent_view=self)
@@ -264,7 +264,7 @@ class WordleView(discord.ui.View):
                 )
 
                 assert self.message is not None
-                embed: discord.Embed = ui.extract_embed_from_message(
+                embed: discord.Embed = ui.embed.extract_from_message(
                     message=self.message, index=0, hide_icon=True
                 )
 
@@ -275,10 +275,10 @@ class WordleView(discord.ui.View):
                 await self.message.edit(embed=embed, view=self)
 
             assert self.message is not None
-            wordle_embed: discord.Embed = ui.extract_embed_from_message(
+            wordle_embed: discord.Embed = ui.embed.extract_from_message(
                 message=self.message, index=0, hide_icon=True
             )
-            ui.update_embed_field(
+            ui.embed.update_field(
                 embed=wordle_embed, name="Timeout", value=ui.get_timeout_timestamp(self)
             )
             await self.message.edit(embed=wordle_embed, view=self)
@@ -317,7 +317,7 @@ class WordleView(discord.ui.View):
                 )
 
                 assert self.message is not None
-                embed: discord.Embed = ui.extract_embed_from_message(
+                embed: discord.Embed = ui.embed.extract_from_message(
                     message=self.message, index=0, hide_icon=True
                 )
 
@@ -328,10 +328,10 @@ class WordleView(discord.ui.View):
                 await self.message.edit(embed=embed, view=self)
 
             assert self.message is not None
-            wordle_embed: discord.Embed = ui.extract_embed_from_message(
+            wordle_embed: discord.Embed = ui.embed.extract_from_message(
                 message=self.message, index=0, hide_icon=True
             )
-            ui.update_embed_field(
+            ui.embed.update_field(
                 embed=wordle_embed, name="Timeout", value=ui.get_timeout_timestamp(self)
             )
             await self.message.edit(embed=wordle_embed, view=self)
@@ -404,7 +404,7 @@ class WordleGuessModal(discord.ui.Modal):
             game: WordleGame = self._parent_view.get_game()
             guess: str = self.guess_input.value.lower()
 
-            embed: discord.Embed = ui.extract_embed(
+            embed: discord.Embed = ui.embed.extract(
                 interaction=interaction, index=0, hide_icon=True
             )
 
@@ -414,7 +414,7 @@ class WordleGuessModal(discord.ui.Modal):
                     f"entered an invalid word '{guess}'."
                 )
 
-                ui.update_embed_field(
+                ui.embed.update_field(
                     embed=embed, name="Status", value=f"Entered invalid word '{guess}'."
                 )
                 await interaction.response.edit_message(embed=embed, view=self._parent_view)
@@ -426,7 +426,7 @@ class WordleGuessModal(discord.ui.Modal):
                     f"entered an already guesses word '{guess}'."
                 )
 
-                ui.update_embed_field(
+                ui.embed.update_field(
                     embed=embed, name="Status", value=f"You already guessed the word '{guess}'."
                 )
                 await interaction.response.edit_message(embed=embed, view=self._parent_view)

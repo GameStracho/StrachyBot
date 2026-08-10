@@ -3,7 +3,7 @@ from enum import Enum as PyEnum
 from sqlalchemy import BigInteger, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from shared.database import Base
+from shared.models import Base
 
 
 class ETriviaCategory(PyEnum):

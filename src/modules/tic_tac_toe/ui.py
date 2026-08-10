@@ -1,7 +1,7 @@
 import discord
 
 import console
-from shared import helpers, models, ui
+from shared import execute_db_operation, models, ui
 from shared.types import Position
 
 from .game import TicTacToeGame
@@ -70,17 +70,17 @@ class TicTacToeView(discord.ui.View):
         self.disable_buttons()
 
         embed: discord.Embed = self.message.embeds[0]
-        embed.color = ui.TIMEOUT_COLOR
+        embed.color = ui.COLORS["game_timeout"]
 
-        ui.update_embed_field(
+        ui.embed.update_field(
             embed=embed, name="Status", value="Game timed out! " + ui.EMOJIS["game_timeout"]
         )
-        ui.remove_embed_field(embed=embed, name="Timeout")
+        ui.embed.remove_field(embed=embed, name="Timeout")
 
         # hide a second icon appearing above the embed
         embed.set_thumbnail(url="attachment://icon.png")
 
-        await helpers.execute_db_operation(
+        await execute_db_operation(
             target=self.message,
             db_func=update_match,
             match_id=self._game.match_id,
@@ -140,7 +140,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                             child.disabled = True
                             break
 
-            embed: discord.Embed = ui.extract_embed(
+            embed: discord.Embed = ui.embed.extract(
                 interaction=interaction, index=0, hide_icon=True
             )
             status_message: str = ""
@@ -152,11 +152,11 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                 winner: discord.User | None = game.get_winner()
                 status: models.EMatchStatus = models.EMatchStatus.PENDING
 
-                ui.remove_embed_field(embed=embed, name="Timeout")
+                ui.embed.remove_field(embed=embed, name="Timeout")
                 parent_view.disable_buttons()
 
                 if not winner:
-                    embed.color = ui.DRAW_COLOR
+                    embed.color = ui.COLORS["game_draw"]
                     embed.set_author(name="", icon_url="")
                     status_message = "Game ended in draw. " + ui.EMOJIS["game_draw"]
                     status = models.EMatchStatus.DRAW
@@ -175,7 +175,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                     )
                     status = models.EMatchStatus.LOSS
 
-                await helpers.execute_db_operation(
+                await execute_db_operation(
                     target=interaction,
                     db_func=update_match,
                     match_id=parent_view.get_game().match_id,
@@ -197,12 +197,12 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                         + ui.EMOJIS["game_turn"]
                     )
 
-                ui.update_embed_field(
+                ui.embed.update_field(
                     embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view)
                 )
 
             assert status_message
-            ui.update_embed_field(embed=embed, name="Status", value=status_message)
+            ui.embed.update_field(embed=embed, name="Status", value=status_message)
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)

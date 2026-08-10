@@ -409,7 +409,7 @@ def test_wordle_view_update_embed() -> None:
     game._status = models.EMatchStatus.SURRENDER
     view3 = WordleView(game=game)
     view3.update_embed(embed3, mocks.create_dummy_user(), "Gave up")
-    assert embed3.color == ui.WHITE_COLOR
+    assert embed3.color == ui.COLORS["white"]
 
     # 5. Invalid Status
     game._status = models.EMatchStatus.TIMEOUT

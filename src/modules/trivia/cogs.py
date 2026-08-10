@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import console
-from shared import bot, helpers, ui
+from shared import StrachyBot, execute_db_operation, ui
 
 from .game import TriviaGame
 from .models import ETriviaCategory, ETriviaDifficulty
@@ -12,7 +12,7 @@ from .ui import TriviaView
 
 
 class TriviaCog(commands.Cog):
-    def __init__(self, bot: bot.StrachyBot) -> None:
+    def __init__(self, bot: StrachyBot) -> None:
         self.bot = bot
 
     @app_commands.command(
@@ -37,7 +37,7 @@ class TriviaCog(commands.Cog):
             )
             await game.fetch_api()
 
-            match_id: int | None = await helpers.execute_db_operation(
+            match_id: int | None = await execute_db_operation(
                 target=self.bot,
                 db_func=create_match,
                 player_id=game.get_player_id(),

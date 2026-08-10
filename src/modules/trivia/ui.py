@@ -3,7 +3,7 @@ import random
 import discord
 
 import console
-from shared import helpers, models, ui
+from shared import execute_db_operation, models, ui
 
 from .game import TriviaGame
 from .repository import update_match
@@ -80,13 +80,13 @@ class TriviaView(discord.ui.View):
         self.disable_buttons()
 
         embed: discord.Embed = self.message.embeds[0]
-        embed.color = ui.TIMEOUT_COLOR
-        ui.remove_embed_field(embed=embed, name="Timeout")
+        embed.color = ui.COLORS["game_timeout"]
+        ui.embed.remove_field(embed=embed, name="Timeout")
 
         # hide a second icon appearing above the embed
         embed.set_thumbnail(url="attachment://icon.png")
 
-        await helpers.execute_db_operation(
+        await execute_db_operation(
             target=self.message,
             db_func=update_match,
             match_id=self._game.match_id,
@@ -127,7 +127,7 @@ class TriviaButton(discord.ui.Button[TriviaView]):
             assert message is not None
 
             embed: discord.Embed = message.embeds[0]
-            ui.remove_embed_field(embed=embed, name="Timeout")
+            ui.embed.remove_field(embed=embed, name="Timeout")
 
             # hide a second icon appearing above the embed
             embed.set_thumbnail(url="attachment://icon.png")
@@ -147,7 +147,7 @@ class TriviaButton(discord.ui.Button[TriviaView]):
                 self.emoji = ui.EMOJIS["trivia_wrong_answer_selected"]
                 status = models.EMatchStatus.LOSS
 
-            await helpers.execute_db_operation(
+            await execute_db_operation(
                 target=interaction,
                 db_func=update_match,
                 match_id=parent_view.get_game().match_id,

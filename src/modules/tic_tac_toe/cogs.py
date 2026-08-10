@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import console
-from shared import bot, helpers, ui
+from shared import StrachyBot, execute_db_operation, ui
 
 from .game import TicTacToeGame
 from .repository import create_match
@@ -11,7 +11,7 @@ from .ui import TicTacToeView
 
 
 class TicCog(commands.Cog):
-    def __init__(self, bot: bot.StrachyBot) -> None:
+    def __init__(self, bot: StrachyBot) -> None:
         self.bot = bot
 
     @app_commands.command(
@@ -49,7 +49,7 @@ class TicCog(commands.Cog):
                 player=player, opponent=opponent, grid_size=grid_size.value
             )
 
-            match_id: int | None = await helpers.execute_db_operation(
+            match_id: int | None = await execute_db_operation(
                 target=self.bot,
                 db_func=create_match,
                 player_id=game.get_player().id,

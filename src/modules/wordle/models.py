@@ -1,7 +1,7 @@
 from sqlalchemy import ARRAY, BigInteger, CheckConstraint, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from shared.database import Base
+from shared.models import Base
 
 
 class WordleMatch(Base):

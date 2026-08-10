@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import console
-from shared import bot, helpers, ui
+from shared import StrachyBot, execute_db_operation, ui
 
 from .game import WordleGame
 from .repository import has_played_daily_challenge
@@ -11,7 +11,7 @@ from .ui import WordleView
 
 
 class WordleCog(commands.Cog):
-    def __init__(self, bot: bot.StrachyBot) -> None:
+    def __init__(self, bot: StrachyBot) -> None:
         self.bot = bot
 
     @app_commands.command(name="wordle", description="Try to guess a 5-letter word in 6 tries.")
@@ -22,7 +22,7 @@ class WordleCog(commands.Cog):
                 f"({interaction.user.id})"
             )
 
-            if daily_challenge and await helpers.execute_db_operation(
+            if daily_challenge and await execute_db_operation(
                 target=self.bot, db_func=has_played_daily_challenge, player_id=interaction.user.id
             ):
                 console.log_info(

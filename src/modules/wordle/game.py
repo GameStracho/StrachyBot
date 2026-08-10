@@ -6,7 +6,7 @@ from datetime import UTC, date, datetime
 from enum import Enum
 
 import console
-from shared import bot, helpers, models
+from shared import StrachyBot, execute_db_operation, models
 
 from .repository import create_match, update_match
 
@@ -147,7 +147,7 @@ class WordleDictionary:
 
 
 class WordleGame:
-    _bot: bot.StrachyBot | None
+    _bot: StrachyBot | None
     _match_id: int
     _status: models.EMatchStatus
     _player_id: int
@@ -192,7 +192,7 @@ class WordleGame:
         if not self._bot:
             return
 
-        await helpers.execute_db_operation(
+        await execute_db_operation(
             target=self._bot,
             db_func=update_match,
             match_id=self._match_id,
@@ -234,10 +234,10 @@ class WordleGame:
     def is_previous_guess(self, word: str) -> bool:
         return word in self._guesses
 
-    async def connect_database(self, bot: bot.StrachyBot) -> None:
+    async def connect_database(self, bot: StrachyBot) -> None:
         self._bot = bot
 
-        match_id: int | None = await helpers.execute_db_operation(
+        match_id: int | None = await execute_db_operation(
             target=self._bot,
             db_func=create_match,
             player_id=self._player_id,

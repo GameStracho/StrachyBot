@@ -9,7 +9,8 @@ from discord.ext import commands
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 import console
-from shared import database
+
+from .database import create_db_engine, create_session_factory
 
 
 class StrachyBot(commands.Bot):
@@ -33,12 +34,12 @@ class StrachyBot(commands.Bot):
         Creates a new engine if db_engine is None.
         """
         if not db_engine:
-            db_engine = database.create_db_engine()
+            db_engine = create_db_engine()
 
         assert db_engine
 
         self._db_engine = db_engine
-        self._db_session_factory = database.create_session_factory(db_engine)
+        self._db_session_factory = create_session_factory(db_engine)
 
     def get_db_session_factory(self) -> async_sessionmaker[AsyncSession] | None:
         return self._db_session_factory

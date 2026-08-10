@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 import console
-from shared.bot import StrachyBot
+from shared import StrachyBot
 
 
 async def main() -> None:

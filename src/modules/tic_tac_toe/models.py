@@ -1,7 +1,7 @@
 from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
-from shared.database import Base
+from shared.models import Base
 
 
 class TicTacToeMatch(Base):

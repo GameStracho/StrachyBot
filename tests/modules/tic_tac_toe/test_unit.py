@@ -348,7 +348,7 @@ async def test_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
 
     await view.on_timeout()
 
-    assert embed.color == ui.TIMEOUT_COLOR
+    assert embed.color == ui.COLORS["game_timeout"]
     assert message.edit.called
     for child in view.children:
         if isinstance(child, TicTacToeButton):

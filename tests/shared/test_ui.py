@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import discord
 
-from shared.ui import BROWN_COLOR, WHITE_COLOR, get_player_colors, get_player_emojis
+from shared.ui import COLORS, get_player_colors, get_player_emojis
 
 
 def test_get_player_colors() -> None:
@@ -25,46 +25,46 @@ def test_get_player_colors() -> None:
     # April fools
     assert get_player_colors(datetime(2026, 4, 1, tzinfo=UTC)) == (
         discord.Color.yellow(),
-        WHITE_COLOR,
+        COLORS["white"],
     )
     assert get_player_colors(datetime(2027, 4, 1, tzinfo=UTC)) == (
         discord.Color.yellow(),
-        WHITE_COLOR,
+        COLORS["white"],
     )
 
     # Easter start
     assert get_player_colors(datetime(2025, 4, 13, tzinfo=UTC)) == (
-        WHITE_COLOR,
+        COLORS["white"],
         discord.Color.yellow(),
     )
     assert get_player_colors(datetime(2026, 3, 29, tzinfo=UTC)) == (
-        WHITE_COLOR,
+        COLORS["white"],
         discord.Color.yellow(),
     )
     assert get_player_colors(datetime(2027, 3, 21, tzinfo=UTC)) == (
-        WHITE_COLOR,
+        COLORS["white"],
         discord.Color.yellow(),
     )
     assert get_player_colors(datetime(2028, 4, 9, tzinfo=UTC)) == (
-        WHITE_COLOR,
+        COLORS["white"],
         discord.Color.yellow(),
     )
 
     # Easter end
     assert get_player_colors(datetime(2025, 4, 27, tzinfo=UTC)) == (
-        WHITE_COLOR,
+        COLORS["white"],
         discord.Color.yellow(),
     )
     assert get_player_colors(datetime(2026, 4, 12, tzinfo=UTC)) == (
-        WHITE_COLOR,
+        COLORS["white"],
         discord.Color.yellow(),
     )
     assert get_player_colors(datetime(2027, 4, 4, tzinfo=UTC)) == (
-        WHITE_COLOR,
+        COLORS["white"],
         discord.Color.yellow(),
     )
     assert get_player_colors(datetime(2028, 4, 23, tzinfo=UTC)) == (
-        WHITE_COLOR,
+        COLORS["white"],
         discord.Color.yellow(),
     )
 
@@ -91,11 +91,11 @@ def test_get_player_colors() -> None:
     # Halloween
     assert get_player_colors(datetime(2028, 10, 31, tzinfo=UTC)) == (
         discord.Color.orange(),
-        BROWN_COLOR,
+        COLORS["brown"],
     )
     assert get_player_colors(datetime(2028, 10, 12, tzinfo=UTC)) == (
         discord.Color.orange(),
-        BROWN_COLOR,
+        COLORS["brown"],
     )
 
     # Christmas
