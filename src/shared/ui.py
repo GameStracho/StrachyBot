@@ -1,10 +1,12 @@
+import re
 import time
+import traceback
 from collections.abc import Awaitable, Callable
 from datetime import UTC, date, datetime
 
 import discord
 
-from shared import console, helpers, messages
+from shared import console, ui
 
 WHITE_COLOR: discord.Color = discord.Color.from_rgb(255, 255, 255)
 BROWN_COLOR: discord.Color = discord.Color.from_rgb(119, 56, 22)
@@ -224,6 +226,48 @@ def get_timeout_timestamp(view: discord.ui.View) -> str:
     return f"<t:{timestamp}:R> ⏱️"
 
 
+async def handle_error(
+    command: str, interaction: discord.Interaction, use_followup: bool = False
+) -> None:
+    """
+    Print error message with details to console and send generic message to user.
+    IMPORTANT: only call from an except block!
+    """
+    console.log_error(
+        f"{command}: An unexpected error occurred for {interaction.user.display_name}: "
+        f"\n{traceback.format_exc()}"
+    )
+
+    embed: discord.Embed = discord.Embed(color=discord.Color.red())
+    embed.title = "Error"
+    embed.description = "An unexpected error occurred. Try again later."
+
+    icon: discord.File = discord.File("./src/images/error.png", filename="error.png")
+    embed.set_thumbnail(url="attachment://error.png")
+
+    if use_followup:
+        await interaction.followup.send(embed=embed, file=icon, ephemeral=True)
+    else:
+        await interaction.response.send_message(embed=embed, file=icon, ephemeral=True)
+
+
+def load_attachment(path: str, filename: str, sub_dir: str = "") -> tuple[discord.File, str]:
+    """
+    Loads attachment 'filename' from 'path/sub_dir/filename'.
+
+    Returns loaded the attachment and its url.
+    """
+
+    attachment_path: str = (
+        re.sub(pattern=r"[^\/]*$", repl="", string=path) + f"/{sub_dir}/{filename}"
+    )
+    attachment: discord.File = discord.File(fp=attachment_path, filename=filename)
+
+    console.log_debug(f"Attachment '{attachment_path}' loaded.")
+
+    return (attachment, f"attachment://{filename}")
+
+
 def extract_embed(interaction: discord.Interaction, index: int, hide_icon: bool) -> discord.Embed:
     message: discord.Message | None = interaction.message
     assert message is not None
@@ -299,7 +343,7 @@ class ConfirmView(discord.ui.View):
             color=discord.Color.blue(), title="Confirmation", description=question
         )
 
-        icon, icon_url = helpers.load_attachment(
+        icon, icon_url = ui.load_attachment(
             path=__file__, filename="question.png", sub_dir="images"
         )
         embed.set_thumbnail(url=icon_url)
@@ -324,7 +368,7 @@ class ConfirmView(discord.ui.View):
         error: Exception,
         item: discord.ui.Item["ConfirmView"],
     ) -> None:
-        await messages.handle_error("shared", interaction=interaction, use_followup=False)
+        await ui.handle_error("shared", interaction=interaction, use_followup=False)
 
     @discord.ui.button()
     async def confirm_button(

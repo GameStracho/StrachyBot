@@ -1,6 +1,6 @@
 import discord
 
-from shared import console, helpers, messages, models, ui
+from shared import console, helpers, models, ui
 from shared.types import Position
 
 from .game import TicTacToeGame
@@ -56,7 +56,7 @@ class TicTacToeView(discord.ui.View):
 
             return True  # Authorized click; allow execution
         except Exception:
-            await messages.handle_error(
+            await ui.handle_error(
                 command="/tic-tac-toe", interaction=interaction, use_followup=False
             )
             return False
@@ -206,6 +206,6 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)
         except Exception:
-            await messages.handle_error(
+            await ui.handle_error(
                 command="/tic-tac-toe", interaction=interaction, use_followup=False
             )

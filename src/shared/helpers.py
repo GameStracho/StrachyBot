@@ -1,4 +1,3 @@
-import re
 from collections.abc import Awaitable, Callable
 from typing import Concatenate, ParamSpec, TypeVar
 
@@ -9,24 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared import console
 from shared.bot import StrachyBot
-
-
-def load_attachment(path: str, filename: str, sub_dir: str = "") -> tuple[discord.File, str]:
-    """
-    Loads attachment 'filename' from 'path/sub_dir/filename'.
-
-    Returns loaded the attachment and its url.
-    """
-
-    attachment_path: str = (
-        re.sub(pattern=r"[^\/]*$", repl="", string=path) + f"/{sub_dir}/{filename}"
-    )
-    attachment: discord.File = discord.File(fp=attachment_path, filename=filename)
-
-    console.log_debug(f"Attachment '{attachment_path}' loaded.")
-
-    return (attachment, f"attachment://{filename}")
-
 
 # Define a TypeVar bound to Pydantic's BaseModel
 T = TypeVar("T", bound=BaseModel)

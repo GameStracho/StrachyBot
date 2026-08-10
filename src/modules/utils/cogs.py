@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from shared import console, messages
+from shared import console, ui
 from shared.bot import StrachyBot
 
 from .helpers import parse_changelog
@@ -42,7 +42,7 @@ class UtilsCog(commands.Cog):
 
             await interaction.response.send_message(embed=embed, file=icon)
         except Exception:
-            await messages.handle_error("/info", interaction)
+            await ui.handle_error("/info", interaction)
 
     @app_commands.command(name="announcement", description="Make announcements in chat.")
     async def announcement(
@@ -67,4 +67,4 @@ class UtilsCog(commands.Cog):
 
             await interaction.response.send_message(embed=embed, file=icon)
         except Exception:
-            await messages.handle_error("/announcement", interaction)
+            await ui.handle_error("/announcement", interaction)

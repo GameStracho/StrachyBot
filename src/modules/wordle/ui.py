@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import discord
 
-from shared import console, helpers, messages, models, ui
+from shared import console, models, ui
 
 from .game import WordleGame, WordleLetterCategory
 
@@ -48,7 +48,7 @@ class WordleView(discord.ui.View):
         embed.add_field(name="Status", value="Game started. You can start guessing.", inline=True)
         embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(self), inline=True)
 
-        icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
+        icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
         embed.set_thumbnail(url=icon_url)
 
         return (embed, icon)
@@ -188,9 +188,7 @@ class WordleView(discord.ui.View):
 
             return True  # Authorized click; allow execution
         except Exception:
-            await messages.handle_error(
-                command="/wordle", interaction=interaction, use_followup=False
-            )
+            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
             return False
 
     async def on_timeout(self) -> None:
@@ -245,9 +243,7 @@ class WordleView(discord.ui.View):
                 f"sent to User {interaction.user.display_name} ({interaction.user.id})."
             )
         except Exception:
-            await messages.handle_error(
-                command="/wordle", interaction=interaction, use_followup=False
-            )
+            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
 
     @discord.ui.button(
         label="Random guess",
@@ -302,9 +298,7 @@ class WordleView(discord.ui.View):
                 embed=confirm_embed, view=confirm_view, file=confirm_icon, ephemeral=True
             )
         except Exception:
-            await messages.handle_error(
-                command="/wordle", interaction=interaction, use_followup=False
-            )
+            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
 
     @discord.ui.button(
         label="Give up", style=discord.ButtonStyle.secondary, emoji=ui.EMOJIS["game_surrender"]
@@ -357,9 +351,7 @@ class WordleView(discord.ui.View):
                 embed=confirm_embed, view=confirm_view, file=confirm_icon, ephemeral=True
             )
         except Exception:
-            await messages.handle_error(
-                command="/wordle", interaction=interaction, use_followup=False
-            )
+            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
 
 
 class WordleGuessModal(discord.ui.Modal):
@@ -452,6 +444,4 @@ class WordleGuessModal(discord.ui.Modal):
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
             self._parent_view.message = await interaction.original_response()
         except Exception:
-            await messages.handle_error(
-                command="/wordle", interaction=interaction, use_followup=False
-            )
+            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)

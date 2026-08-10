@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from shared import bot, console, helpers, messages, ui
+from shared import bot, console, helpers, ui
 
 from .game import TriviaGame
 from .models import ETriviaCategory, ETriviaDifficulty
@@ -60,7 +60,7 @@ class TriviaCog(commands.Cog):
             embed.add_field(name="Question", value=game.get_question(), inline=False)
             embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=view), inline=False)
 
-            icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
+            icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
             embed.set_thumbnail(url=icon_url)
 
             console.log_info(
@@ -72,6 +72,4 @@ class TriviaCog(commands.Cog):
             await interaction.followup.send(embed=embed, view=view, file=icon)
             view.message = await interaction.original_response()
         except Exception:
-            await messages.handle_error(
-                command="/trivia", interaction=interaction, use_followup=True
-            )
+            await ui.handle_error(command="/trivia", interaction=interaction, use_followup=True)

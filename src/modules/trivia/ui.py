@@ -2,7 +2,7 @@ import random
 
 import discord
 
-from shared import console, helpers, messages, models, ui
+from shared import console, helpers, models, ui
 
 from .game import TriviaGame
 from .repository import update_match
@@ -68,9 +68,7 @@ class TriviaView(discord.ui.View):
 
             return True  # Authorized click; allow execution
         except Exception:
-            await messages.handle_error(
-                command="/trivia", interaction=interaction, use_followup=False
-            )
+            await ui.handle_error(command="/trivia", interaction=interaction, use_followup=False)
             return False
 
     async def on_timeout(self) -> None:
@@ -158,9 +156,7 @@ class TriviaButton(discord.ui.Button[TriviaView]):
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)
         except Exception:
-            await messages.handle_error(
-                command="/trivia", interaction=interaction, use_followup=False
-            )
+            await ui.handle_error(command="/trivia", interaction=interaction, use_followup=False)
 
     def disable(self) -> None:
         """Disable the button and reveal whether the answer was correct or wrong."""

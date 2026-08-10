@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from shared import bot, console, helpers, messages
+from shared import bot, console, helpers, ui
 
 from .game import WordleGame
 from .repository import has_played_daily_challenge
@@ -47,6 +47,4 @@ class WordleCog(commands.Cog):
             await interaction.response.send_message(embed=embed, view=view, file=icon)
             view.message = await interaction.original_response()
         except Exception:
-            await messages.handle_error(
-                command="/wordle", interaction=interaction, use_followup=False
-            )
+            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
