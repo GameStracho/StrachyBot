@@ -1,5 +1,5 @@
 ---
-name: module-test-generator
+name: tester
 description: Specialized test generation subagent for StrachyBot feature modules and shared core components.
 tools:
   - edit_file
