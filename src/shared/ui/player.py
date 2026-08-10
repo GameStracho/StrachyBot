@@ -26,7 +26,7 @@ def _calculate_easter_sunday(year: int) -> date:
     # The '15' represents the base alignment for the Gregorian reform
     lunar_epact = (
         19 * metonic_cycle_pos + century - leap_centuries - solar_leap_correction + 15
-    ) % 3
+    ) % 30
 
     # 4. Determine day of the week adjustments
     leap_years_in_century = year_in_century // 4
