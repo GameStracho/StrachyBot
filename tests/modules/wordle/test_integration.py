@@ -53,12 +53,8 @@ async def test_wordle_cog_daily_challenge_not_played(monkeypatch: pytest.MonkeyP
             return 42
         return await db_func(None, *args, **kwargs)
 
-    monkeypatch.setattr(
-        "modules.wordle.cogs.execute_db_operation", fake_execute_db_operation
-    )
-    monkeypatch.setattr(
-        "modules.wordle.game.execute_db_operation", fake_execute_db_operation
-    )
+    monkeypatch.setattr("modules.wordle.cogs.execute_db_operation", fake_execute_db_operation)
+    monkeypatch.setattr("modules.wordle.game.execute_db_operation", fake_execute_db_operation)
 
     cog = WordleCog(bot=bot.StrachyBot())
     wordle_callback = cast(Any, cog.wordle.callback)
@@ -80,9 +76,7 @@ async def test_wordle_cog_daily_challenge_already_played(monkeypatch: pytest.Mon
             return True
         return None
 
-    monkeypatch.setattr(
-        "modules.wordle.cogs.execute_db_operation", fake_execute_db_operation
-    )
+    monkeypatch.setattr("modules.wordle.cogs.execute_db_operation", fake_execute_db_operation)
 
     cog = WordleCog(bot=bot.StrachyBot())
     wordle_callback = cast(Any, cog.wordle.callback)
@@ -103,9 +97,7 @@ async def test_wordle_cog_error_handling(monkeypatch: pytest.MonkeyPatch) -> Non
     async def fake_execute_db_operation(*args: Any, **kwargs: Any) -> Any:
         raise mocks.TestError("DB Error")
 
-    monkeypatch.setattr(
-        "modules.wordle.cogs.execute_db_operation", fake_execute_db_operation
-    )
+    monkeypatch.setattr("modules.wordle.cogs.execute_db_operation", fake_execute_db_operation)
 
     error_mock = AsyncMock()
     monkeypatch.setattr("modules.wordle.cogs.ui.handle_error", error_mock)

@@ -47,9 +47,7 @@ async def test_tic_cog_command_error_handling(monkeypatch: pytest.MonkeyPatch) -
     interaction = mocks.DummyInteraction(user_id=100, username="Alice")
 
     # Force error by raising during execute_db_operation
-    monkeypatch.setattr(
-        "shared.execute_db_operation", AsyncMock(side_effect=Exception("DB Error"))
-    )
+    monkeypatch.setattr("shared.execute_db_operation", AsyncMock(side_effect=Exception("DB Error")))
     handle_error_mock = AsyncMock()
     monkeypatch.setattr("shared.ui.handle_error", handle_error_mock)
 
