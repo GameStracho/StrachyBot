@@ -33,7 +33,7 @@ async def handle_error(
     embed.title = "Error"
     embed.description = "An unexpected error occurred. Try again later."
 
-    icon: discord.File = discord.File("./src/images/error.png", filename="error.png")
+    icon: discord.File = discord.File("./src/shared/images/error.png", filename="error.png")
     embed.set_thumbnail(url="attachment://error.png")
 
     if use_followup:
