@@ -18,6 +18,7 @@ from tests import mocks
 # 1. Grid & Cell Unit Tests
 # ---------------------------------------------------------------------------
 
+
 def test_cell_enum_values() -> None:
     assert ETicTacToeCell.EMPTY.value == 0
     assert ETicTacToeCell.PLAYER.value == 1
@@ -51,6 +52,7 @@ def test_grid_initialization_and_bounds() -> None:
 # ---------------------------------------------------------------------------
 # 2. Game State & Logic Unit Tests
 # ---------------------------------------------------------------------------
+
 
 def test_game_initialization() -> None:
     player = mocks.create_dummy_user(100, "Alice")
@@ -180,9 +182,15 @@ def test_game_draw() -> None:
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
     moves = [
-        Position(0, 0), Position(1, 0), Position(2, 0),
-        Position(1, 1), Position(0, 1), Position(2, 1),
-        Position(1, 2), Position(0, 2), Position(2, 2)
+        Position(0, 0),
+        Position(1, 0),
+        Position(2, 0),
+        Position(1, 1),
+        Position(0, 1),
+        Position(2, 1),
+        Position(1, 2),
+        Position(0, 2),
+        Position(2, 2),
     ]
     for pos in moves:
         assert game.has_game_ended() is False
@@ -195,6 +203,7 @@ def test_game_draw() -> None:
 # ---------------------------------------------------------------------------
 # 3. Bot AI Unit Tests
 # ---------------------------------------------------------------------------
+
 
 def test_bot_ai_scoring_and_decisions() -> None:
     human = mocks.create_dummy_user(100, "Alice", is_bot=False)
@@ -390,7 +399,11 @@ async def test_button_callback_game_ended_win(monkeypatch: pytest.MonkeyPatch) -
     assert game.has_game_ended() is False
 
     view = TicTacToeView(game=game, timeout=15.0)
-    win_button = next(child for child in view.children if isinstance(child, TicTacToeButton) and child._position == Position(2, 0))
+    win_button = next(
+        child
+        for child in view.children
+        if isinstance(child, TicTacToeButton) and child._position == Position(2, 0)
+    )
 
     embed = discord.Embed(title="Tic-Tac-Toe")
     embed.add_field(name="Status", value="In progress")
@@ -402,7 +415,9 @@ async def test_button_callback_game_ended_win(monkeypatch: pytest.MonkeyPatch) -
 
     update_match_mock = AsyncMock(return_value=True)
     monkeypatch.setattr("modules.tic_tac_toe.ui.update_match", update_match_mock)
-    monkeypatch.setattr("modules.tic_tac_toe.ui.helpers.execute_db_operation", mocks.dummy_execute_db_operation)
+    monkeypatch.setattr(
+        "modules.tic_tac_toe.ui.helpers.execute_db_operation", mocks.dummy_execute_db_operation
+    )
 
     await win_button.callback(interaction)
     player_color, _ = ui.get_player_colors()

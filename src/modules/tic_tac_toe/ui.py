@@ -1,4 +1,3 @@
-
 import discord
 
 from shared import console, helpers, messages, models, ui
@@ -28,11 +27,9 @@ class TicTacToeView(discord.ui.View):
             f"with {timeout}s timeout."
         )
 
-
     def get_game(self) -> TicTacToeGame:
         return self._game
-    
-    
+
     def disable_buttons(self) -> None:
         for child in self.children:
             if isinstance(child, TicTacToeButton):
@@ -40,25 +37,29 @@ class TicTacToeView(discord.ui.View):
 
         console.log_debug(f"/tic-tac-toe: Buttons disabled for game {self._game.match_id}.")
 
-
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
-            current_player = self._game.get_player() if self._game.is_players_turn() else self._game.get_opponent()
+            current_player = (
+                self._game.get_player()
+                if self._game.is_players_turn()
+                else self._game.get_opponent()
+            )
 
             if interaction.user.id != current_player.id:
-                console.log_debug(f"Ineligible user {interaction.user.display_name} ({interaction.user.id}) tried to respond to game {self._game.match_id}.")
-
-                await interaction.response.send_message(
-                    "It's not your turn!", 
-                    ephemeral=True
+                console.log_debug(
+                    f"Ineligible user {interaction.user.display_name} ({interaction.user.id}) "
+                    f"tried to respond to game {self._game.match_id}."
                 )
+
+                await interaction.response.send_message("It's not your turn!", ephemeral=True)
                 return False  # Aborts processing and DOES NOT reset/extend the view timeout
 
             return True  # Authorized click; allow execution
         except Exception:
-            await messages.handle_error(command="/tic-tac-toe", interaction=interaction, use_followup=False)
+            await messages.handle_error(
+                command="/tic-tac-toe", interaction=interaction, use_followup=False
+            )
             return False
-
 
     async def on_timeout(self) -> None:
         if self._game.has_game_ended() or self.message is None:
@@ -70,15 +71,20 @@ class TicTacToeView(discord.ui.View):
         embed: discord.Embed = self.message.embeds[0]
         embed.color = ui.TIMEOUT_COLOR
 
-        ui.update_embed_field(embed=embed, name="Status", value="Game timed out! " + ui.EMOJIS["game_timeout"])
+        ui.update_embed_field(
+            embed=embed, name="Status", value="Game timed out! " + ui.EMOJIS["game_timeout"]
+        )
         ui.remove_embed_field(embed=embed, name="Timeout")
 
         # hide a second icon appearing above the embed
         embed.set_thumbnail(url="attachment://icon.png")
 
         await helpers.execute_db_operation(
-            target=self.message, db_func=update_match,
-            match_id=self._game.match_id, status=models.EMatchStatus.TIMEOUT, total_moves=self._game.get_total_moves()
+            target=self.message,
+            db_func=update_match,
+            match_id=self._game.match_id,
+            status=models.EMatchStatus.TIMEOUT,
+            total_moves=self._game.get_total_moves(),
         )
 
         # Edit the original message to show disabled buttons
@@ -89,19 +95,18 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
     _position: Position
 
     def __init__(self, game_id: int, position: Position) -> None:
-        super().__init__(label=ui.EMOJIS["tic_empty_cell"], style=discord.ButtonStyle.secondary, row=position.y)
+        super().__init__(
+            label=ui.EMOJIS["tic_empty_cell"], style=discord.ButtonStyle.secondary, row=position.y
+        )
 
         self._position = position
 
         console.log_debug(
-            f"/tic-tac-toe: New TicTacToeButton created for game {game_id}: "
-            f"pos = {position}."
+            f"/tic-tac-toe: New TicTacToeButton created for game {game_id}: pos = {position}."
         )
-
 
     def get_position(self) -> Position:
         return self._position
-
 
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
@@ -134,7 +139,9 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                             child.disabled = True
                             break
 
-            embed: discord.Embed = ui.extract_embed(interaction=interaction, index=0, hide_icon=True)
+            embed: discord.Embed = ui.extract_embed(
+                interaction=interaction, index=0, hide_icon=True
+            )
             status_message: str = ""
             player_color, opponent_color = ui.get_player_colors()
             player: discord.User = game.get_player()
@@ -155,29 +162,43 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                 elif winner == game.get_player():
                     embed.color = player_color
                     embed.set_author(name=player.display_name, icon_url=player.display_avatar)
-                    status_message = f"Player {player_emoji} {player.mention} won. " + ui.EMOJIS["game_win"]
+                    status_message = (
+                        f"Player {player_emoji} {player.mention} won. " + ui.EMOJIS["game_win"]
+                    )
                     status = models.EMatchStatus.WIN
                 else:
                     embed.color = opponent_color
                     embed.set_author(name=opponent.display_name, icon_url=player.display_avatar)
-                    status_message = f"Player {opponent_emoji} {opponent.mention} won. " + ui.EMOJIS["game_win"]
+                    status_message = (
+                        f"Player {opponent_emoji} {opponent.mention} won. " + ui.EMOJIS["game_win"]
+                    )
                     status = models.EMatchStatus.LOSS
 
                 await helpers.execute_db_operation(
-                    target=interaction, db_func=update_match,
-                    match_id=parent_view.get_game().match_id, status=status, total_moves=parent_view.get_game().get_total_moves()
+                    target=interaction,
+                    db_func=update_match,
+                    match_id=parent_view.get_game().match_id,
+                    status=status,
+                    total_moves=parent_view.get_game().get_total_moves(),
                 )
             else:
                 if game.is_players_turn():
                     embed.color = player_color
                     embed.set_author(name=player.display_name, icon_url=player.display_avatar)
-                    status_message = f"It's {player_emoji} {player.mention}'s turn. " + ui.EMOJIS["game_turn"]
+                    status_message = (
+                        f"It's {player_emoji} {player.mention}'s turn. " + ui.EMOJIS["game_turn"]
+                    )
                 else:
                     embed.color = opponent_color
                     embed.set_author(name=opponent.display_name, icon_url=opponent.display_avatar)
-                    status_message = f"It's {opponent_emoji} {opponent.mention}'s turn. " + ui.EMOJIS["game_turn"]
+                    status_message = (
+                        f"It's {opponent_emoji} {opponent.mention}'s turn. "
+                        + ui.EMOJIS["game_turn"]
+                    )
 
-                ui.update_embed_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view))
+                ui.update_embed_field(
+                    embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view)
+                )
 
             assert status_message
             ui.update_embed_field(embed=embed, name="Status", value=status_message)
@@ -185,4 +206,6 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)
         except Exception:
-            await messages.handle_error(command="/tic-tac-toe", interaction=interaction, use_followup=False)
+            await messages.handle_error(
+                command="/tic-tac-toe", interaction=interaction, use_followup=False
+            )

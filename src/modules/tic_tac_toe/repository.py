@@ -7,14 +7,19 @@ from shared.models import EMatchStatus, Match
 from .models import TicTacToeMatch
 
 
-async def create_match(session: AsyncSession, player_id: int, opponent_id: int, grid_size: int) -> int:
+async def create_match(
+    session: AsyncSession, player_id: int, opponent_id: int, grid_size: int
+) -> int:
     """
     Creates a new tic-tac-toe match record in the database.
-    
+
     Returns id of the created match.
     """
 
-    console.log_debug(f"tic: Creating a new match (player_id = {player_id}, opponent_id = {opponent_id}, grid_size = {grid_size})...")
+    console.log_debug(
+        f"tic: Creating a new match (player_id = {player_id}, opponent_id = {opponent_id}, "
+        f"grid_size = {grid_size})..."
+    )
     match_id: int = 0
 
     async with session.begin():
@@ -26,9 +31,7 @@ async def create_match(session: AsyncSession, player_id: int, opponent_id: int, 
         await session.flush()
 
         child_match: TicTacToeMatch = TicTacToeMatch(
-            match_id=parent_match.match_id,
-            opponent_id=opponent_id,
-            grid_size=grid_size
+            match_id=parent_match.match_id, opponent_id=opponent_id, grid_size=grid_size
         )
         session.add(child_match)
 
@@ -38,7 +41,9 @@ async def create_match(session: AsyncSession, player_id: int, opponent_id: int, 
     return match_id
 
 
-async def update_match(session: AsyncSession, match_id: int, status: EMatchStatus, total_moves: int) -> bool:
+async def update_match(
+    session: AsyncSession, match_id: int, status: EMatchStatus, total_moves: int
+) -> bool:
     """
     Updates an pending tic-tac-toe match record in the database.
 
@@ -48,16 +53,19 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
         console.log_warning(f"tic: Cannot update match status to {status}.")
         return False
 
-    console.log_debug(f"tic: Updating match ({match_id}) with status ({status}) and total_moves ({total_moves})...")
+    console.log_debug(
+        f"tic: Updating match ({match_id}) "
+        f"with status ({status}) and total_moves ({total_moves})..."
+    )
 
     async with session.begin():
-        parent_match: Match | None = (await session.execute(
-            select(Match).where(Match.match_id == match_id)
-        )).scalar_one_or_none()
+        parent_match: Match | None = (
+            await session.execute(select(Match).where(Match.match_id == match_id))
+        ).scalar_one_or_none()
 
-        child_match: TicTacToeMatch | None = (await session.execute(
-            select(TicTacToeMatch).where(TicTacToeMatch.match_id == match_id)
-        )).scalar_one_or_none()
+        child_match: TicTacToeMatch | None = (
+            await session.execute(select(TicTacToeMatch).where(TicTacToeMatch.match_id == match_id))
+        ).scalar_one_or_none()
 
         if not parent_match or not child_match:
             console.log_warning(f"tic: Match ({match_id}) not found, update aborted.")

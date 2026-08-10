@@ -36,7 +36,6 @@ class ETriviaCategory(PyEnum):
     def __str__(self) -> str:
         return self.value
 
-
     def __int__(self) -> int:
         match self:
             case ETriviaCategory.ANY:
@@ -106,20 +105,18 @@ class ETriviaDifficulty(PyEnum):
 class TriviaMatch(Base):
     __tablename__ = "trivia_match"
 
-    match_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("match.match_id", ondelete="CASCADE"), primary_key=True)
+    match_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("match.match_id", ondelete="CASCADE"), primary_key=True
+    )
     question: Mapped[str] = mapped_column(String, nullable=False)
     correct_answer: Mapped[str] = mapped_column(String, nullable=False)
 
     # native_enum=True tells Postgres to create a custom ENUM data type
     category: Mapped[ETriviaCategory] = mapped_column(
-        Enum(ETriviaCategory, native_enum=True),
-        nullable=False,
-        default=ETriviaCategory.ANY
+        Enum(ETriviaCategory, native_enum=True), nullable=False, default=ETriviaCategory.ANY
     )
 
     # native_enum=True tells Postgres to create a custom ENUM data type
     difficulty: Mapped[ETriviaDifficulty] = mapped_column(
-        Enum(ETriviaDifficulty, native_enum=True),
-        nullable=False,
-        default=ETriviaDifficulty.ANY
+        Enum(ETriviaDifficulty, native_enum=True), nullable=False, default=ETriviaDifficulty.ANY
     )

@@ -1,6 +1,6 @@
 import time
 from collections.abc import Awaitable, Callable
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import discord
 
@@ -70,38 +70,57 @@ EMOJIS: dict[str, str] = {
     "cancel_button": "✖️",
 }
 
+
 def _calculate_easter_sunday(year: int) -> date:
     """
-    Calculates the month and day of Easter Sunday for a given year 
+    Calculates the month and day of Easter Sunday for a given year
     using the Anonymous Gregorian Algorithm (Meeus/Jones/Butcher).
     Returns date of Easter Sunday.
     """
-    a = year % 19
-    b = year // 100
-    c = year % 100
-    d = b // 4
-    e = b % 4
-    f = (b + 8) // 25
-    g = (b - f + 1) // 3
-    h = (19 * a + b - d - g + 15) % 30
-    i = c // 4
-    k = c % 4
-    l = (32 + 2 * e + 2 * i - h - k) % 7
-    m = (a + 11 * h + 22 * l) // 451
+    # 1. Break down the year
+    metonic_cycle_pos = year % 19
+    century = year // 100
+    year_in_century = year % 100
 
-    month = (h + l - 7 * m + 114) // 31
-    day = ((h + l - 7 * m + 114) % 31) + 1
+    # 2. Compute calendar shifts and corrections
+    leap_centuries = century // 4
+    century_remainder = century % 4
+    lunar_epact_correction = (century + 8) // 25
+    solar_leap_correction = (century - lunar_epact_correction + 1) // 3
 
-    return datetime(year, month, day, tzinfo=timezone.utc).date()
+    # 3. Find the Paschal Full Moon (Days past March 21)
+    # The '15' represents the base alignment for the Gregorian reform
+    lunar_epact = (
+        19 * metonic_cycle_pos + century - leap_centuries - solar_leap_correction + 15
+    ) % 3
+
+    # 4. Determine day of the week adjustments
+    leap_years_in_century = year_in_century // 4
+    year_remainder = year_in_century % 4
+    sunday_correction = (
+        32 + 2 * century_remainder + 2 * leap_years_in_century - lunar_epact - year_remainder
+    ) % 7
+
+    # 5. Handle rare Metonic calendar exceptions
+    metonic_exception = (metonic_cycle_pos + 11 * lunar_epact + 22 * sunday_correction) // 451
+
+    # 6. Extract final Month and Day
+    # The '114' acts as a mathematical offset to scale the results into March/April
+    total_days_offset = lunar_epact + sunday_correction - 7 * metonic_exception + 114
+
+    month = total_days_offset // 31  # 3 = March, 4 = April
+    day = (total_days_offset % 31) + 1
+
+    return datetime(year, month, day, tzinfo=UTC).date()
 
 
 def get_player_colors(date: datetime | None = None) -> tuple[discord.Color, discord.Color]:
     """
-        Returns player's and opponent's colors based on selected date.
+    Returns player's and opponent's colors based on selected date.
     """
     if not date:
-            date = datetime.now(timezone.utc)
-    
+        date = datetime.now(UTC)
+
     # New Year
     if (date.day == 1 and date.month == 1) or (date.day == 31 and date.month == 12):
         return (discord.Color.red(), discord.Color.blue())
@@ -125,7 +144,7 @@ def get_player_colors(date: datetime | None = None) -> tuple[discord.Color, disc
     # Summer (June, July, August)
     if date.month in (6, 7, 8):
         return (discord.Color.yellow(), discord.Color.blue())
-        
+
     # Halloween (October)
     if date.month == 10:
         return (discord.Color.orange(), BROWN_COLOR)
@@ -143,7 +162,7 @@ def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
     Returns player's and opponent's emojis based on selected date.
     """
     if not date:
-        date = datetime.now(timezone.utc)
+        date = datetime.now(UTC)
 
     # New Year
     if (date.day == 1 and date.month == 1) or (date.day == 31 and date.month == 12):
@@ -168,7 +187,7 @@ def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
     # Summer (June, July, August)
     if date.month in (6, 7, 8):
         return ("☀️", "🌊")
-        
+
     # Halloween (October)
     if date.month == 10:
         return ("👻", "🦉")
@@ -211,7 +230,10 @@ def extract_embed(interaction: discord.Interaction, index: int, hide_icon: bool)
 
     return extract_embed_from_message(message=message, index=index, hide_icon=hide_icon)
 
-def extract_embed_from_message(message: discord.Message, index: int, hide_icon: bool) -> discord.Embed:
+
+def extract_embed_from_message(
+    message: discord.Message, index: int, hide_icon: bool
+) -> discord.Embed:
     embed: discord.Embed = message.embeds[index]
 
     if hide_icon:
@@ -228,7 +250,7 @@ class ConfirmView(discord.ui.View):
 
     """
     A generic, reusable confirmation View.
-    
+
     :param on_confirm: Async function executed when the confirm button is clicked.
     :param on_cancel: Optional async function executed when the cancel button is clicked.
     :param confirm_label: Text label for the confirm button.
@@ -239,6 +261,7 @@ class ConfirmView(discord.ui.View):
     :param cancel_emoji: Optional emoji for the cancel button.
     :param timeout: Time in seconds before the confirmation prompt expires.
     """
+
     def __init__(
         self,
         on_confirm: Callable[[discord.Interaction], Awaitable[None]],
@@ -272,9 +295,13 @@ class ConfirmView(discord.ui.View):
 
     def build_embed(self, question: str) -> tuple[discord.Embed, discord.File]:
         console.log_debug(f"Building embed for ConfirmView ({self.id}, question = '{question}')...")
-        embed: discord.Embed = discord.Embed(color=discord.Color.blue(), title="Confirmation", description=question)
+        embed: discord.Embed = discord.Embed(
+            color=discord.Color.blue(), title="Confirmation", description=question
+        )
 
-        icon, icon_url = helpers.load_attachment(path=__file__, filename="question.png", sub_dir="images")
+        icon, icon_url = helpers.load_attachment(
+            path=__file__, filename="question.png", sub_dir="images"
+        )
         embed.set_thumbnail(url=icon_url)
         embed.add_field(name="Timeout", value=get_timeout_timestamp(self), inline=False)
 
@@ -291,13 +318,20 @@ class ConfirmView(discord.ui.View):
         if self._interaction:
             await self._interaction.delete_original_response()
 
-    async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item["ConfirmView"]) -> None:
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item["ConfirmView"],
+    ) -> None:
         await messages.handle_error("shared", interaction=interaction, use_followup=False)
 
     @discord.ui.button()
-    async def confirm_button(self, interaction: discord.Interaction, button: discord.ui.Button["ConfirmView"]) -> None:
+    async def confirm_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button["ConfirmView"]
+    ) -> None:
         console.log_debug(f"ConfirmView ({self.id}) confirmed.")
-        
+
         self.stop()
         await self._on_confirm(interaction)
 
@@ -308,9 +342,11 @@ class ConfirmView(discord.ui.View):
         await interaction.delete_original_response()
 
     @discord.ui.button()
-    async def cancel_button(self, interaction: discord.Interaction, button: discord.ui.Button["ConfirmView"]) -> None:
+    async def cancel_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button["ConfirmView"]
+    ) -> None:
         console.log_debug(f"ConfirmView ({self.id}) cancelled.")
-        
+
         self.stop()
         if self._on_cancel:
             await self._on_cancel(interaction)

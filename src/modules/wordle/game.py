@@ -2,7 +2,7 @@ import os
 import random
 import re
 import string
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from enum import Enum
 
 from shared import bot, console, helpers, models
@@ -18,6 +18,7 @@ class WordleLetterCategory(Enum):
 
     def __int__(self) -> int:
         return self.value
+
 
 class WordleDictionary:
     _secret_words_path: str
@@ -37,8 +38,10 @@ class WordleDictionary:
             self._line_size = len(file.readline())
 
         console.log_debug(
-            f"/wordle: Initialized dictionary from answers file '{self._secret_words_path}' ({self._secret_words_size} B) "
-            f"and allowed guesses file '{self._allowed_guesses_path}' ({self._allowed_guesses_size} B)"
+            f"/wordle: Initialized dictionary from answers file "
+            f"'{self._secret_words_path}' ({self._secret_words_size} B) "
+            f"and allowed guesses file "
+            f"'{self._allowed_guesses_path}' ({self._allowed_guesses_size} B)"
             f"with line size of {self._line_size} B"
         )
 
@@ -50,14 +53,20 @@ class WordleDictionary:
             file.seek(random_line * self._line_size)
             result = file.read(5).decode("utf-8").lower()
 
-        console.log_debug(f"/wordle: Found random word '{result}' on line {random_line} in file '{file_path}'.")
+        console.log_debug(
+            f"/wordle: Found random word '{result}' on line {random_line} in file '{file_path}'."
+        )
         return result
 
     def get_random_secret_word(self) -> str:
-        return self._get_random_word(file_path=self._secret_words_path, file_size=self._secret_words_size)
+        return self._get_random_word(
+            file_path=self._secret_words_path, file_size=self._secret_words_size
+        )
 
     def get_random_allowed_guess(self) -> str:
-        return self._get_random_word(file_path=self._allowed_guesses_path, file_size=self._allowed_guesses_size)
+        return self._get_random_word(
+            file_path=self._allowed_guesses_path, file_size=self._allowed_guesses_size
+        )
 
     def get_daily_secret_word(self, target_date: date | None = None) -> str:
         """
@@ -65,7 +74,7 @@ class WordleDictionary:
         Everyone calling this method on the same day will get the exact same word.
         """
         if target_date is None:
-            target_date = datetime.now(tz=timezone.utc).date().today()
+            target_date = datetime.now(tz=UTC).date().today()
 
         # Seed random generator with the date string (e.g. "2026-08-09")
         date_seed: str = target_date.strftime("%Y-%m-%d")
@@ -80,7 +89,8 @@ class WordleDictionary:
             result = file.read(5).decode("utf-8").lower()
 
         console.log_debug(
-            f"/wordle: Daily challenge word '{result}' (line {line_index}) selected for date {date_seed}."
+            f"/wordle: Daily challenge word '{result}' (line {line_index}) "
+            f"selected for date {date_seed}."
         )
         return result
 
@@ -91,7 +101,7 @@ class WordleDictionary:
 
             while low <= high:
                 mid: int = (low + high) // 2
-                mid -= mid % self._line_size # ensure mid is pointing to a start of a line
+                mid -= mid % self._line_size  # ensure mid is pointing to a start of a line
                 file.seek(mid)
 
                 current_word: str = file.read(5).decode("utf-8").lower()
@@ -107,15 +117,27 @@ class WordleDictionary:
 
     def is_valid_word(self, word: str) -> bool:
         if len(word) != 5:
-            console.log_debug(f"/wordle: Word '{word}' has invalid length {len(word)} (required 5).")
+            console.log_debug(
+                f"/wordle: Word '{word}' has invalid length {len(word)} (required 5)."
+            )
             return False
 
         if not word.isalpha():
-            console.log_debug(f"/wordle: Word '{word}' contains invalid characters. Only letters are allowed.")
+            console.log_debug(
+                f"/wordle: Word '{word}' contains invalid characters. Only letters are allowed."
+            )
             return False
 
-        if not (self._find_word(word=word, file_path=self._secret_words_path, file_size=self._secret_words_size) 
-            or self._find_word(word=word, file_path=self._allowed_guesses_path, file_size=self._allowed_guesses_size)):
+        if not (
+            self._find_word(
+                word=word, file_path=self._secret_words_path, file_size=self._secret_words_size
+            )
+            or self._find_word(
+                word=word,
+                file_path=self._allowed_guesses_path,
+                file_size=self._allowed_guesses_size,
+            )
+        ):
             console.log_debug(f"/wordle: Word '{word}' is invalid.")
             return False
 
@@ -150,7 +172,7 @@ class WordleGame:
         module_folder: str = re.sub(pattern=r"\/[^\/]*$", repl="/", string=__file__)
         self._dictionary = WordleDictionary(
             answers_path=module_folder + "secret-words.txt",
-            allowed_guesses_path=module_folder + "allowed-guesses.txt"
+            allowed_guesses_path=module_folder + "allowed-guesses.txt",
         )
 
         if self._is_daily:
@@ -161,7 +183,8 @@ class WordleGame:
     def __str__(self) -> str:
         return (
             f"Wordle game {self._match_id} for user {self._player_id} "
-            f"(secret_word: {self._secret_word}, guesses: {self._guesses}, is_daily: {self._is_daily})"
+            f"(secret_word: {self._secret_word}, guesses: {self._guesses},"
+            f"is_daily: {self._is_daily})"
         )
 
     async def _update_database_record(self) -> None:
@@ -169,13 +192,16 @@ class WordleGame:
             return
 
         await helpers.execute_db_operation(
-            target=self._bot, db_func=update_match,
-            match_id=self._match_id, status=self._status,
-            guesses_count=len(self._guesses), guesses=self._guesses
+            target=self._bot,
+            db_func=update_match,
+            match_id=self._match_id,
+            status=self._status,
+            guesses_count=len(self._guesses),
+            guesses=self._guesses,
         )
 
     def get_match_id(self) -> int:
-            return self._match_id
+        return self._match_id
 
     def get_player_id(self) -> int:
         return self._player_id
@@ -211,10 +237,11 @@ class WordleGame:
         self._bot = bot
 
         match_id: int | None = await helpers.execute_db_operation(
-            target=self._bot, db_func=create_match,
+            target=self._bot,
+            db_func=create_match,
             player_id=self._player_id,
             secret_word=self._secret_word,
-            is_daily=self._is_daily
+            is_daily=self._is_daily,
         )
 
         if match_id:
@@ -225,7 +252,9 @@ class WordleGame:
             return
 
         self._guesses.append(word)
-        console.log_info(f"/wordle: User '{self._player_id}' guessed word '{word}' in game {self._match_id}.")
+        console.log_info(
+            f"/wordle: User '{self._player_id}' guessed word '{word}' in game {self._match_id}."
+        )
 
         if word == self._secret_word:
             console.log_info(f"/wordle: User '{self._player_id}' won game {self._match_id}.")
@@ -234,9 +263,7 @@ class WordleGame:
             return
 
         if len(self._guesses) == 6:
-            console.log_info(
-                f"/wordle: User '{self._player_id}' lost game {self._match_id}."
-            )
+            console.log_info(f"/wordle: User '{self._player_id}' lost game {self._match_id}.")
             self._status = models.EMatchStatus.LOSS
             await self._update_database_record()
 
@@ -246,7 +273,9 @@ class WordleGame:
         while self.is_previous_guess(random_guess):
             random_guess = self._dictionary.get_random_allowed_guess()
 
-        console.log_info(f"/wordle: generated random word '{random_guess}' for game {self._match_id}")
+        console.log_info(
+            f"/wordle: generated random word '{random_guess}' for game {self._match_id}"
+        )
 
         await self.add_guess(word=random_guess)
 
@@ -260,18 +289,18 @@ class WordleGame:
 
     async def handle_surrender(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
-                    return
-        
+            return
+
         console.log_info(f"/wordle: Player '{self._player_id}' gave up game {self._match_id}.")
         self._status = models.EMatchStatus.SURRENDER
         await self._update_database_record()
 
     def categorize_word(self, word: str) -> list[tuple[str, WordleLetterCategory]]:
         """
-            Categorizes each letter of the word based on the it's position relative to the secret word
-            and updates the categories of available letters.
+        Categorizes each letter of the word based on the it's position relative to the secret word
+        and updates the categories of available letters.
 
-            Returns each letter of the word with it's categorization
+        Returns each letter of the word with it's categorization
         """
         result: list[tuple[str, WordleLetterCategory]] = []
 
@@ -281,7 +310,11 @@ class WordleGame:
 
             if letter == self._secret_word[i]:
                 category = WordleLetterCategory.CORRECT
-            elif letter in self._secret_word and word[:i].count(letter) < sw_count and word[i:].count(letter) <= sw_count:
+            elif (
+                letter in self._secret_word
+                and word[:i].count(letter) < sw_count
+                and word[i:].count(letter) <= sw_count
+            ):
                 category = WordleLetterCategory.MISPLACED
 
             result.append((letter, category))

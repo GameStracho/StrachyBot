@@ -26,10 +26,10 @@ class StrachyBot(commands.Bot):
         self._db_session_factory = None
         self._db_engine = None
 
-
     def create_db_session_factory(self, db_engine: AsyncEngine | None = None) -> None:
         """
-            Create database session factory from a db_engine for accessing the database. Creates a new engine if db_engine is None.
+        Create database session factory from a db_engine for accessing the database.
+        Creates a new engine if db_engine is None.
         """
         if not db_engine:
             db_engine = database.create_db_engine()
@@ -39,10 +39,8 @@ class StrachyBot(commands.Bot):
         self._db_engine = db_engine
         self._db_session_factory = database.create_session_factory(db_engine)
 
-
     def get_db_session_factory(self) -> async_sessionmaker[AsyncSession] | None:
         return self._db_session_factory
-
 
     async def close(self) -> None:
         """Called when the bot shuts down. Handles resource cleanup."""
@@ -70,24 +68,32 @@ class StrachyBot(commands.Bot):
             else:
                 synced_commands += command.name
 
-        console.log_info(f"Slash commands synced: {console.highlight(Fore.YELLOW, synced_commands)}")
-
+        console.log_info(
+            f"Slash commands synced: {console.highlight(Fore.YELLOW, synced_commands)}"
+        )
 
     async def on_ready(self) -> None:
         """Called when the bot starts."""
-        console.log_success(console.highlight(Fore.YELLOW, str(self.user)) + " is now online and ready to serve!")
-
+        console.log_success(
+            console.highlight(Fore.YELLOW, str(self.user)) + " is now online and ready to serve!"
+        )
 
     async def __load_modules(self) -> None:
         """Load all modules from src/modules directory."""
-        modules_dir: str = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "modules"))
+        modules_dir: str = os.path.normpath(
+            os.path.join(os.path.dirname(__file__), "..", "modules")
+        )
         success: bool = True
 
         for module_name in os.listdir(modules_dir):
             module_path = os.path.join(modules_dir, module_name)
-            
+
             # Skip non-directories and utility modules
-            if not os.path.isdir(module_path) or module_name.startswith("_") or not os.path.join(module_path, "cogs.py"):
+            if (
+                not os.path.isdir(module_path)
+                or module_name.startswith("_")
+                or not os.path.join(module_path, "cogs.py")
+            ):
                 continue
 
             try:

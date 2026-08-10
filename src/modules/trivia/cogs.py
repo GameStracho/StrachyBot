@@ -14,22 +14,36 @@ class TriviaCog(commands.Cog):
     def __init__(self, bot: bot.StrachyBot) -> None:
         self.bot = bot
 
-    @app_commands.command(name="trivia", description="Try to answer a question by selecting 1 of 4 answers.")
+    @app_commands.command(
+        name="trivia", description="Try to answer a question by selecting 1 of 4 answers."
+    )
     async def trivia(
-            self, interaction: discord.Interaction, category: ETriviaCategory = ETriviaCategory.ANY,
-            difficulty: ETriviaDifficulty = ETriviaDifficulty.ANY) -> None:
+        self,
+        interaction: discord.Interaction,
+        category: ETriviaCategory = ETriviaCategory.ANY,
+        difficulty: ETriviaDifficulty = ETriviaDifficulty.ANY,
+    ) -> None:
         try:
             # Tells Discord to display "Thinking..." and extends time limit to 15 mins
             await interaction.response.defer()
 
-            console.log_debug(f"/trivia: Command used by user {interaction.user.display_name} ({interaction.user.id})")
-            game: TriviaGame = TriviaGame(player_id=interaction.user.id, category=category, difficulty=difficulty)
+            console.log_debug(
+                f"/trivia: Command used by user {interaction.user.display_name} "
+                f"({interaction.user.id})"
+            )
+            game: TriviaGame = TriviaGame(
+                player_id=interaction.user.id, category=category, difficulty=difficulty
+            )
             await game.fetch_api()
 
             match_id: int | None = await helpers.execute_db_operation(
-                target=self.bot, db_func=create_match,
-                player_id=game.get_player_id(), category=game.get_category(), difficulty=game.get_difficulty(),
-                question=game.get_question(), correct_answer=game.get_correct_answer()
+                target=self.bot,
+                db_func=create_match,
+                player_id=game.get_player_id(),
+                category=game.get_category(),
+                difficulty=game.get_difficulty(),
+                question=game.get_question(),
+                correct_answer=game.get_correct_answer(),
             )
 
             if match_id:
@@ -37,7 +51,9 @@ class TriviaCog(commands.Cog):
 
             view: TriviaView = TriviaView(game=game, timeout=15.0)
             embed: discord.Embed = discord.Embed(title="Trivia", color=discord.Color.dark_gold())
-            embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar)
+            embed.set_author(
+                name=interaction.user.display_name, icon_url=interaction.user.display_avatar
+            )
 
             embed.add_field(name="Category", value=game.get_category(), inline=True)
             embed.add_field(name="Difficulty", value=game.get_difficulty(), inline=True)
@@ -47,10 +63,15 @@ class TriviaCog(commands.Cog):
             icon, icon_url = helpers.load_attachment(path=__file__, filename="icon.png")
             embed.set_thumbnail(url=icon_url)
 
-            console.log_info(f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) started a new {game}.")
+            console.log_info(
+                f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) "
+                f"started a new {game}."
+            )
 
-            # CRITICAL: Save the sent message reference to the view so the timeout handler can edit it!
+            # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
             await interaction.followup.send(embed=embed, view=view, file=icon)
             view.message = await interaction.original_response()
         except Exception:
-            await messages.handle_error(command="/trivia", interaction=interaction, use_followup=True)
+            await messages.handle_error(
+                command="/trivia", interaction=interaction, use_followup=True
+            )

@@ -8,17 +8,23 @@ from .models import ETriviaCategory, ETriviaDifficulty, TriviaMatch
 
 
 async def create_match(
-        session: AsyncSession, player_id: int, category: ETriviaCategory, difficulty: ETriviaDifficulty,
-        question: str, correct_answer: str) -> int:
+    session: AsyncSession,
+    player_id: int,
+    category: ETriviaCategory,
+    difficulty: ETriviaDifficulty,
+    question: str,
+    correct_answer: str,
+) -> int:
     """
     Creates a new trivia match record in the database.
-    
+
     Returns id of the created match.
     """
 
     console.log_debug(
-        f"trivia: Creating a new match (player_id = {player_id}, category = {category}, difficulty = {difficulty}, "
-        f"question = {question}, correct_answer = {correct_answer})..."
+        f"trivia: Creating a new match (player_id = {player_id}, category = {category}, "
+        f"difficulty = {difficulty}, question = {question}, "
+        f"correct_answer = {correct_answer})..."
     )
 
     match_id: int = 0
@@ -36,7 +42,7 @@ async def create_match(
             category=category,
             difficulty=difficulty,
             question=question,
-            correct_answer=correct_answer
+            correct_answer=correct_answer,
         )
         session.add(child_match)
 
@@ -59,9 +65,9 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
     console.log_debug(f"trivia: Updating match ({match_id}) with status ({status})...")
 
     async with session.begin():
-        match: Match | None = (await session.execute(
-            select(Match).where(Match.match_id == match_id)
-        )).scalar_one_or_none()
+        match: Match | None = (
+            await session.execute(select(Match).where(Match.match_id == match_id))
+        ).scalar_one_or_none()
 
         if not match:
             console.log_warning(f"trivia: Match ({match_id}) not found, update aborted.")

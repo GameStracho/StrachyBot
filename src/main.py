@@ -32,5 +32,6 @@ async def main() -> None:
             console.log_info("Closing bot HTTP session and active connections...")
             await bot.close()
 
+
 if __name__ == "__main__":
     asyncio.run(main())

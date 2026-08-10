@@ -302,6 +302,7 @@ def test_wordle_game_categorize_word() -> None:
     assert avail["s"] == WordleLetterCategory.INCORRECT
     assert avail["z"] == WordleLetterCategory.UNUSED
 
+
 def test_wordle_view_build_embed() -> None:
     game = WordleGame(player_id=123, is_daily=False)
     view = WordleView(game=game)
@@ -678,7 +679,8 @@ async def test_wordle_guess_modal_on_submit(monkeypatch: pytest.MonkeyPatch) -> 
     # 4. Exception path
     error_mock = AsyncMock()
     monkeypatch.setattr("modules.wordle.ui.messages.handle_error", error_mock)
-    monkeypatch.setattr("modules.wordle.ui.ui.extract_embed", MagicMock(side_effect=Exception("Failed")))
+    monkeypatch.setattr(
+        "modules.wordle.ui.ui.extract_embed", MagicMock(side_effect=Exception("Failed"))
+    )
     await modal3.on_submit(interaction)
     error_mock.assert_called_once()
-
