@@ -378,12 +378,12 @@ def test_wordle_view_update_embed() -> None:
 
     # 1. PENDING
     game._guesses = ["apple"]
-    view.update_embed(embed, mocks.create_dummy_user(), "Keep playing")
+    view.update_embed(embed, "Keep playing")
     assert any(field.name == "Timeout" for field in embed.fields)
 
     # 2. WIN
     game._status = models.EMatchStatus.WIN
-    view.update_embed(embed, mocks.create_dummy_user(), "Won")
+    view.update_embed(embed, "Won")
     assert embed.color == discord.Color.green()
     assert not any(field.name == "Timeout" for field in embed.fields)
 
@@ -396,7 +396,7 @@ def test_wordle_view_update_embed() -> None:
 
     game._status = models.EMatchStatus.LOSS
     view2 = WordleView(game=game)
-    view2.update_embed(embed2, mocks.create_dummy_user(), "Lost")
+    view2.update_embed(embed2, "Lost")
     assert embed2.color == discord.Color.red()
 
     # 4. SURRENDER
@@ -408,14 +408,14 @@ def test_wordle_view_update_embed() -> None:
 
     game._status = models.EMatchStatus.SURRENDER
     view3 = WordleView(game=game)
-    view3.update_embed(embed3, mocks.create_dummy_user(), "Gave up")
+    view3.update_embed(embed3, "Gave up")
     assert embed3.color == ui.COLORS["white"]
 
     # 5. Invalid Status
     game._status = models.EMatchStatus.TIMEOUT
     view4 = WordleView(game=game)
     with pytest.raises(ValueError):
-        view4.update_embed(embed3, mocks.create_dummy_user(), "Error")
+        view4.update_embed(embed3, "Error")
 
 
 @pytest.mark.asyncio

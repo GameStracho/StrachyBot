@@ -120,9 +120,7 @@ class WordleView(discord.ui.View):
 
         return result
 
-    def update_embed(
-        self, embed: discord.Embed, user: discord.User | discord.Member, default_status: str
-    ) -> None:
+    def update_embed(self, embed: discord.Embed, default_status: str) -> None:
         last_guess: str = self._game.get_last_guess()
         ui.embed.update_field(
             embed=embed,
@@ -269,9 +267,7 @@ class WordleView(discord.ui.View):
                 )
 
                 await self._game.guess_random_word()
-                self.update_embed(
-                    embed=embed, user=confirm_interaction.user, default_status="Used random guess."
-                )
+                self.update_embed(embed=embed, default_status="Used random guess.")
                 await self.message.edit(embed=embed, view=self)
 
             assert self.message is not None
@@ -322,9 +318,7 @@ class WordleView(discord.ui.View):
                 )
 
                 await self._game.handle_surrender()
-                self.update_embed(
-                    embed=embed, user=confirm_interaction.user, default_status="Used random guess."
-                )
+                self.update_embed(embed=embed, default_status="Used random guess.")
                 await self.message.edit(embed=embed, view=self)
 
             assert self.message is not None
@@ -439,9 +433,7 @@ class WordleGuessModal(discord.ui.Modal):
                 f"in game {self._parent_view.get_game().get_match_id()}."
             )
 
-            self._parent_view.update_embed(
-                embed=embed, user=interaction.user, default_status="Valid guess."
-            )
+            self._parent_view.update_embed(embed=embed, default_status="Valid guess.")
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
             self._parent_view.message = await interaction.original_response()
         except Exception:
