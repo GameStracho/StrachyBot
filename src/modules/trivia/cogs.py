@@ -50,7 +50,7 @@ class TriviaCog(commands.Cog):
             if match_id:
                 game.match_id = match_id
 
-            view: TriviaView = TriviaView(game=game, timeout=15.0)
+            view: TriviaView = TriviaView(game=game, timeout=60.0)
             embed: discord.Embed = discord.Embed(title="Trivia", color=discord.Color.dark_gold())
             embed.set_author(
                 name=interaction.user.display_name, icon_url=interaction.user.display_avatar
