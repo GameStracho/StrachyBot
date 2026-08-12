@@ -28,6 +28,7 @@ services:
     image: dockette/adminer:postgres
     profiles:
       - development
+      - production
     env_file: .env
     ports:
       - ${ADMINER_PORT:-8080}:80
@@ -37,8 +38,8 @@ services:
         required: true
     environment:
       # Enable the autologin plugin
-      ADMINER_PLUGIN_AUTOLOGIN: "1"
-      
+      ADMINER_PLUGIN_AUTOLOGIN: "${ADMINER_AUTOLOGIN:-0}"
+
       # Provide the unified DSN connection string
       # Format: pgsql://username:password@host:port/database
       ADMINER_AUTOLOGIN_SERVER: "pgsql://postgres:${DATABASE_PASSWORD:-Password1234}@postgres:5432/StrachyBot"
@@ -49,7 +50,7 @@ services:
       - production
     restart: always
     env_file: .env
-    command: sh -c "alembic upgrade head && python src/main.py" 
+    command: sh -c "alembic upgrade head && python src/main.py"
     depends_on:
       postgres:
         condition: "service_healthy"
