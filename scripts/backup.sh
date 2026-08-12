@@ -8,13 +8,14 @@ set -e
 # ==========================================
 
 CURRENT_DATE=$(date +"%Y-%m-%d_%H-%M-%S")
-CONTAINER_NAME="StrachyBotDB"
 DB_NAME="StrachyBot"
 DB_USER="postgres"
 
 # Absolute paths are required for cron jobs!
-# Dynamically locate the 'backups' directory from the 'scripts' directory (BASH_SOURCE[0])
-BACKUP_REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../backups" && pwd)"
+# Dynamically locate directories relative to this script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKUP_REPO_DIR="$(cd "${SCRIPT_DIR}/../backups" && pwd)"
+COMPOSE_FILE="$(cd "${SCRIPT_DIR}/.." && pwd)/docker-compose.yml"
 
 BACKUP_FILE_NAME="backup.sql"
 FULL_BACKUP_PATH="${BACKUP_REPO_DIR}/${BACKUP_FILE_NAME}"
@@ -34,26 +35,28 @@ if [ ! -d "$BACKUP_REPO_DIR" ]; then
     exit 1
 fi
 
-if [ ! "$(docker ps -q -f name=^${CONTAINER_NAME}$)" ]; then
-    echo "Error: Docker container '${CONTAINER_NAME}' is not running." >&2
+if [ ! -f "$COMPOSE_FILE" ]; then
+    echo "Error: Compose file '$COMPOSE_FILE' does not exist." >&2
     exit 1
 fi
 
-BACKUP_EXISTS=
+# Dynamically query the container ID for the 'postgres' service belonging ONLY to this compose file
+CONTAINER_ID=$(docker compose -f "$COMPOSE_FILE" ps -q postgres)
 
-if [[ -f "${FULL_BACKUP_PATH}" ]]; then
-    BACKUP_EXISTS=true
+if [ -z "$CONTAINER_ID" ]; then
+    echo "Error: Postgres container for project at '$COMPOSE_FILE' is not running." >&2
+    exit 1
 fi
 
-echo "Extracting database contents from the '${CONTAINER_NAME}' Docker container..."
-docker exec -t "$CONTAINER_NAME" pg_dump -U "$DB_USER" -d "$DB_NAME" > "$FULL_BACKUP_PATH"
+echo "Extracting database contents from container ID [${CONTAINER_ID}]..."
+docker exec -t "$CONTAINER_ID" pg_dump -U "$DB_USER" -d "$DB_NAME" > "$FULL_BACKUP_PATH"
 echo "SQL dump successfully written to: ${FULL_BACKUP_PATH}."
 
 echo "Tracking changes to '${BACKUP_FILE_NAME}'..."
 cd "$BACKUP_REPO_DIR"
 git add "$BACKUP_FILE_NAME"
 
-if [[ ! -z "${BACKUP_EXISTS}" ]]; then
+if [[ -f "${FULL_BACKUP_PATH}" ]]; then
     echo "Filtering database changes..."
     # Filter out git headers (+++ or ---) and '\restrict' and '\unrestrict' lines
     BACKUP_CHANGED=$(git diff --cached | grep -E '^[+-][^+-]' | grep -vE '(restrict|unrestrict)' || true)
@@ -71,6 +74,6 @@ echo "Committing the changes..."
 git -c user.name="$GIT_USER" -c user.email="$GIT_EMAIL" commit -m "[${CURRENT_DATE}] automatic backup."
 
 echo "Pushing changes to the remote repository..."
-git push origin main 
+git push origin main
 
 echo "Database backup complete!"
