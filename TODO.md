@@ -1,16 +1,21 @@
 ## [2.0.0] Harder, Better, Faster, Stronger
 
 ### Polishing
+- FIX `Tic-Tac-Toe`: zamezit spuštění hry sám proti sobě.
+- FIX `Tic-Tac-Toe`: randomizovat automatické tahy
+- FIX `Tic-Tac-Toe`: zvýšit počet políček potřebných ke spojení při hraní s plochou 4x4 a 5x5
+- FIX `Wordle`: Přidat spoiler do správy o pokusu uhodnout neexistující slovo při hraní denní výzvy
+- Dát `timeout` vpravo od `status`u v `TicTacToeView`
 - přesunout volání databázových funkcí z `ui.py` do `game.py` u všech mini-her
 - přidat do všech views metodu `build_embed` a `update_embed`, která vytvoří základní embed
 - zastavit timeout timery v `Trivia` a `Tic-Tac-Toe` zavoláním self.stop na konci hry
-- přesunout `alembic-postgresql-enum` z `requirements-dev` do `requirements`
-- odstranit `/announcement` command a přejmenovat `utils` modul na `info`
+- odstranit `/announcement` command
+- přejmenovat `utils` modul na `info`
 - přebarvit `/info` command na barvu `teal`
+- FIX: zmenšit počet Trivia API requestů
 - vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)
 - přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných
-- Dát `timeout` vpravo od `status`u v `TicTacToeView`
-- zapnout `strict` type checking v CI
+- aktualizovat README - přidat zmínku o existujících skriptech a co dělají, zjednodušit setup a zmínit adminer
 - přidat chybějící testy pro moduly: Wordle, Trivia a Shared + zkontrolovat testy pro Tic-Tac-Toe a Wordle
 - přidat příkaz `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
 

@@ -2,20 +2,29 @@
 
 ### Added
 - [TODO.md](TODO.md) to-do list
+- Enabled `strict` type checking in CI
+- Enabled database interface (`adminer` service) in production
+- Script for restoring backups
 
 ### Changed
 - Renamed custom AI agent
 - Updated `ruff` configuration - check line length, spacing, import order, naming style, etc.
 - Formatted source code
-- Moved console log functions to separate module `console`
+- Moved console log functions to a separate module `console`
 - Restructured `shared` module and simplified `shared` imports
 - Moved `src/images` to `src/shared/images`
+- Removed custom container names
 
 ### Removed
 - Google Drive backups
 - User statistics recorded into JSON files
 - Files that are not used anymore
 - member `_timeout` from `TicTacToeView`
+
+### Fixed
+- Increased `Trivia` timeout to 60 seconds
+- Enabled permanent database storage for `postgres` service
+- Moved `alembic-postgresql-enum` from `requirements-dev` to `requirements`
 
 ---
 
