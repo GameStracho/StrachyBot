@@ -1,7 +1,7 @@
 import re
 from datetime import date
 from typing import Any, cast
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, PropertyMock
 
 import discord
 import pytest
@@ -439,7 +439,7 @@ async def test_wordle_view_interaction_check(monkeypatch: pytest.MonkeyPatch) ->
     assert interaction_invalid.response.send_message.called
 
     # Exception
-    monkeypatch.setattr(game, "get_player", MagicMock(side_effect=Exception("Failed")))
+    monkeypatch.setattr(WordleGame, "player", PropertyMock(side_effect=Exception("Failed")))
     error_mock = AsyncMock()
     monkeypatch.setattr("modules.wordle.ui.ui.handle_error", error_mock)
 
