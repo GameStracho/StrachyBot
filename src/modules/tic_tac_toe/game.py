@@ -1,4 +1,5 @@
 from enum import Enum
+import random
 
 import discord
 
@@ -117,7 +118,7 @@ class TicTacToeGame:
                 return pos
 
         # Priority 3: Strategic positional selection based on score
-        best_pos: Position = empty_positions[0]
+        best_positions: list[Position] = [empty_positions[0]]
         best_score: int = -1
 
         for pos in empty_positions:
@@ -125,9 +126,11 @@ class TicTacToeGame:
 
             if score > best_score:
                 best_score = score
-                best_pos = pos
+                best_positions = [pos]
+            elif score == best_score:
+                best_positions.append(pos)
 
-        return best_pos
+        return random.choice(best_positions)
 
     def _simulate_win(self, pos: Position, control_value: ETicTacToeCell) -> bool:
         assert self._grid.get_cell_value(pos=pos) == ETicTacToeCell.EMPTY

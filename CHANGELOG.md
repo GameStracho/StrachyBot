@@ -26,6 +26,7 @@
 - Enabled permanent database storage for `postgres` service
 - Moved `alembic-postgresql-enum` from `requirements-dev` to `requirements`
 - Prevented starting the `Tic-Tac-Toe` game against oneself.
+- Automated `Tic-Tac-Toe` auto-play moves
 
 ---
 

@@ -1,7 +1,6 @@
 ## [2.0.0] Harder, Better, Faster, Stronger
 
 ### Polishing
-- FIX `Tic-Tac-Toe`: randomizovat automatické tahy
 - FIX `Tic-Tac-Toe`: zvýšit počet políček potřebných ke spojení při hraní s plochou 4x4 a 5x5
 - FIX `Wordle`: Přidat spoiler do správy o pokusu uhodnout neexistující slovo při hraní denní výzvy
 - Dát `timeout` vpravo od `status`u v `TicTacToeView`
