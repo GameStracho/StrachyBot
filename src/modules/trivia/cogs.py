@@ -3,11 +3,10 @@ from discord import app_commands
 from discord.ext import commands
 
 import console
-from shared import StrachyBot, execute_db_operation, ui
+from shared import StrachyBot, ui
 
 from .game import TriviaGame
 from .models import ETriviaCategory, ETriviaDifficulty
-from .repository import create_match
 from .ui import TriviaView
 
 
@@ -36,33 +35,10 @@ class TriviaCog(commands.Cog):
                 player_id=interaction.user.id, category=category, difficulty=difficulty
             )
             await game.fetch_api()
-
-            match_id: int | None = await execute_db_operation(
-                target=self.bot,
-                db_func=create_match,
-                player_id=game.get_player_id(),
-                category=game.get_category(),
-                difficulty=game.get_difficulty(),
-                question=game.get_question(),
-                correct_answer=game.get_correct_answer(),
-            )
-
-            if match_id:
-                game._match_id = match_id
+            await game.connect_database(self.bot)
 
             view: TriviaView = TriviaView(game=game, timeout=60.0)
-            embed: discord.Embed = discord.Embed(title="Trivia", color=discord.Color.dark_gold())
-            embed.set_author(
-                name=interaction.user.display_name, icon_url=interaction.user.display_avatar
-            )
-
-            embed.add_field(name="Category", value=game.get_category(), inline=True)
-            embed.add_field(name="Difficulty", value=game.get_difficulty(), inline=True)
-            embed.add_field(name="Question", value=game.get_question(), inline=False)
-            embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=view), inline=False)
-
-            icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
-            embed.set_thumbnail(url=icon_url)
+            embed, icon = view.build_embed(user=interaction.user)
 
             console.log_info(
                 f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) "

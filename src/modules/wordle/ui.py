@@ -53,6 +53,56 @@ class WordleView(discord.ui.View):
 
         return (embed, icon)
 
+    def update_embed(self, embed: discord.Embed, default_status: str) -> None:
+        last_guess: str = self._game.get_last_guess()
+        ui.embed.update_field(
+            embed=embed,
+            name=f"Guess #{self._game.get_guesses_count()}",
+            value=self._uncover_word(word=last_guess),
+        )
+        ui.embed.update_field(
+            embed=embed, name="Used letters", value=self._color_available_letters()
+        )
+
+        match self._game.get_status():
+            case models.EMatchStatus.PENDING:
+                ui.embed.update_field(embed=embed, name="Status", value=default_status)
+                ui.embed.update_field(
+                    embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self)
+                )
+                return
+            case models.EMatchStatus.WIN:
+                embed.color = discord.Color.green()
+                ui.embed.update_field(
+                    embed=embed, name="Status", value="You won! " + ui.EMOJIS["game_win"]
+                )
+            case models.EMatchStatus.LOSS:
+                embed.color = discord.Color.red()
+                ui.embed.update_field(
+                    embed=embed,
+                    name="Status",
+                    value=(
+                        f"You lost! {ui.EMOJIS['game_loss']}\n"
+                        f"The secret word was '{self.spoil(self._game.get_secret_word())}'."
+                    ),
+                )
+            case models.EMatchStatus.SURRENDER:
+                embed.color = ui.COLORS["white"]
+                ui.embed.update_field(
+                    embed=embed,
+                    name="Status",
+                    value=(
+                        f"You gave up! {ui.EMOJIS['game_surrender']}\n"
+                        f"The secret word was '{self.spoil(self._game.get_secret_word())}'."
+                    ),
+                )
+            case _:
+                raise ValueError(self._game.get_status())
+
+        self.disable_buttons()
+        ui.embed.remove_field(embed=embed, name="Timeout")
+        self.stop()
+
     def disable_buttons(self) -> None:
         for child in self.children:
             if isinstance(child, discord.ui.Button):
@@ -118,56 +168,6 @@ class WordleView(discord.ui.View):
                 uncovered_colors = ""
 
         return result
-
-    def update_embed(self, embed: discord.Embed, default_status: str) -> None:
-        last_guess: str = self._game.get_last_guess()
-        ui.embed.update_field(
-            embed=embed,
-            name=f"Guess #{self._game.get_guesses_count()}",
-            value=self._uncover_word(word=last_guess),
-        )
-        ui.embed.update_field(
-            embed=embed, name="Used letters", value=self._color_available_letters()
-        )
-
-        match self._game.get_status():
-            case models.EMatchStatus.PENDING:
-                ui.embed.update_field(embed=embed, name="Status", value=default_status)
-                ui.embed.update_field(
-                    embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self)
-                )
-                return
-            case models.EMatchStatus.WIN:
-                embed.color = discord.Color.green()
-                ui.embed.update_field(
-                    embed=embed, name="Status", value="You won! " + ui.EMOJIS["game_win"]
-                )
-            case models.EMatchStatus.LOSS:
-                embed.color = discord.Color.red()
-                ui.embed.update_field(
-                    embed=embed,
-                    name="Status",
-                    value=(
-                        f"You lost! {ui.EMOJIS['game_loss']}\n"
-                        f"The secret word was '{self.spoil(self._game.get_secret_word())}'."
-                    ),
-                )
-            case models.EMatchStatus.SURRENDER:
-                embed.color = ui.COLORS["white"]
-                ui.embed.update_field(
-                    embed=embed,
-                    name="Status",
-                    value=(
-                        f"You gave up! {ui.EMOJIS['game_surrender']}\n"
-                        f"The secret word was '{self.spoil(self._game.get_secret_word())}'."
-                    ),
-                )
-            case _:
-                raise ValueError(self._game.get_status())
-
-        self.disable_buttons()
-        ui.embed.remove_field(embed=embed, name="Timeout")
-        self.stop()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:

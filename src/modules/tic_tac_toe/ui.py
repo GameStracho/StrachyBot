@@ -18,9 +18,7 @@ class TicTacToeView(discord.ui.View):
 
         for x in range(game.get_grid_size()):
             for y in range(game.get_grid_size()):
-                self.add_item(
-                    TicTacToeButton(parent_view=self, position=Position(x, y))
-                )
+                self.add_item(TicTacToeButton(parent_view=self, position=Position(x, y)))
 
         console.log_debug(
             f"/tic-tac-toe: New TicTacToeView created for game {self._game.get_match_id()} "
@@ -29,6 +27,98 @@ class TicTacToeView(discord.ui.View):
 
     def get_game(self) -> TicTacToeGame:
         return self._game
+
+    def build_embed(
+        self, user: discord.User | discord.Member
+    ) -> tuple[discord.Embed, discord.File]:
+        player_emoji, opponent_emoji = ui.get_player_emojis()
+        player_color, _ = ui.get_player_colors()
+        embed = discord.Embed(
+            color=player_color,
+            title="Tic-Tac-Toe",
+            description=f"Connect {self._game.get_target_length()} cells to win.",
+        )
+
+        embed.set_author(name=user.display_name, icon_url=user.display_avatar)
+
+        embed.add_field(
+            name="Players",
+            value=(
+                f"{player_emoji} {self._game.get_player().mention}\n{opponent_emoji} "
+                f"{self._game.get_opponent().mention}"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="Status",
+            value=f"It's {player_emoji} {self._game.get_player().mention}'s turn.",
+            inline=False,
+        )
+        embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=self), inline=False)
+
+        icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
+        embed.set_thumbnail(url=icon_url)
+
+        return (embed, icon)
+
+    def update_embed(self, embed: discord.Embed) -> None:
+        status_message: str = ""
+        player_emoji, opponent_emoji = ui.get_player_emojis()
+        player_color, opponent_color = ui.get_player_colors()
+        player: discord.User = self._game.get_player()
+        opponent: discord.User = self._game.get_opponent()
+        winner: discord.User | None = self._game.get_winner()
+
+        match self._game.get_status():
+            case models.EMatchStatus.WIN:
+                assert winner
+
+                embed.color = player_color
+                embed.set_author(name=winner.display_name, icon_url=winner.display_avatar)
+                status_message = (
+                    f"Player {player_emoji} {player.mention} won. " + ui.EMOJIS["game_win"]
+                )
+            case models.EMatchStatus.LOSS:
+                assert winner
+
+                embed.color = opponent_color
+                embed.set_author(name=winner.display_name, icon_url=winner.display_avatar)
+                status_message = (
+                    f"Player {opponent_emoji} {opponent.mention} won. " + ui.EMOJIS["game_win"]
+                )
+            case models.EMatchStatus.DRAW:
+                embed.color = ui.COLORS["game_draw"]
+                embed.set_author(name="", icon_url="")
+                status_message = "Game ended in draw. " + ui.EMOJIS["game_draw"]
+            case models.EMatchStatus.PENDING:
+                if self._game.is_players_turn():
+                    embed.color = player_color
+                    embed.set_author(name=player.display_name, icon_url=player.display_avatar)
+                    status_message = (
+                        f"It's {player_emoji} {player.mention}'s turn. " + ui.EMOJIS["game_turn"]
+                    )
+                else:
+                    embed.color = opponent_color
+                    embed.set_author(name=opponent.display_name, icon_url=opponent.display_avatar)
+                    status_message = (
+                        f"It's {opponent_emoji} {opponent.mention}'s turn. "
+                        + ui.EMOJIS["game_turn"]
+                    )
+            case _:
+                raise ValueError(self._game.get_status())
+
+        if self._game.get_status() == models.EMatchStatus.PENDING:
+            ui.embed.update_field(
+                embed=embed,
+                name="Timeout",
+                value=ui.get_timeout_timestamp(view=self),
+            )
+        else:
+            ui.embed.remove_field(embed=embed, name="Timeout")
+            self.disable_buttons()
+
+        assert status_message
+        ui.embed.update_field(embed=embed, name="Status", value=status_message)
 
     def disable_buttons(self) -> None:
         for child in self.children:
@@ -138,65 +228,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
             embed: discord.Embed = ui.embed.extract(
                 interaction=interaction, index=0, hide_icon=True
             )
-            status_message: str = ""
-            player_color, opponent_color = ui.get_player_colors()
-            player: discord.User = game.get_player()
-            opponent: discord.User = game.get_opponent()
-            winner: discord.User | None = game.get_winner()
-
-            match game.get_status():
-                case models.EMatchStatus.WIN:
-                    assert winner
-
-                    embed.color = player_color
-                    embed.set_author(name=winner.display_name, icon_url=winner.display_avatar)
-                    status_message = (
-                        f"Player {player_emoji} {player.mention} won. " + ui.EMOJIS["game_win"]
-                    )
-                case models.EMatchStatus.LOSS:
-                    assert winner
-
-                    embed.color = opponent_color
-                    embed.set_author(name=winner.display_name, icon_url=winner.display_avatar)
-                    status_message = (
-                        f"Player {opponent_emoji} {opponent.mention} won. " + ui.EMOJIS["game_win"]
-                    )
-                case models.EMatchStatus.DRAW:
-                    embed.color = ui.COLORS["game_draw"]
-                    embed.set_author(name="", icon_url="")
-                    status_message = "Game ended in draw. " + ui.EMOJIS["game_draw"]
-                case models.EMatchStatus.PENDING:
-                    if game.is_players_turn():
-                        embed.color = player_color
-                        embed.set_author(name=player.display_name, icon_url=player.display_avatar)
-                        status_message = (
-                            f"It's {player_emoji} {player.mention}'s turn. "
-                            + ui.EMOJIS["game_turn"]
-                        )
-                    else:
-                        embed.color = opponent_color
-                        embed.set_author(
-                            name=opponent.display_name, icon_url=opponent.display_avatar
-                        )
-                        status_message = (
-                            f"It's {opponent_emoji} {opponent.mention}'s turn. "
-                            + ui.EMOJIS["game_turn"]
-                        )
-                case _:
-                    raise ValueError(game.get_status())
-
-            if game.get_status() == models.EMatchStatus.PENDING:
-                ui.embed.update_field(
-                    embed=embed,
-                    name="Timeout",
-                    value=ui.get_timeout_timestamp(view=self._parent_view),
-                )
-            else:
-                ui.embed.remove_field(embed=embed, name="Timeout")
-                self._parent_view.disable_buttons()
-
-            assert status_message
-            ui.embed.update_field(embed=embed, name="Status", value=status_message)
+            self._parent_view.update_embed(embed=embed)
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=self._parent_view)

@@ -44,6 +44,38 @@ class TriviaView(discord.ui.View):
     def get_game(self) -> TriviaGame:
         return self._game
 
+    def build_embed(
+        self, user: discord.User | discord.Member
+    ) -> tuple[discord.Embed, discord.File]:
+        embed: discord.Embed = discord.Embed(title="Trivia", color=discord.Color.dark_gold())
+        embed.set_author(name=user.display_name, icon_url=user.display_avatar)
+
+        embed.add_field(name="Category", value=self._game.get_category(), inline=True)
+        embed.add_field(name="Difficulty", value=self._game.get_difficulty(), inline=True)
+        embed.add_field(name="Question", value=self._game.get_question(), inline=False)
+        embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=self), inline=False)
+
+        icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
+        embed.set_thumbnail(url=icon_url)
+
+        return (embed, icon)
+
+    def update_embed(self, embed: discord.Embed) -> None:
+        match self._game.get_status():
+            case models.EMatchStatus.WIN:
+                embed.color = discord.Color.green()
+                self.style = discord.ButtonStyle.green
+                self.emoji = ui.EMOJIS["trivia_correct_answer_selected"]
+            case models.EMatchStatus.LOSS:
+                embed.color = discord.Color.red()
+                self.style = discord.ButtonStyle.red
+                self.emoji = ui.EMOJIS["trivia_wrong_answer_selected"]
+            case _:
+                raise ValueError(self._game.get_status())
+
+        self.disable_buttons()
+        ui.embed.remove_field(embed=embed, name="Timeout")
+
     def disable_buttons(self) -> None:
         console.log_debug(f"/trivia: Revealing answers for game {self._game.get_match_id()}...")
         for child in self.children:
@@ -106,31 +138,13 @@ class TriviaButton(discord.ui.Button[TriviaView]):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
-            message: discord.Message | None = interaction.message
-            assert message is not None
-
-            embed: discord.Embed = message.embeds[0]
-            ui.embed.remove_field(embed=embed, name="Timeout")
-
-            # hide a second icon appearing above the embed
-            embed.set_thumbnail(url="attachment://icon.png")
-
-            self._parent_view.disable_buttons()
-
             answer: str = self.label if self.label else ""
             await self._parent_view.get_game().select_answer(answer=answer)
 
-            match self._parent_view.get_game().get_status():
-                case models.EMatchStatus.WIN:
-                    embed.color = discord.Color.green()
-                    self.style = discord.ButtonStyle.green
-                    self.emoji = ui.EMOJIS["trivia_correct_answer_selected"]
-                case models.EMatchStatus.LOSS:
-                    embed.color = discord.Color.red()
-                    self.style = discord.ButtonStyle.red
-                    self.emoji = ui.EMOJIS["trivia_wrong_answer_selected"]
-                case _:
-                    raise ValueError(self._parent_view.get_game().get_status())
+            embed: discord.Embed = ui.embed.extract(
+                interaction=interaction, index=0, hide_icon=True
+            )
+            self._parent_view.update_embed(embed=embed)
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
