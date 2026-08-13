@@ -21,7 +21,7 @@
 - Google Drive backups
 - User statistics recorded into JSON files
 - Files that are not used anymore
-- member `_timeout` from `TicTacToeView`
+- Unused `/announcement` command
 
 ### Fixed
 - Increased `Trivia` timeout to 60 seconds

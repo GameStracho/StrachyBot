@@ -6,15 +6,12 @@
 - přidat sdílený typ User a helper funkci pro převod discord.User -> shared.User
 - přidat do všech views metodu `build_embed` a `update_embed`, která vytvoří základní embed
 - zastavit timeout timery v `Trivia` a `Tic-Tac-Toe` zavoláním self.stop na konci hry
-- odstranit `/announcement` command
 - přejmenovat `utils` modul na `info`
 - přebarvit `/info` command na barvu `teal`
 - FIX: zmenšit počet Trivia API requestů
 - vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)
 - přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných
 - aktualizovat README - přidat zmínku o existujících skriptech a co dělají, zjednodušit setup a zmínit adminer
-- přidat anotace ke všem funkcím kromě getterů a setterů
-- zkontrolovat code base pomocí AI
 
 ### Better Console Logs
 
