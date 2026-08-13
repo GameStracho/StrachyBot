@@ -36,6 +36,17 @@ class TicCog(commands.Cog):
                 f"({interaction.user.id})"
             )
 
+            if opponent.id == interaction.user.id:
+                console.log_debug(
+                    "/tic-tac-toe: Player and opponent have the same id. Game start abandoned."
+                )
+                await interaction.response.send_message(
+                    "You cannot play against yourself!\n"
+                    "Select a bot as your opponent if you want to play singleplayer. ",
+                    ephemeral=True,
+                )
+                return
+
             player: discord.User
 
             if isinstance(interaction.user, discord.User):
