@@ -104,6 +104,7 @@ class TicTacToeView(discord.ui.View):
         else:
             ui.embed.remove_field(embed=embed, name="Timeout")
             self.disable_buttons()
+            self.stop()
 
         assert status_message
         ui.embed.update_field(embed=embed, name="Status", value=status_message)

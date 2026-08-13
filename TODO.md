@@ -2,7 +2,6 @@
 
 ### Polishing
 - vylepšit gettery pomocí @property
-- zastavit timeout timery v `Trivia` a `Tic-Tac-Toe` zavoláním self.stop na konci hry
 - FIX: zmenšit počet Trivia API requestů
 - vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)
 - přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných

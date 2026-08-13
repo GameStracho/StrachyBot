@@ -70,6 +70,7 @@ class TriviaView(discord.ui.View):
                 raise ValueError(self._game.get_status())
 
         self.disable_buttons()
+        self.stop()
         ui.embed.remove_field(embed=embed, name="Timeout")
 
     def disable_buttons(self) -> None:
