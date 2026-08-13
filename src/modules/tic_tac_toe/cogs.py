@@ -74,7 +74,12 @@ class TicCog(commands.Cog):
             view: TicTacToeView = TicTacToeView(game=game, timeout=60.0)
             player_emoji, opponent_emoji = ui.get_player_emojis()
             player_color, _ = ui.get_player_colors()
-            embed = discord.Embed(color=player_color, title="Tic-Tac-Toe")
+            embed = discord.Embed(
+                color=player_color,
+                title="Tic-Tac-Toe",
+                description=f"Connect {game.get_target_length()} cells to win.",
+            )
+
             embed.set_author(
                 name=interaction.user.display_name, icon_url=interaction.user.display_avatar
             )

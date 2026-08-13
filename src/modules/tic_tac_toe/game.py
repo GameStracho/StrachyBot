@@ -1,5 +1,5 @@
-from enum import Enum
 import random
+from enum import Enum
 
 import discord
 
@@ -87,6 +87,15 @@ class TicTacToeGame:
     def is_opponent_bot(self) -> bool:
         return self._opponent.bot
 
+    def get_target_length(self) -> int:
+        """Returns the optimal target line length based on board dimension."""
+        if self._grid.get_size() <= 3:
+            return 3
+        elif self._grid.get_size() in (4, 5):
+            return 4
+        else:
+            return 5
+
     def calculate_bot_move(self) -> Position | None:
         """
         Calculates an intelligent move for the bot opponent.
@@ -160,11 +169,11 @@ class TicTacToeGame:
 
         # Check alignment with existing bot cells (creation of threats)
         for axis in EDirection.get_axes():
-            for start_offset in range(3):
+            for start_offset in range(self.get_target_length()):
                 opponent_count: int = 0
                 player_count: int = 0
 
-                for i in range(3):
+                for i in range(self.get_target_length()):
                     col: int = pos.x + (i - start_offset) * axis.x
                     row: int = pos.y + (i - start_offset) * axis.y
                     cell: ETicTacToeCell | None = self._grid.get_cell_value(Position(col, row))
@@ -244,14 +253,14 @@ class TicTacToeGame:
 
     def _check_axis(self, pos: Position, axis: Vector, control_value: ETicTacToeCell) -> bool:
         """
-        Checks axis for 3 connected cells passing through given position.
+        Checks axis for connected cells passing through given position.
         """
         assert control_value != ETicTacToeCell.EMPTY
 
-        for start_offset in range(3):
+        for start_offset in range(self.get_target_length()):
             connected: bool = True
 
-            for i in range(3):
+            for i in range(self.get_target_length()):
                 # Move in positive direction
                 col: int = pos.x + (i - start_offset) * axis.x
                 row: int = pos.y + (i - start_offset) * axis.y

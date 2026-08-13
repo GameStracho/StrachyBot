@@ -1,7 +1,6 @@
 ## [2.0.0] Harder, Better, Faster, Stronger
 
 ### Polishing
-- FIX `Tic-Tac-Toe`: zvýšit počet políček potřebných ke spojení při hraní s plochou 4x4 a 5x5
 - FIX `Wordle`: Přidat spoiler do správy o pokusu uhodnout neexistující slovo při hraní denní výzvy
 - Dát `timeout` vpravo od `status`u v `TicTacToeView`
 - přesunout volání databázových funkcí z `ui.py` do `game.py` u všech mini-her

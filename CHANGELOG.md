@@ -14,6 +14,7 @@
 - Restructured `shared` module and simplified `shared` imports
 - Moved `src/images` to `src/shared/images`
 - Removed custom container names
+- Balanced `Tic-Tac-Toe` 4x4 and 5x5 boards
 
 ### Removed
 - Google Drive backups
