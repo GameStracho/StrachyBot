@@ -287,10 +287,7 @@ class TicTacToeGame:
         self._total_moves += 1
         self._end_game(pos=position, control_value=cell_value)
 
-        # update database record on game end
-        if self._status != models.EMatchStatus.PENDING:
-            await self._update_database_record()
-
+        await self._update_database_record()
         return True
 
     def _end_game(self, pos: Position, control_value: ETicTacToeCell) -> None:

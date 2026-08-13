@@ -280,7 +280,8 @@ class WordleGame:
         if len(self._guesses) == 6:
             console.log_info(f"/wordle: User '{self._player_id}' lost game {self._match_id}.")
             self._status = models.EMatchStatus.LOSS
-            await self._update_database_record()
+
+        await self._update_database_record()
 
     async def guess_random_word(self) -> None:
         random_guess: str = self._dictionary.get_random_allowed_guess()

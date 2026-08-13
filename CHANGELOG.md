@@ -5,6 +5,7 @@
 - Enabled `strict` type checking in CI
 - Enabled database interface (`adminer` service) in production
 - Script for restoring backups
+- Updates of database records on each game update
 
 ### Changed
 - Renamed custom AI agent
