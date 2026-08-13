@@ -6,7 +6,6 @@
 - přidat sdílený typ User a helper funkci pro převod discord.User -> shared.User
 - přidat do všech views metodu `build_embed` a `update_embed`, která vytvoří základní embed
 - zastavit timeout timery v `Trivia` a `Tic-Tac-Toe` zavoláním self.stop na konci hry
-- přejmenovat `utils` modul na `info`
 - přebarvit `/info` command na barvu `teal`
 - FIX: zmenšit počet Trivia API requestů
 - vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)

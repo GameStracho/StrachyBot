@@ -24,7 +24,7 @@ class UtilsCog(commands.Cog):
             embed: discord.Embed = discord.Embed(
                 color=discord.Color.blue(),
                 title="StrachyBot 🤖",
-                description="Discord bot with fun mini-games like *Wordle* and *Tic-Tac-Toe*.",
+                description="Discord bot with fun mini-games like *Trivia*, *Tic-Tac-Toe* and *Wordle*.",
             )
 
             embed.add_field(
@@ -37,8 +37,8 @@ class UtilsCog(commands.Cog):
             for section_name, section_content in sections:
                 embed.add_field(name=section_name, value=section_content, inline=False)
 
-            icon: discord.File = discord.File("./src/modules/utils/info.png", filename="info.png")
-            embed.set_thumbnail(url="attachment://info.png")
+            icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
+            embed.set_thumbnail(url=icon_url)
 
             await interaction.response.send_message(embed=embed, file=icon)
         except Exception:
