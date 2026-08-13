@@ -1,11 +1,10 @@
 import discord
 
 import console
-from shared import execute_db_operation, models, ui
+from shared import models, ui
 from shared.types import Position
 
 from .game import TicTacToeGame
-from .repository import update_match
 
 
 class TicTacToeView(discord.ui.View):
@@ -19,10 +18,12 @@ class TicTacToeView(discord.ui.View):
 
         for x in range(game.get_grid_size()):
             for y in range(game.get_grid_size()):
-                self.add_item(TicTacToeButton(game_id=self._game.match_id, position=Position(x, y)))
+                self.add_item(
+                    TicTacToeButton(game_id=self._game.get_match_id(), position=Position(x, y))
+                )
 
         console.log_debug(
-            f"/tic-tac-toe: New TicTacToeView created for game {self._game.match_id} "
+            f"/tic-tac-toe: New TicTacToeView created for game {self._game.get_match_id()} "
             f"with {timeout}s timeout."
         )
 
@@ -34,7 +35,7 @@ class TicTacToeView(discord.ui.View):
             if isinstance(child, TicTacToeButton):
                 child.disabled = True
 
-        console.log_debug(f"/tic-tac-toe: Buttons disabled for game {self._game.match_id}.")
+        console.log_debug(f"/tic-tac-toe: Buttons disabled for game {self._game.get_match_id()}.")
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
@@ -47,7 +48,7 @@ class TicTacToeView(discord.ui.View):
             if interaction.user.id != current_player.id:
                 console.log_debug(
                     f"Ineligible user {interaction.user.display_name} ({interaction.user.id}) "
-                    f"tried to respond to game {self._game.match_id}."
+                    f"tried to respond to game {self._game.get_match_id()}."
                 )
 
                 await interaction.response.send_message("It's not your turn!", ephemeral=True)
@@ -61,11 +62,11 @@ class TicTacToeView(discord.ui.View):
             return False
 
     async def on_timeout(self) -> None:
-        if self._game.has_game_ended() or self.message is None:
+        if self._game.get_status() != models.EMatchStatus.PENDING or self.message is None:
             return
 
-        console.log_info(f"/tic-tac-toe: Game {self._game.match_id} timed out.")
         self.disable_buttons()
+        await self._game.handle_timeout()
 
         embed: discord.Embed = self.message.embeds[0]
         embed.color = ui.COLORS["game_timeout"]
@@ -77,14 +78,6 @@ class TicTacToeView(discord.ui.View):
 
         # hide a second icon appearing above the embed
         embed.set_thumbnail(url="attachment://icon.png")
-
-        await execute_db_operation(
-            target=self.message,
-            db_func=update_match,
-            match_id=self._game.match_id,
-            status=models.EMatchStatus.TIMEOUT,
-            total_moves=self._game.get_total_moves(),
-        )
 
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)
@@ -114,7 +107,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
 
             game: TicTacToeGame = parent_view.get_game()
 
-            success: bool = game.play(position=self._position)
+            success: bool = await game.play(position=self._position)
 
             if not success:
                 await interaction.response.send_message("Invalid move! ☹️", ephemeral=True)
@@ -125,11 +118,15 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
             self.disabled = True
 
             # Check if opponent is a bot and should make an automatic counter-move
-            if not game.has_game_ended() and game.is_opponent_bot() and not game.is_players_turn():
+            if (
+                game.get_status() == models.EMatchStatus.PENDING
+                and game.is_opponent_bot()
+                and not game.is_players_turn()
+            ):
                 bot_pos: Position | None = game.calculate_bot_move()
 
                 if bot_pos is not None:
-                    game.play(position=bot_pos)
+                    await game.play(position=bot_pos)
 
                     # Disable button played by bot
                     for child in parent_view.children:
@@ -145,59 +142,56 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
             player_color, opponent_color = ui.get_player_colors()
             player: discord.User = game.get_player()
             opponent: discord.User = game.get_opponent()
+            winner: discord.User | None = game.get_winner()
 
-            if game.has_game_ended():
-                winner: discord.User | None = game.get_winner()
-                status: models.EMatchStatus = models.EMatchStatus.PENDING
+            match game.get_status():
+                case models.EMatchStatus.WIN:
+                    assert winner
 
-                ui.embed.remove_field(embed=embed, name="Timeout")
-                parent_view.disable_buttons()
-
-                if not winner:
-                    embed.color = ui.COLORS["game_draw"]
-                    embed.set_author(name="", icon_url="")
-                    status_message = "Game ended in draw. " + ui.EMOJIS["game_draw"]
-                    status = models.EMatchStatus.DRAW
-                elif winner == game.get_player():
                     embed.color = player_color
-                    embed.set_author(name=player.display_name, icon_url=player.display_avatar)
+                    embed.set_author(name=winner.display_name, icon_url=winner.display_avatar)
                     status_message = (
                         f"Player {player_emoji} {player.mention} won. " + ui.EMOJIS["game_win"]
                     )
-                    status = models.EMatchStatus.WIN
-                else:
+                case models.EMatchStatus.LOSS:
+                    assert winner
+
                     embed.color = opponent_color
-                    embed.set_author(name=opponent.display_name, icon_url=player.display_avatar)
+                    embed.set_author(name=winner.display_name, icon_url=winner.display_avatar)
                     status_message = (
                         f"Player {opponent_emoji} {opponent.mention} won. " + ui.EMOJIS["game_win"]
                     )
-                    status = models.EMatchStatus.LOSS
+                case models.EMatchStatus.DRAW:
+                    embed.color = ui.COLORS["game_draw"]
+                    embed.set_author(name="", icon_url="")
+                    status_message = "Game ended in draw. " + ui.EMOJIS["game_draw"]
+                case models.EMatchStatus.PENDING:
+                    if game.is_players_turn():
+                        embed.color = player_color
+                        embed.set_author(name=player.display_name, icon_url=player.display_avatar)
+                        status_message = (
+                            f"It's {player_emoji} {player.mention}'s turn. "
+                            + ui.EMOJIS["game_turn"]
+                        )
+                    else:
+                        embed.color = opponent_color
+                        embed.set_author(
+                            name=opponent.display_name, icon_url=opponent.display_avatar
+                        )
+                        status_message = (
+                            f"It's {opponent_emoji} {opponent.mention}'s turn. "
+                            + ui.EMOJIS["game_turn"]
+                        )
+                case _:
+                    raise ValueError(game.get_status())
 
-                await execute_db_operation(
-                    target=interaction,
-                    db_func=update_match,
-                    match_id=parent_view.get_game().match_id,
-                    status=status,
-                    total_moves=parent_view.get_game().get_total_moves(),
-                )
-            else:
-                if game.is_players_turn():
-                    embed.color = player_color
-                    embed.set_author(name=player.display_name, icon_url=player.display_avatar)
-                    status_message = (
-                        f"It's {player_emoji} {player.mention}'s turn. " + ui.EMOJIS["game_turn"]
-                    )
-                else:
-                    embed.color = opponent_color
-                    embed.set_author(name=opponent.display_name, icon_url=opponent.display_avatar)
-                    status_message = (
-                        f"It's {opponent_emoji} {opponent.mention}'s turn. "
-                        + ui.EMOJIS["game_turn"]
-                    )
-
+            if game.get_status() == models.EMatchStatus.PENDING:
                 ui.embed.update_field(
                     embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view)
                 )
+            else:
+                ui.embed.remove_field(embed=embed, name="Timeout")
+                parent_view.disable_buttons()
 
             assert status_message
             ui.embed.update_field(embed=embed, name="Status", value=status_message)

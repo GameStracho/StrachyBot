@@ -24,9 +24,9 @@ async def test_tic_cog_command_success(monkeypatch: pytest.MonkeyPatch) -> None:
     interaction.original_response_message = dummy_response_message
 
     create_match_mock = AsyncMock(return_value=123)
-    monkeypatch.setattr("modules.tic_tac_toe.cogs.create_match", create_match_mock)
+    monkeypatch.setattr("modules.tic_tac_toe.game.create_match", create_match_mock)
     monkeypatch.setattr(
-        "modules.tic_tac_toe.cogs.execute_db_operation", mocks.dummy_execute_db_operation
+        "modules.tic_tac_toe.game.execute_db_operation", mocks.dummy_execute_db_operation
     )
 
     grid_choice = discord.app_commands.Choice(name="3x3", value=3)

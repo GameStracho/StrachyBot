@@ -2,6 +2,7 @@
 
 ### Polishing
 - přesunout volání databázových funkcí z `ui.py` do `game.py` u všech mini-her
+- přidat sdílený typ User a helper funkci pro převod discord.User -> shared.User
 - přidat do všech views metodu `build_embed` a `update_embed`, která vytvoří základní embed
 - zastavit timeout timery v `Trivia` a `Tic-Tac-Toe` zavoláním self.stop na konci hry
 - odstranit `/announcement` command
@@ -11,8 +12,8 @@
 - vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)
 - přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných
 - aktualizovat README - přidat zmínku o existujících skriptech a co dělají, zjednodušit setup a zmínit adminer
-- přidat chybějící testy pro moduly: Wordle, Trivia a Shared + zkontrolovat testy pro Tic-Tac-Toe a Wordle
-- přidat příkaz `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
+- přidat anotace ke všem funkcím kromě getterů a setterů
+- zkontrolovat code base pomocí AI
 
 ### Better Console Logs
 
@@ -20,6 +21,12 @@
 - přidat možnosti pro vypnutí logování do databáze, vypnutí vypisování logů do konzole, nastavení log levelu (debug, info, success, atd.) - přidat ke každé zprávě parametr "module" (ten bude značit, ke kterému modulu zpráva patří)
 - přidat více info a debug logů ke stávajícím modulům
 - zlepšit error handling (pomocí override 'on_error' metod v custom button a view třídách)
+
+### Web Command
+- přidat příkaz `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
+
+### Missing tests
+- přidat chybějící testy pro moduly: Wordle, Trivia a Shared + zkontrolovat testy pro Tic-Tac-Toe a Wordle
 
 --
 

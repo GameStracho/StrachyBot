@@ -148,12 +148,14 @@ class WordleDictionary:
 
 class WordleGame:
     _bot: StrachyBot | None
+
     _match_id: int
     _status: models.EMatchStatus
     _player_id: int
     _secret_word: str
     _is_daily: bool
     _guesses: list[str]
+
     _available_letters: dict[str, WordleLetterCategory]
     _dictionary: WordleDictionary
 
