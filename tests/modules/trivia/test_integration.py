@@ -8,7 +8,7 @@ from modules.trivia.cogs import TriviaCog
 from modules.trivia.game import TriviaGame
 from modules.trivia.models import ETriviaCategory, ETriviaDifficulty
 from modules.trivia.ui import TriviaButton, TriviaView
-from shared import bot
+from shared import bot, models
 from tests import mocks
 
 
@@ -27,7 +27,7 @@ async def test_trivia_cog_creates_game_and_sends_embed(monkeypatch: pytest.Monke
         return 42
 
     monkeypatch.setattr(TriviaGame, "fetch_api", fake_fetch_api)
-    monkeypatch.setattr("modules.trivia.cogs.create_match", fake_create_match)
+    monkeypatch.setattr("modules.trivia.game.create_match", fake_create_match)
 
     cog = TriviaCog(bot=bot.StrachyBot())
 
@@ -43,7 +43,7 @@ async def test_view_timeout_disables_buttons_and_updates_match(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     game = TriviaGame(player_id=8)
-    game.match_id = 55
+    game._match_id = 55
     game._question = "Question"
     game._correct_answer = "Correct"
     game._incorrect_answers = ["Wrong"]
@@ -56,8 +56,8 @@ async def test_view_timeout_disables_buttons_and_updates_match(
     mock_message._state._get_client = Mock(return_value=bot.StrachyBot())
     view.message = mock_message
 
-    monkeypatch.setattr("modules.trivia.ui.update_match", AsyncMock(return_value=True))
+    monkeypatch.setattr("modules.trivia.game.update_match", AsyncMock(return_value=True))
     await view.on_timeout()
 
-    assert game.is_over() is True
+    assert game.get_status() is models.EMatchStatus.TIMEOUT
     assert all(child.disabled for child in view.children if isinstance(child, TriviaButton))

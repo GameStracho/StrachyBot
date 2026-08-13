@@ -3,10 +3,9 @@ import random
 import discord
 
 import console
-from shared import execute_db_operation, models, ui
+from shared import models, ui
 
 from .game import TriviaGame
-from .repository import update_match
 
 
 class TriviaView(discord.ui.View):
@@ -29,7 +28,7 @@ class TriviaView(discord.ui.View):
             label, is_correct = option
             self.add_item(
                 TriviaButton(
-                    game_id=self._game.match_id,
+                    game_id=self._game._match_id,
                     label=label,
                     is_correct=is_correct,
                     emoji=ui.EMOJIS[chr(ord("a") + i)],
@@ -38,7 +37,7 @@ class TriviaView(discord.ui.View):
             )
 
         console.log_debug(
-            f"/trivia: New TriviaView created for game {self._game.match_id} "
+            f"/trivia: New TriviaView created for game {self._game._match_id} "
             f"with {timeout}s timeout."
         )
 
@@ -46,13 +45,11 @@ class TriviaView(discord.ui.View):
         return self._game
 
     def disable_buttons(self) -> None:
-        self._game.end()
-
-        console.log_debug(f"/trivia: Revealing answers for game {self._game.match_id}...")
+        console.log_debug(f"/trivia: Revealing answers for game {self._game.get_match_id()}...")
         for child in self.children:
             if isinstance(child, TriviaButton):
                 child.disable()
-        console.log_debug(f"/trivia: Answers revealed for game {self._game.match_id}.")
+        console.log_debug(f"/trivia: Answers revealed for game {self._game.get_match_id()}.")
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
@@ -60,7 +57,7 @@ class TriviaView(discord.ui.View):
                 console.log_warning(
                     f"/trivia: Ineligible user {interaction.user.display_name} "
                     f"({interaction.user.id}) "
-                    f"responded to game {self._game.match_id}"
+                    f"responded to game {self._game.get_match_id()}"
                 )
                 await interaction.response.send_message(
                     "You cannot respond to this game.", ephemeral=True
@@ -73,11 +70,11 @@ class TriviaView(discord.ui.View):
             return False
 
     async def on_timeout(self) -> None:
-        if self._game.is_over() or self.message is None:
+        if self._game.get_status() != models.EMatchStatus.PENDING or self.message is None:
             return
 
-        console.log_info(f"/trivia: Game {self._game.match_id} timed out.")
         self.disable_buttons()
+        await self._game.handle_timeout()
 
         embed: discord.Embed = self.message.embeds[0]
         embed.color = ui.COLORS["game_timeout"]
@@ -85,13 +82,6 @@ class TriviaView(discord.ui.View):
 
         # hide a second icon appearing above the embed
         embed.set_thumbnail(url="attachment://icon.png")
-
-        await execute_db_operation(
-            target=self.message,
-            db_func=update_match,
-            match_id=self._game.match_id,
-            status=models.EMatchStatus.TIMEOUT,
-        )
 
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)
@@ -115,14 +105,6 @@ class TriviaButton(discord.ui.Button[TriviaView]):
             parent_view = self.view
             assert isinstance(parent_view, TriviaView)
 
-            answer_type: str = "Correct" if self._is_correct else "Incorrect"
-
-            console.log_info(
-                f"/trivia: {answer_type} answer ({self.label}) "
-                f"chosen for game {parent_view.get_game().match_id} "
-                f"by user {interaction.user.display_name} ({interaction.user.id})."
-            )
-
             message: discord.Message | None = interaction.message
             assert message is not None
 
@@ -134,25 +116,20 @@ class TriviaButton(discord.ui.Button[TriviaView]):
 
             parent_view.disable_buttons()
 
-            status: models.EMatchStatus = models.EMatchStatus.PENDING
+            answer: str = self.label if self.label else ""
+            await parent_view.get_game().select_answer(answer=answer)
 
-            if self._is_correct:
-                embed.color = discord.Color.green()
-                self.style = discord.ButtonStyle.green
-                self.emoji = ui.EMOJIS["trivia_correct_answer_selected"]
-                status = models.EMatchStatus.WIN
-            else:
-                embed.color = discord.Color.red()
-                self.style = discord.ButtonStyle.red
-                self.emoji = ui.EMOJIS["trivia_wrong_answer_selected"]
-                status = models.EMatchStatus.LOSS
-
-            await execute_db_operation(
-                target=interaction,
-                db_func=update_match,
-                match_id=parent_view.get_game().match_id,
-                status=status,
-            )
+            match parent_view.get_game().get_status():
+                case models.EMatchStatus.WIN:
+                    embed.color = discord.Color.green()
+                    self.style = discord.ButtonStyle.green
+                    self.emoji = ui.EMOJIS["trivia_correct_answer_selected"]
+                case models.EMatchStatus.LOSS:
+                    embed.color = discord.Color.red()
+                    self.style = discord.ButtonStyle.red
+                    self.emoji = ui.EMOJIS["trivia_wrong_answer_selected"]
+                case _:
+                    raise ValueError(parent_view.get_game().get_status())
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=parent_view)

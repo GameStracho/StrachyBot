@@ -1,7 +1,8 @@
 ## [2.0.0] Harder, Better, Faster, Stronger
 
 ### Polishing
-- přesunout volání databázových funkcí z `ui.py` do `game.py` u všech mini-her
+- aktualizovat záznamy v db při každé aktualizaci hry
+- přidat člena `parent_view` všech custom tlačítkám
 - přidat sdílený typ User a helper funkci pro převod discord.User -> shared.User
 - přidat do všech views metodu `build_embed` a `update_embed`, která vytvoří základní embed
 - zastavit timeout timery v `Trivia` a `Tic-Tac-Toe` zavoláním self.stop na konci hry

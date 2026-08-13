@@ -129,9 +129,15 @@ class TicTacToeGame:
 
         if match_id:
             self._match_id = match_id
+            console.log_debug(
+                f"/tic-tac-toe: Created new database record with id {self._match_id}."
+            )
 
     async def _update_database_record(self) -> None:
         if not self._bot:
+            console.log_warning(
+                f"/tic-tac-toe: Database is not connected. Skipping update of {self}."
+            )
             return
 
         await execute_db_operation(
@@ -141,6 +147,8 @@ class TicTacToeGame:
             status=self._status,
             total_moves=self._total_moves,
         )
+
+        console.log_debug(f"/tic-tac-toe: Updated database record for game {self._match_id}.")
 
     async def handle_timeout(self) -> None:
         if self._status != models.EMatchStatus.PENDING:

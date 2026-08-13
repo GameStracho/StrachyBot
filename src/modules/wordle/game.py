@@ -190,19 +190,6 @@ class WordleGame:
             f"is_daily: {self._is_daily})"
         )
 
-    async def _update_database_record(self) -> None:
-        if not self._bot:
-            return
-
-        await execute_db_operation(
-            target=self._bot,
-            db_func=update_match,
-            match_id=self._match_id,
-            status=self._status,
-            guesses_count=len(self._guesses),
-            guesses=self._guesses,
-        )
-
     def get_match_id(self) -> int:
         return self._match_id
 
@@ -249,6 +236,31 @@ class WordleGame:
 
         if match_id:
             self._match_id = match_id
+            console.log_debug(f"/wordle: Created new database record with id {self._match_id}.")
+
+    async def _update_database_record(self) -> None:
+        if not self._bot:
+            console.log_warning(f"/wordle: Database is not connected. Skipping update of {self}.")
+            return
+
+        await execute_db_operation(
+            target=self._bot,
+            db_func=update_match,
+            match_id=self._match_id,
+            status=self._status,
+            guesses_count=len(self._guesses),
+            guesses=self._guesses,
+        )
+
+        console.log_debug(f"/wordle: Updated database record for game {self._match_id}.")
+
+    async def handle_timeout(self) -> None:
+        if self._status != models.EMatchStatus.PENDING:
+            return
+
+        console.log_info(f"/wordle: Game {self._match_id} timed out.")
+        self._status = models.EMatchStatus.TIMEOUT
+        await self._update_database_record()
 
     async def add_guess(self, word: str) -> None:
         if self._status != models.EMatchStatus.PENDING:
@@ -281,14 +293,6 @@ class WordleGame:
         )
 
         await self.add_guess(word=random_guess)
-
-    async def handle_timeout(self) -> None:
-        if self._status != models.EMatchStatus.PENDING:
-            return
-
-        console.log_info(f"/wordle: Game {self._match_id} timed out.")
-        self._status = models.EMatchStatus.TIMEOUT
-        await self._update_database_record()
 
     async def handle_surrender(self) -> None:
         if self._status != models.EMatchStatus.PENDING:

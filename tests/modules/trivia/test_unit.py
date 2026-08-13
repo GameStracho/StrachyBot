@@ -9,7 +9,7 @@ from modules.trivia.game import TriviaGame
 from modules.trivia.models import ETriviaCategory, ETriviaDifficulty
 from modules.trivia.response import TriviaResponse
 from modules.trivia.ui import TriviaButton, TriviaView
-from shared import helpers
+from shared import helpers, models
 from tests import mocks
 
 
@@ -120,7 +120,7 @@ def test_trivia_view_initializes_buttons_with_expected_labels(
     monkeypatch.setattr("modules.trivia.ui.random.shuffle", lambda items: items.reverse())
 
     game = TriviaGame(player_id=5, category=ETriviaCategory.ANY, difficulty=ETriviaDifficulty.ANY)
-    game.match_id = 12
+    game._match_id = 12
     game._question = "What?"
     game._correct_answer = "Correct"
     game._incorrect_answers = ["Wrong A", "Wrong B", "Wrong C"]
@@ -137,7 +137,7 @@ async def test_trivia_button_correct_answer_updates_embed_and_status(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     game = TriviaGame(player_id=5)
-    game.match_id = 21
+    game._match_id = 21
     game._question = "Question"
     game._correct_answer = "Correct"
     game._incorrect_answers = ["Wrong"]
@@ -155,11 +155,11 @@ async def test_trivia_button_correct_answer_updates_embed_and_status(
     interaction.response = cast(Any, dummy_response)
     interaction.message = message
 
-    monkeypatch.setattr("modules.trivia.ui.update_match", AsyncMock(return_value=True))
+    monkeypatch.setattr("modules.trivia.game.update_match", AsyncMock(return_value=True))
 
     await button.callback(interaction)
 
-    assert game.is_over() is True
+    assert game.get_status() is models.EMatchStatus.WIN
     assert embed.color == discord.Color.green()
     assert button.style == discord.ButtonStyle.green
     assert str(button.emoji) == "✔️"
@@ -169,7 +169,7 @@ async def test_trivia_button_correct_answer_updates_embed_and_status(
 @pytest.mark.asyncio
 async def test_trivia_view_rejects_wrong_user(monkeypatch: pytest.MonkeyPatch) -> None:
     game = TriviaGame(player_id=5)
-    game.match_id = 21
+    game._match_id = 21
     game._correct_answer = "Correct"
     game._incorrect_answers = ["Wrong"]
 
@@ -180,7 +180,7 @@ async def test_trivia_view_rejects_wrong_user(monkeypatch: pytest.MonkeyPatch) -
     interaction.response = cast(Any, dummy_response)
     interaction.message = SimpleNamespace(embeds=[discord.Embed()])
     update_match_mock = AsyncMock(return_value=True)
-    monkeypatch.setattr("modules.trivia.ui.update_match", update_match_mock)
+    monkeypatch.setattr("modules.trivia.game.update_match", update_match_mock)
 
     await view.interaction_check(interaction)
 

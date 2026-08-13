@@ -48,7 +48,7 @@ class TriviaCog(commands.Cog):
             )
 
             if match_id:
-                game.match_id = match_id
+                game._match_id = match_id
 
             view: TriviaView = TriviaView(game=game, timeout=60.0)
             embed: discord.Embed = discord.Embed(title="Trivia", color=discord.Color.dark_gold())
