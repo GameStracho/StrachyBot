@@ -26,8 +26,9 @@
 - Increased `Trivia` timeout to 60 seconds
 - Enabled permanent database storage for `postgres` service
 - Moved `alembic-postgresql-enum` from `requirements-dev` to `requirements`
-- Prevented starting the `Tic-Tac-Toe` game against oneself.
+- Prevented starting the `Tic-Tac-Toe` game against oneself
 - Automated `Tic-Tac-Toe` auto-play moves
+- Hide invalid words and already guessed words in `Wordle` daily challenge
 
 ---
 

@@ -1,8 +1,6 @@
 ## [2.0.0] Harder, Better, Faster, Stronger
 
 ### Polishing
-- FIX `Wordle`: Přidat spoiler do správy o pokusu uhodnout neexistující slovo při hraní denní výzvy
-- Dát `timeout` vpravo od `status`u v `TicTacToeView`
 - přesunout volání databázových funkcí z `ui.py` do `game.py` u všech mini-her
 - přidat do všech views metodu `build_embed` a `update_embed`, která vytvoří základní embed
 - zastavit timeout timery v `Trivia` a `Tic-Tac-Toe` zavoláním self.stop na konci hry

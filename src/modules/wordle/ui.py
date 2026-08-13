@@ -17,7 +17,6 @@ class WordleView(discord.ui.View):
         super().__init__(timeout=timeout)
 
         self._game = game
-        self._spoiler = "||" if game.is_daily() else ""
         console.log_debug(
             f"/trivia: New WordleView created for game {self._game.get_match_id()}"
             f" with {timeout}s timeout."
@@ -60,6 +59,10 @@ class WordleView(discord.ui.View):
                 child.disabled = True
         console.log_debug(f"/wordle: Buttons disabled for game {self._game.get_match_id()}.")
 
+    def spoil(self, string: str) -> str:
+        spoiler = "||" if self._game.is_daily() else ""
+        return f"{spoiler}{string}{spoiler}"
+
     def _get_letter_category_emoji(self, category: WordleLetterCategory) -> str:
         match category:
             case WordleLetterCategory.CORRECT:
@@ -91,10 +94,7 @@ class WordleView(discord.ui.View):
             uncovered_letters += ui.EMOJIS[letter] + " "
             uncovered_colors += self._get_letter_category_emoji(category=category) + " "
 
-        return (
-            f"{self._spoiler}{uncovered_letters.rstrip()}{self._spoiler}"
-            f"\n{uncovered_colors.rstrip()}"
-        )
+        return f"{self.spoil(uncovered_letters.rstrip())}\n{uncovered_colors.rstrip()}"
 
     def _color_available_letters(self) -> str:
         """
@@ -113,8 +113,7 @@ class WordleView(discord.ui.View):
             uncovered_colors += self._get_letter_category_emoji(category=category) + " "
 
             if len(uncovered_letters) == len(available_letters):
-                result += f"\n\n{uncovered_letters.rstrip()}"
-                result += f"\n{self._spoiler}{uncovered_colors}{self._spoiler}"
+                result += f"\n\n{uncovered_letters.rstrip()}\n{self.spoil(uncovered_colors)}"
                 uncovered_letters = ""
                 uncovered_colors = ""
 
@@ -149,9 +148,8 @@ class WordleView(discord.ui.View):
                     embed=embed,
                     name="Status",
                     value=(
-                        f"You lost! {ui.EMOJIS['game_loss']} "
-                        f"The secret word was "
-                        f"'{self._spoiler}{self._game.get_secret_word()}{self._spoiler}'."
+                        f"You lost! {ui.EMOJIS['game_loss']}\n"
+                        f"The secret word was '{self.spoil(self._game.get_secret_word())}'."
                     ),
                 )
             case models.EMatchStatus.SURRENDER:
@@ -160,9 +158,8 @@ class WordleView(discord.ui.View):
                     embed=embed,
                     name="Status",
                     value=(
-                        f"You gave up! {ui.EMOJIS['game_surrender']} "
-                        f"The secret word was "
-                        f"'{self._spoiler}{self._game.get_secret_word()}{self._spoiler}'."
+                        f"You gave up! {ui.EMOJIS['game_surrender']}\n"
+                        f"The secret word was '{self.spoil(self._game.get_secret_word())}'."
                     ),
                 )
             case _:
@@ -397,6 +394,7 @@ class WordleGuessModal(discord.ui.Modal):
         try:
             game: WordleGame = self._parent_view.get_game()
             guess: str = self.guess_input.value.lower()
+            updated_status: str = ""
 
             embed: discord.Embed = ui.embed.extract(
                 interaction=interaction, index=0, hide_icon=True
@@ -407,33 +405,23 @@ class WordleGuessModal(discord.ui.Modal):
                     f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                     f"entered an invalid word '{guess}'."
                 )
-
-                ui.embed.update_field(
-                    embed=embed, name="Status", value=f"Entered invalid word '{guess}'."
-                )
-                await interaction.response.edit_message(embed=embed, view=self._parent_view)
-                return
-
-            if game.is_previous_guess(word=guess):
+                updated_status = f"Entered invalid word '{self._parent_view.spoil(guess)}'."
+            elif game.is_previous_guess(word=guess):
                 console.log_info(
                     f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                     f"entered an already guesses word '{guess}'."
                 )
-
-                ui.embed.update_field(
-                    embed=embed, name="Status", value=f"You already guessed the word '{guess}'."
+                updated_status = f"You already guessed the word '{self._parent_view.spoil(guess)}'."
+            else:
+                await game.add_guess(word=guess)
+                console.log_info(
+                    f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
+                    f"guessed '{self.guess_input.value}' "
+                    f"in game {self._parent_view.get_game().get_match_id()}."
                 )
-                await interaction.response.edit_message(embed=embed, view=self._parent_view)
-                return
+                updated_status = "Valid guess."
 
-            await game.add_guess(word=guess)
-            console.log_info(
-                f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
-                f"guessed '{self.guess_input.value}' "
-                f"in game {self._parent_view.get_game().get_match_id()}."
-            )
-
-            self._parent_view.update_embed(embed=embed, default_status="Valid guess.")
+            self._parent_view.update_embed(embed=embed, default_status=updated_status)
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
             self._parent_view.message = await interaction.original_response()
         except Exception:
