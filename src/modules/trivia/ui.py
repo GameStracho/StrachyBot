@@ -3,7 +3,7 @@ import random
 import discord
 
 import console
-from shared import models, ui
+from shared import models, types, ui
 
 from .game import TriviaGame
 
@@ -44,9 +44,9 @@ class TriviaView(discord.ui.View):
     def get_game(self) -> TriviaGame:
         return self._game
 
-    def build_embed(
-        self, user: discord.User | discord.Member
-    ) -> tuple[discord.Embed, discord.File]:
+    def build_embed(self) -> tuple[discord.Embed, discord.File]:
+        user: types.User = self._game.get_player()
+
         embed: discord.Embed = discord.Embed(title="Trivia", color=discord.Color.dark_gold())
         embed.set_author(name=user.display_name, icon_url=user.display_avatar)
 
@@ -64,12 +64,8 @@ class TriviaView(discord.ui.View):
         match self._game.get_status():
             case models.EMatchStatus.WIN:
                 embed.color = discord.Color.green()
-                self.style = discord.ButtonStyle.green
-                self.emoji = ui.EMOJIS["trivia_correct_answer_selected"]
             case models.EMatchStatus.LOSS:
                 embed.color = discord.Color.red()
-                self.style = discord.ButtonStyle.red
-                self.emoji = ui.EMOJIS["trivia_wrong_answer_selected"]
             case _:
                 raise ValueError(self._game.get_status())
 
@@ -85,7 +81,7 @@ class TriviaView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
-            if interaction.user.id != self._game.get_player_id():
+            if interaction.user.id != self._game.get_player().id:
                 console.log_warning(
                     f"/trivia: Ineligible user {interaction.user.display_name} "
                     f"({interaction.user.id}) "
@@ -108,12 +104,11 @@ class TriviaView(discord.ui.View):
         self.disable_buttons()
         await self._game.handle_timeout()
 
-        embed: discord.Embed = self.message.embeds[0]
+        embed: discord.Embed = ui.embed.extract_from_message(
+            message=self.message, index=0, hide_icon=True
+        )
         embed.color = ui.COLORS["game_timeout"]
         ui.embed.remove_field(embed=embed, name="Timeout")
-
-        # hide a second icon appearing above the embed
-        embed.set_thumbnail(url="attachment://icon.png")
 
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)
@@ -154,8 +149,9 @@ class TriviaButton(discord.ui.Button[TriviaView]):
     def disable(self) -> None:
         """Disable the button and reveal whether the answer was correct or wrong."""
         self.disabled = True
-        self.emoji = (
-            ui.EMOJIS["trivia_correct_answer"]
-            if self._is_correct
-            else ui.EMOJIS["trivia_wrong_answer"]
-        )
+        if self._is_correct:
+            self.style = discord.ButtonStyle.green
+            self.emoji = ui.EMOJIS["trivia_correct_answer_selected"]
+        else:
+            self.style = discord.ButtonStyle.red
+            self.emoji = ui.EMOJIS["trivia_wrong_answer"]

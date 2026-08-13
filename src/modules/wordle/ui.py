@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 import discord
 
 import console
-from shared import models, ui
+from shared import models, types, ui
 
 from .game import WordleGame, WordleLetterCategory
 
@@ -25,10 +25,9 @@ class WordleView(discord.ui.View):
     def get_game(self) -> WordleGame:
         return self._game
 
-    def build_embed(
-        self, user: discord.User | discord.Member
-    ) -> tuple[discord.Embed, discord.File]:
+    def build_embed(self) -> tuple[discord.Embed, discord.File]:
         title: str = "Wordle"
+        user: types.User = self._game.get_player()
 
         if self._game.is_daily():
             title += f" {datetime.now(tz=UTC).date().strftime('%Y-%m-%d')}"
@@ -171,7 +170,7 @@ class WordleView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
-            if interaction.user.id != self._game.get_player_id():
+            if interaction.user.id != self._game.get_player().id:
                 console.log_warning(
                     f"/wordle: Ineligible user {interaction.user.display_name} "
                     f"({interaction.user.id}) "

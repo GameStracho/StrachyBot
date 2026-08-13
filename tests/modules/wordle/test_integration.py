@@ -13,8 +13,7 @@ from tests import mocks
 
 @pytest.mark.asyncio
 async def test_wordle_cog_starts_game_and_sends_embed(monkeypatch: pytest.MonkeyPatch) -> None:
-    interaction = mocks.DummyInteraction(user_id=13, username="Alice")
-    interaction.user = mocks.create_dummy_user(13, "Alice")
+    interaction = mocks.DummyInteraction(mocks.DummyUser(user_id=13, username="Alice"))
 
     async def fake_create_match(*args: Any, **kwargs: Any) -> int:
         return 42
@@ -41,8 +40,7 @@ async def test_wordle_cog_starts_game_and_sends_embed(monkeypatch: pytest.Monkey
 
 @pytest.mark.asyncio
 async def test_wordle_cog_daily_challenge_not_played(monkeypatch: pytest.MonkeyPatch) -> None:
-    interaction = mocks.DummyInteraction(user_id=13, username="Alice")
-    interaction.user = mocks.create_dummy_user(13, "Alice")
+    interaction = mocks.DummyInteraction(user=mocks.DummyUser(user_id=13, username="Alice"))
 
     async def fake_execute_db_operation(
         target: Any, db_func: Any, *args: Any, **kwargs: Any
@@ -66,8 +64,7 @@ async def test_wordle_cog_daily_challenge_not_played(monkeypatch: pytest.MonkeyP
 
 @pytest.mark.asyncio
 async def test_wordle_cog_daily_challenge_already_played(monkeypatch: pytest.MonkeyPatch) -> None:
-    interaction = mocks.DummyInteraction(user_id=13, username="Alice")
-    interaction.user = mocks.create_dummy_user(13, "Alice")
+    interaction = mocks.DummyInteraction(user=mocks.DummyUser(user_id=13, username="Alice"))
 
     async def fake_execute_db_operation(
         target: Any, db_func: Any, *args: Any, **kwargs: Any
@@ -91,8 +88,7 @@ async def test_wordle_cog_daily_challenge_already_played(monkeypatch: pytest.Mon
 
 @pytest.mark.asyncio
 async def test_wordle_cog_error_handling(monkeypatch: pytest.MonkeyPatch) -> None:
-    interaction = mocks.DummyInteraction(user_id=13, username="Alice")
-    interaction.user = mocks.create_dummy_user(13, "Alice")
+    interaction = mocks.DummyInteraction(user=mocks.DummyUser(user_id=13, username="Alice"))
 
     async def fake_execute_db_operation(*args: Any, **kwargs: Any) -> Any:
         raise mocks.TestError("DB Error")
@@ -114,7 +110,7 @@ async def test_wordle_cog_error_handling(monkeypatch: pytest.MonkeyPatch) -> Non
 async def test_wordle_view_timeout_disables_buttons_and_updates_db(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    game = WordleGame(player_id=8, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(user_id=8), is_daily=False)
     game._match_id = 55
     game._secret_word = "apple"
     game._bot = mocks.DummyStrachyBot()

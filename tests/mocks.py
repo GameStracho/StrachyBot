@@ -1,16 +1,52 @@
 from __future__ import annotations
 
 from types import SimpleNamespace, TracebackType
-from typing import Any, cast
-from unittest.mock import AsyncMock, MagicMock
+from typing import Any
+from unittest.mock import AsyncMock
 
 import discord
 
-from shared import bot, models
+from shared import bot, models, types
 
 
 class DummyStrachyBot(bot.StrachyBot):
     pass
+
+
+class DummyUser(types.User):
+    def __init__(self, user_id: int = 1, username: str = "Tester", is_bot: bool = False) -> None:
+        super().__init__(
+            id=user_id,
+            name="Tester",
+            display_name=username,
+            display_avatar="example.com/avatar",
+            mention=f"<@{user_id}>",
+            is_bot=is_bot,
+        )
+
+    @property
+    def id(self) -> int:
+        return self._id
+
+    @property
+    def name(self) -> str:  # type: ignore[override]
+        return self._name
+
+    @property
+    def display_name(self) -> str:
+        return self._display_name
+
+    @property
+    def mention(self) -> str:  # type: ignore[override]
+        return self._mention
+
+    @property
+    def bot(self) -> bool:
+        return self._is_bot
+
+    @property
+    def display_avatar(self) -> SimpleNamespace:  # type: ignore[override]
+        return SimpleNamespace(url=self._display_avatar)
 
 
 class DummyConnection:
@@ -99,9 +135,16 @@ class DummyInteraction(discord.Interaction):
     followup: Any
     user: Any
 
-    def __init__(self, user_id: int = 1, username: str = "Tester") -> None:
+    def __init__(self, user: DummyUser) -> None:
         # Avoid running full discord.Interaction internal state machine logic during raw unit tests
-        self.user = SimpleNamespace(id=user_id, display_name=username)
+        self.user = SimpleNamespace(
+            id=user.id,
+            display_name=user.display_name,
+            name=user.name,
+            mention=user.mention,
+            display_avatar=SimpleNamespace(url=user.display_avatar),
+            bot=user.is_bot,
+        )
         self.response = SimpleNamespace(
             defer=AsyncMock(),
             send_message=AsyncMock(),
@@ -129,17 +172,6 @@ class DummyInteraction(discord.Interaction):
 class TestError(Exception):
     def __init__(self, *args: Any) -> None:
         super().__init__(*args)
-
-
-def create_dummy_user(
-    user_id: int = 1, username: str = "Tester", is_bot: bool = False
-) -> discord.User:
-    user = MagicMock(spec=discord.User)
-    user.id = user_id
-    user.display_name = username
-    user.mention = f"<@{user_id}>"
-    user.bot = is_bot
-    return cast(discord.User, user)
 
 
 async def dummy_execute_db_operation(target: Any, db_func: Any, *args: Any, **kwargs: Any) -> Any:

@@ -46,22 +46,16 @@ class TicCog(commands.Cog):
                 )
                 return
 
-            player: discord.User
-
-            if isinstance(interaction.user, discord.User):
-                player = interaction.user
-            else:
-                temp_player: discord.User | None = await self.bot.fetch_user(interaction.user.id)
-                assert temp_player
-                player = temp_player
-
+            player_emoji, opponent_emoji = ui.get_player_emojis()
             game: TicTacToeGame = TicTacToeGame(
-                player=player, opponent=opponent, grid_size=grid_size.value
+                player=ui.get_user(user=interaction.user, emoji=player_emoji),
+                opponent=ui.get_user(user=opponent, emoji=opponent_emoji),
+                grid_size=grid_size.value,
             )
             await game.connect_database(bot=self.bot)
 
             view: TicTacToeView = TicTacToeView(game=game, timeout=60.0)
-            embed, icon = view.build_embed(user=interaction.user)
+            embed, icon = view.build_embed()
 
             console.log_info(
                 f"/tic-tac-toe: User {interaction.user.display_name} ({interaction.user.id}) "

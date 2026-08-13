@@ -34,10 +34,12 @@ class WordleCog(commands.Cog):
                 )
                 return
 
-            game: WordleGame = WordleGame(player_id=interaction.user.id, is_daily=daily_challenge)
+            game: WordleGame = WordleGame(
+                player=ui.get_user(user=interaction.user), is_daily=daily_challenge
+            )
             await game.connect_database(bot=self.bot)
             view: WordleView = WordleView(game=game, timeout=300.0)
-            embed, icon = view.build_embed(interaction.user)
+            embed, icon = view.build_embed()
 
             console.log_info(
                 f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "

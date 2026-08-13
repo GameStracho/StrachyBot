@@ -2,7 +2,7 @@ import discord
 
 import console
 from shared import models, ui
-from shared.types import Position
+from shared.types import Position, User
 
 from .game import TicTacToeGame
 
@@ -28,9 +28,7 @@ class TicTacToeView(discord.ui.View):
     def get_game(self) -> TicTacToeGame:
         return self._game
 
-    def build_embed(
-        self, user: discord.User | discord.Member
-    ) -> tuple[discord.Embed, discord.File]:
+    def build_embed(self) -> tuple[discord.Embed, discord.File]:
         player_emoji, opponent_emoji = ui.get_player_emojis()
         player_color, _ = ui.get_player_colors()
         embed = discord.Embed(
@@ -39,13 +37,14 @@ class TicTacToeView(discord.ui.View):
             description=f"Connect {self._game.get_target_length()} cells to win.",
         )
 
+        user: User = self._game.get_player()
         embed.set_author(name=user.display_name, icon_url=user.display_avatar)
 
         embed.add_field(
             name="Players",
             value=(
-                f"{player_emoji} {self._game.get_player().mention}\n{opponent_emoji} "
-                f"{self._game.get_opponent().mention}"
+                f"{player_emoji} {self._game.get_player().mention}"
+                f"\n{opponent_emoji} {self._game.get_opponent().mention}"
             ),
             inline=False,
         )
@@ -63,47 +62,36 @@ class TicTacToeView(discord.ui.View):
 
     def update_embed(self, embed: discord.Embed) -> None:
         status_message: str = ""
-        player_emoji, opponent_emoji = ui.get_player_emojis()
         player_color, opponent_color = ui.get_player_colors()
-        player: discord.User = self._game.get_player()
-        opponent: discord.User = self._game.get_opponent()
-        winner: discord.User | None = self._game.get_winner()
+        player: User = self._game.get_player()
+        opponent: User = self._game.get_opponent()
 
         match self._game.get_status():
-            case models.EMatchStatus.WIN:
+            case models.EMatchStatus.WIN | models.EMatchStatus.LOSS:
+                winner: User | None = self._game.get_winner()
                 assert winner
 
-                embed.color = player_color
+                embed.color = player_color if winner == player else opponent_color
                 embed.set_author(name=winner.display_name, icon_url=winner.display_avatar)
                 status_message = (
-                    f"Player {player_emoji} {player.mention} won. " + ui.EMOJIS["game_win"]
-                )
-            case models.EMatchStatus.LOSS:
-                assert winner
-
-                embed.color = opponent_color
-                embed.set_author(name=winner.display_name, icon_url=winner.display_avatar)
-                status_message = (
-                    f"Player {opponent_emoji} {opponent.mention} won. " + ui.EMOJIS["game_win"]
+                    f"Player {winner.emoji} {winner.mention} won. " + ui.EMOJIS["game_win"]
                 )
             case models.EMatchStatus.DRAW:
                 embed.color = ui.COLORS["game_draw"]
                 embed.set_author(name="", icon_url="")
                 status_message = "Game ended in draw. " + ui.EMOJIS["game_draw"]
             case models.EMatchStatus.PENDING:
-                if self._game.is_players_turn():
-                    embed.color = player_color
-                    embed.set_author(name=player.display_name, icon_url=player.display_avatar)
-                    status_message = (
-                        f"It's {player_emoji} {player.mention}'s turn. " + ui.EMOJIS["game_turn"]
-                    )
-                else:
-                    embed.color = opponent_color
-                    embed.set_author(name=opponent.display_name, icon_url=opponent.display_avatar)
-                    status_message = (
-                        f"It's {opponent_emoji} {opponent.mention}'s turn. "
-                        + ui.EMOJIS["game_turn"]
-                    )
+                current_player: User = player if self._game.is_players_turn() else opponent
+
+                embed.color = player_color if self._game.is_players_turn() else opponent_color
+                embed.set_author(
+                    name=current_player.display_name,
+                    icon_url=current_player.display_avatar,
+                )
+                status_message = (
+                    f"It's {current_player.emoji} {current_player.mention}'s turn. "
+                    + ui.EMOJIS["game_turn"]
+                )
             case _:
                 raise ValueError(self._game.get_status())
 
@@ -129,7 +117,7 @@ class TicTacToeView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
-            current_player = (
+            current_player: User = (
                 self._game.get_player()
                 if self._game.is_players_turn()
                 else self._game.get_opponent()
@@ -210,7 +198,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
             # Check if opponent is a bot and should make an automatic counter-move
             if (
                 game.get_status() == models.EMatchStatus.PENDING
-                and game.is_opponent_bot()
+                and game.get_opponent().is_bot
                 and not game.is_players_turn()
             ):
                 bot_pos: Position | None = game.calculate_bot_move()

@@ -89,10 +89,12 @@ async def test_fetch_api_builds_expected_url_and_populates_game(
 
     monkeypatch.setattr(target=helpers, name="fetch_api", value=fake_fetch_api)
 
-    game = TriviaGame(player_id=7, category=ETriviaCategory.GENERAL_KNOWLEDGE)
+    player = mocks.DummyUser(user_id=7)
+
+    game = TriviaGame(player=player, category=ETriviaCategory.GENERAL_KNOWLEDGE)
     await game.fetch_api()
 
-    assert game.get_player_id() == 7
+    assert game.get_player() == player
     assert game.get_category() == ETriviaCategory.COMPUTERS
     assert game.get_difficulty() == ETriviaDifficulty.MEDIUM
     assert game.get_question() == "Question?"
@@ -109,7 +111,7 @@ async def test_fetch_api_raises_when_api_returns_no_results(
 
     monkeypatch.setattr(target=helpers, name="fetch_api", value=fake_fetch_api)
 
-    game = TriviaGame(player_id=1)
+    game = TriviaGame(player=mocks.DummyUser())
     with pytest.raises(Exception, match="No API response received"):
         await game.fetch_api()
 
@@ -119,7 +121,11 @@ def test_trivia_view_initializes_buttons_with_expected_labels(
 ) -> None:
     monkeypatch.setattr("modules.trivia.ui.random.shuffle", lambda items: items.reverse())
 
-    game = TriviaGame(player_id=5, category=ETriviaCategory.ANY, difficulty=ETriviaDifficulty.ANY)
+    game = TriviaGame(
+        player=mocks.DummyUser(user_id=5),
+        category=ETriviaCategory.ANY,
+        difficulty=ETriviaDifficulty.ANY,
+    )
     game._match_id = 12
     game._question = "What?"
     game._correct_answer = "Correct"
@@ -136,7 +142,8 @@ def test_trivia_view_initializes_buttons_with_expected_labels(
 async def test_trivia_button_correct_answer_updates_embed_and_status(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    game = TriviaGame(player_id=5)
+    user = mocks.DummyUser(user_id=5)
+    game = TriviaGame(player=user)
     game._match_id = 21
     game._question = "Question"
     game._correct_answer = "Correct"
@@ -150,7 +157,7 @@ async def test_trivia_button_correct_answer_updates_embed_and_status(
     embed = discord.Embed(title="Trivia")
     message = SimpleNamespace(embeds=[embed])
 
-    interaction = mocks.DummyInteraction(user_id=5, username="Tester")
+    interaction = mocks.DummyInteraction(user=user)
     dummy_response = mocks.DummyResponse()
     interaction.response = cast(Any, dummy_response)
     interaction.message = message
@@ -168,14 +175,15 @@ async def test_trivia_button_correct_answer_updates_embed_and_status(
 
 @pytest.mark.asyncio
 async def test_trivia_view_rejects_wrong_user(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = TriviaGame(player_id=5)
+    user = mocks.DummyUser(user_id=5)
+    game = TriviaGame(player=user)
     game._match_id = 21
     game._correct_answer = "Correct"
     game._incorrect_answers = ["Wrong"]
 
     view = TriviaView(game=game, timeout=5.0)
 
-    interaction = mocks.DummyInteraction(user_id=99, username="Other")
+    interaction = mocks.DummyInteraction(user=mocks.DummyUser(user_id=99))
     dummy_response = mocks.DummyResponse()
     interaction.response = cast(Any, dummy_response)
     interaction.message = SimpleNamespace(embeds=[discord.Embed()])

@@ -32,13 +32,13 @@ class TriviaCog(commands.Cog):
                 f"({interaction.user.id})"
             )
             game: TriviaGame = TriviaGame(
-                player_id=interaction.user.id, category=category, difficulty=difficulty
+                player=ui.get_user(user=interaction.user), category=category, difficulty=difficulty
             )
             await game.fetch_api()
             await game.connect_database(self.bot)
 
             view: TriviaView = TriviaView(game=game, timeout=60.0)
-            embed, icon = view.build_embed(user=interaction.user)
+            embed, icon = view.build_embed()
 
             console.log_info(
                 f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) "

@@ -11,7 +11,7 @@ class TriviaGame:
 
     _match_id: int
     _status: models.EMatchStatus
-    _player_id: int
+    _player: types.User
     _question: str
     _correct_answer: str
     _category: ETriviaCategory
@@ -21,21 +21,21 @@ class TriviaGame:
 
     def __init__(
         self,
-        player_id: int,
+        player: types.User,
         category: ETriviaCategory = ETriviaCategory.ANY,
         difficulty: ETriviaDifficulty = ETriviaDifficulty.ANY,
     ) -> None:
         self._bot = None
         self._match_id = -1
         self._status = models.EMatchStatus.PENDING
-        self._player_id = player_id
+        self._player = player
         self._is_over = False
         self._category = category
         self._difficulty = difficulty
 
     def __str__(self) -> str:
         return (
-            f"Trivia game {self._match_id} for user {self._player_id} - {self._question} "
+            f"Trivia game {self._match_id} for user {self._player} - {self._question} "
             f"(status: {self._status}, difficulty: {self._difficulty}, category: {self._category}, "
             f"correct answer: {self._correct_answer}, incorrect answers: {self._incorrect_answers})"
         )
@@ -65,8 +65,8 @@ class TriviaGame:
     def get_status(self) -> models.EMatchStatus:
         return self._status
 
-    def get_player_id(self) -> int:
-        return self._player_id
+    def get_player(self) -> types.User:
+        return self._player
 
     def get_category(self) -> ETriviaCategory:
         return self._category
@@ -89,7 +89,7 @@ class TriviaGame:
         match_id: int | None = await execute_db_operation(
             target=self._bot,
             db_func=create_match,
-            player_id=self._player_id,
+            player_id=self._player.id,
             category=self._category,
             difficulty=self._difficulty,
             question=self._question,
@@ -121,7 +121,7 @@ class TriviaGame:
 
     async def select_answer(self, answer: str) -> bool:
         console.log_debug(
-            f"/trivia: User {self._player_id} selected answer '{answer}' for game {self._match_id}"
+            f"/trivia: User {self._player.id} selected answer '{answer}' for game {self._match_id}"
         )
 
         if self._status != models.EMatchStatus.PENDING:
@@ -134,7 +134,7 @@ class TriviaGame:
 
         console.log_info(
             f"/trivia: {'Correct' if is_correct else 'Incorrect'} answer '{answer}' "
-            f"chosen for game {self._match_id} by user {self._player_id}."
+            f"chosen for game {self._match_id} by user {self._player.id}."
         )
 
         self._status = models.EMatchStatus.WIN if is_correct else models.EMatchStatus.LOSS

@@ -1,11 +1,9 @@
 import random
 from enum import Enum
 
-import discord
-
 import console
 from shared import StrachyBot, execute_db_operation, models
-from shared.types import EDirection, Position, Vector
+from shared.types import EDirection, Position, User, Vector
 
 from .repository import create_match, update_match
 
@@ -51,13 +49,13 @@ class TicTacToeGame:
 
     _match_id: int
     _status: models.EMatchStatus
-    _player: discord.User
-    _opponent: discord.User
+    _player: User
+    _opponent: User
     _total_moves: int
 
     _grid: TicTacToeGrid
 
-    def __init__(self, player: discord.User, opponent: discord.User, grid_size: int) -> None:
+    def __init__(self, player: User, opponent: User, grid_size: int) -> None:
         self._bot = None
         self._match_id = -1
         self._status = models.EMatchStatus.PENDING
@@ -68,8 +66,8 @@ class TicTacToeGame:
 
     def __str__(self) -> str:
         return (
-            f"Tic-Tac-Toe game {self._match_id} for player {self._player.id} "
-            f"against opponent {self._opponent.id} "
+            f"Tic-Tac-Toe game {self._match_id} for player {self._player} "
+            f"against opponent {self._opponent} "
             f"(status: {self._status}, total moves: {self._total_moves}, "
             f"grid_size: {self._grid.get_size()})."
         )
@@ -80,10 +78,10 @@ class TicTacToeGame:
     def get_status(self) -> models.EMatchStatus:
         return self._status
 
-    def get_player(self) -> discord.User:
+    def get_player(self) -> User:
         return self._player
 
-    def get_opponent(self) -> discord.User:
+    def get_opponent(self) -> User:
         return self._opponent
 
     def get_total_moves(self) -> int:
@@ -92,7 +90,7 @@ class TicTacToeGame:
     def get_grid_size(self) -> int:
         return self._grid.get_size()
 
-    def get_winner(self) -> discord.User | None:
+    def get_winner(self) -> User | None:
         match self._status:
             case models.EMatchStatus.WIN:
                 return self._player
@@ -100,9 +98,6 @@ class TicTacToeGame:
                 return self._opponent
             case _:
                 return None
-
-    def is_opponent_bot(self) -> bool:
-        return self._opponent.bot
 
     def get_target_length(self) -> int:
         """Returns the optimal target line length based on board dimension."""

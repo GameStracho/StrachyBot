@@ -5,6 +5,7 @@ import traceback
 import discord
 
 import console
+from shared.types import User
 
 
 def get_timeout_timestamp(view: discord.ui.View) -> str:
@@ -57,3 +58,15 @@ def load_attachment(path: str, filename: str, sub_dir: str = "") -> tuple[discor
     console.log_debug(f"Attachment '{attachment_path}' loaded.")
 
     return (attachment, f"attachment://{filename}")
+
+
+def get_user(user: discord.User | discord.Member, emoji: str = "") -> User:
+    return User(
+        id=user.id,
+        name=user.name,
+        display_name=user.display_name,
+        display_avatar=user.display_avatar.url,
+        mention=user.mention,
+        is_bot=user.bot,
+        emoji=emoji,
+    )

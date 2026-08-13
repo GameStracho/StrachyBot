@@ -1,12 +1,14 @@
 ## [2.0.0] Harder, Better, Faster, Stronger
 
 ### Polishing
-- přidat sdílený typ User a helper funkci pro převod discord.User -> shared.User
+- vylepšit gettery pomocí @property
 - zastavit timeout timery v `Trivia` a `Tic-Tac-Toe` zavoláním self.stop na konci hry
 - FIX: zmenšit počet Trivia API requestů
 - vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)
 - přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných
 - aktualizovat README - přidat zmínku o existujících skriptech a co dělají, zjednodušit setup a zmínit adminer
+- zjednodušit nejnovější změny v CHANGELOG.md (ponechat jen to podstatné)
+- ručně otestovat všechny provedené změny
 
 ### Better Console Logs
 

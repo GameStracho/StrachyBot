@@ -14,7 +14,7 @@ from tests import mocks
 
 @pytest.mark.asyncio
 async def test_trivia_cog_creates_game_and_sends_embed(monkeypatch: pytest.MonkeyPatch) -> None:
-    interaction = mocks.DummyInteraction(user_id=13, username="Alice")
+    interaction = mocks.DummyInteraction(user=mocks.DummyUser(user_id=13, username="Alice"))
 
     async def fake_fetch_api(self: TriviaGame) -> None:
         self._category = ETriviaCategory.VIDEO_GAMES
@@ -42,7 +42,7 @@ async def test_trivia_cog_creates_game_and_sends_embed(monkeypatch: pytest.Monke
 async def test_view_timeout_disables_buttons_and_updates_match(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    game = TriviaGame(player_id=8)
+    game = TriviaGame(player=mocks.DummyUser(user_id=8))
     game._match_id = 55
     game._question = "Question"
     game._correct_answer = "Correct"

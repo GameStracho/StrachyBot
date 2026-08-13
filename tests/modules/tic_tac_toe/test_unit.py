@@ -56,8 +56,8 @@ def test_grid_initialization_and_bounds() -> None:
 
 
 def test_game_initialization() -> None:
-    player = mocks.create_dummy_user(100, "Alice")
-    opponent = mocks.create_dummy_user(200, "Bob")
+    player = mocks.DummyUser(user_id=100, username="Alice")
+    opponent = mocks.DummyUser(user_id=200, username="Bob")
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
     assert game.get_match_id() == -1
@@ -67,26 +67,13 @@ def test_game_initialization() -> None:
     assert game.get_grid_size() == 3
     assert game.get_status() is EMatchStatus.PENDING
     assert game.is_players_turn() is True
-    assert game.is_opponent_bot() is False
     assert "Tic-Tac-Toe game" in str(game)
-
-
-def test_game_is_opponent_bot() -> None:
-    human = mocks.create_dummy_user(101, "Alice", is_bot=False)
-    bot_user = mocks.create_dummy_user(202, "StrachyBot", is_bot=True)
-
-    game_vs_bot = TicTacToeGame(player=human, opponent=bot_user, grid_size=3)
-    assert game_vs_bot.is_opponent_bot() is True
-
-    human2 = mocks.create_dummy_user(303, "Bob", is_bot=False)
-    game_vs_human = TicTacToeGame(player=human, opponent=human2, grid_size=3)
-    assert game_vs_human.is_opponent_bot() is False
 
 
 @pytest.mark.asyncio
 async def test_game_invalid_moves() -> None:
-    player = mocks.create_dummy_user(100, "Alice")
-    opponent = mocks.create_dummy_user(200, "Bob")
+    player = mocks.DummyUser(user_id=100, username="Alice")
+    opponent = mocks.DummyUser(user_id=200, username="Bob")
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
     # Out of bounds
@@ -102,8 +89,8 @@ async def test_game_invalid_moves() -> None:
 
 @pytest.mark.asyncio
 async def test_game_horizontal_win() -> None:
-    player = mocks.create_dummy_user(100, "Alice")
-    opponent = mocks.create_dummy_user(200, "Bob")
+    player = mocks.DummyUser(user_id=100, username="Alice")
+    opponent = mocks.DummyUser(user_id=200, username="Bob")
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
     assert await game.play(Position(0, 0)) is True  # Player (turn 0)
@@ -128,8 +115,8 @@ async def test_game_horizontal_win() -> None:
 
 @pytest.mark.asyncio
 async def test_game_vertical_win() -> None:
-    player = mocks.create_dummy_user(100, "Alice")
-    opponent = mocks.create_dummy_user(200, "Bob")
+    player = mocks.DummyUser(user_id=100, username="Alice")
+    opponent = mocks.DummyUser(user_id=200, username="Bob")
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
     await game.play(Position(0, 0))  # Player (turn 0)
@@ -155,8 +142,8 @@ async def test_game_vertical_win() -> None:
 @pytest.mark.asyncio
 async def test_game_diagonal_wins() -> None:
     # Main diagonal: (0,0), (1,1), (2,2)
-    player = mocks.create_dummy_user(100, "Alice")
-    opponent = mocks.create_dummy_user(200, "Bob")
+    player = mocks.DummyUser(user_id=100, username="Alice")
+    opponent = mocks.DummyUser(user_id=200, username="Bob")
     game_main = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
     await game_main.play(Position(0, 0))  # Player (turn 0)
     assert game_main.get_status() is EMatchStatus.PENDING
@@ -196,8 +183,8 @@ async def test_game_diagonal_wins() -> None:
 
 @pytest.mark.asyncio
 async def test_game_draw() -> None:
-    player = mocks.create_dummy_user(100, "Alice")
-    opponent = mocks.create_dummy_user(200, "Bob")
+    player = mocks.DummyUser(user_id=100, username="Alice")
+    opponent = mocks.DummyUser(user_id=200, username="Bob")
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
     moves = [
@@ -226,8 +213,8 @@ async def test_game_draw() -> None:
 
 @pytest.mark.asyncio
 async def test_bot_ai_scoring_and_decisions() -> None:
-    human = mocks.create_dummy_user(100, "Alice", is_bot=False)
-    bot = mocks.create_dummy_user(200, "StrachyBot", is_bot=True)
+    human = mocks.DummyUser(user_id=100, username="Alice", is_bot=False)
+    bot = mocks.DummyUser(user_id=200, username="StrachyBot", is_bot=True)
     game = TicTacToeGame(player=human, opponent=bot, grid_size=3)
 
     # Move 0: Human plays (0,0)
@@ -247,8 +234,8 @@ async def test_bot_ai_scoring_and_decisions() -> None:
 
 @pytest.mark.asyncio
 async def test_bot_ai_center_or_corner_start() -> None:
-    human = mocks.create_dummy_user(101, "Alice", is_bot=False)
-    bot_user = mocks.create_dummy_user(202, "StrachyBot", is_bot=True)
+    human = mocks.DummyUser(user_id=101, username="Alice", is_bot=False)
+    bot_user = mocks.DummyUser(user_id=202, username="StrachyBot", is_bot=True)
 
     game = TicTacToeGame(player=human, opponent=bot_user, grid_size=3)
     # Human plays corner (0,0)
@@ -263,8 +250,8 @@ async def test_bot_ai_center_or_corner_start() -> None:
 
 @pytest.mark.asyncio
 async def test_bot_ai_immediate_block() -> None:
-    human = mocks.create_dummy_user(101, "Alice", is_bot=False)
-    bot_user = mocks.create_dummy_user(202, "StrachyBot", is_bot=True)
+    human = mocks.DummyUser(user_id=101, username="Alice", is_bot=False)
+    bot_user = mocks.DummyUser(user_id=202, username="StrachyBot", is_bot=True)
 
     game = TicTacToeGame(player=human, opponent=bot_user, grid_size=3)
 
@@ -284,8 +271,8 @@ async def test_bot_ai_immediate_block() -> None:
 
 @pytest.mark.asyncio
 async def test_bot_ai_immediate_win() -> None:
-    human = mocks.create_dummy_user(101, "Alice", is_bot=False)
-    bot_user = mocks.create_dummy_user(202, "StrachyBot", is_bot=True)
+    human = mocks.DummyUser(user_id=101, username="Alice", is_bot=False)
+    bot_user = mocks.DummyUser(user_id=202, username="StrachyBot", is_bot=True)
 
     game = TicTacToeGame(player=human, opponent=bot_user, grid_size=3)
 
@@ -309,8 +296,8 @@ async def test_bot_ai_immediate_win() -> None:
 @pytest.mark.asyncio
 @pytest.mark.parametrize("grid_size", [3, 4, 5])
 async def test_bot_ai_grid_sizes(grid_size: int) -> None:
-    human = mocks.create_dummy_user(101, "Alice", is_bot=False)
-    bot_user = mocks.create_dummy_user(202, "StrachyBot", is_bot=True)
+    human = mocks.DummyUser(user_id=101, username="Alice", is_bot=False)
+    bot_user = mocks.DummyUser(user_id=202, username="StrachyBot", is_bot=True)
 
     game = TicTacToeGame(player=human, opponent=bot_user, grid_size=grid_size)
     await game.play(Position(0, 0))
@@ -329,8 +316,8 @@ async def test_bot_ai_grid_sizes(grid_size: int) -> None:
 
 @pytest.mark.asyncio
 async def test_view_and_button_interaction_check() -> None:
-    player = mocks.create_dummy_user(100, "Alice")
-    opponent = mocks.create_dummy_user(200, "Bob")
+    player = mocks.DummyUser(user_id=100, username="Alice")
+    opponent = mocks.DummyUser(user_id=200, username="Bob")
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
     view = TicTacToeView(game=game, timeout=15.0)
@@ -338,18 +325,18 @@ async def test_view_and_button_interaction_check() -> None:
     assert view.get_game() == game
 
     # Eligible user check
-    valid_interaction = mocks.DummyInteraction(user_id=100, username="Alice")
+    valid_interaction = mocks.DummyInteraction(user=player)
     assert await view.interaction_check(valid_interaction) is True
 
     # Ineligible user check
-    invalid_interaction = mocks.DummyInteraction(user_id=999, username="Eve")
+    invalid_interaction = mocks.DummyInteraction(user=mocks.DummyUser(user_id=999, username="Eve"))
     assert await view.interaction_check(invalid_interaction) is False
 
 
 @pytest.mark.asyncio
 async def test_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
-    player = mocks.create_dummy_user(100, "Alice")
-    opponent = mocks.create_dummy_user(200, "Bob")
+    player = mocks.DummyUser(user_id=100, username="Alice")
+    opponent = mocks.DummyUser(user_id=200, username="Bob")
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
     game._match_id = 42
 
@@ -381,9 +368,9 @@ async def test_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.asyncio
 async def test_button_callback_human_and_bot_moves(monkeypatch: pytest.MonkeyPatch) -> None:
-    human = mocks.create_dummy_user(100, "Alice", is_bot=False)
-    bot = mocks.create_dummy_user(200, "StrachyBot", is_bot=True)
-    game = TicTacToeGame(player=human, opponent=bot, grid_size=3)
+    player = mocks.DummyUser(user_id=100, username="Alice", is_bot=False)
+    bot = mocks.DummyUser(user_id=200, username="StrachyBot", is_bot=True)
+    game = TicTacToeGame(player=player, opponent=bot, grid_size=3)
     game._match_id = 99
 
     view = TicTacToeView(game=game, timeout=15.0)
@@ -395,7 +382,7 @@ async def test_button_callback_human_and_bot_moves(monkeypatch: pytest.MonkeyPat
     embed.add_field(name="Timeout", value="<t:1234:R>")
     message = SimpleNamespace(embeds=[embed])
 
-    interaction = mocks.DummyInteraction(user_id=100, username="Alice")
+    interaction = mocks.DummyInteraction(user=player)
     interaction.message = cast(Any, message)
 
     monkeypatch.setattr("modules.tic_tac_toe.game.update_match", AsyncMock(return_value=True))
@@ -410,8 +397,8 @@ async def test_button_callback_human_and_bot_moves(monkeypatch: pytest.MonkeyPat
 
 @pytest.mark.asyncio
 async def test_button_callback_game_ended_win(monkeypatch: pytest.MonkeyPatch) -> None:
-    player = mocks.create_dummy_user(100, "Alice")
-    opponent = mocks.create_dummy_user(200, "Bob")
+    player = mocks.DummyUser(user_id=100, username="Alice")
+    opponent = mocks.DummyUser(user_id=200, username="Bob")
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
     game._match_id = 77
     game._bot = mocks.DummyStrachyBot()
@@ -435,7 +422,7 @@ async def test_button_callback_game_ended_win(monkeypatch: pytest.MonkeyPatch) -
     embed.add_field(name="Timeout", value="<t:1234:R>")
     message = SimpleNamespace(embeds=[embed])
 
-    interaction = mocks.DummyInteraction(user_id=100, username="Alice")
+    interaction = mocks.DummyInteraction(user=player)
     interaction.message = cast(Any, message)
 
     update_match_mock = AsyncMock(return_value=True)

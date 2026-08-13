@@ -8,6 +8,7 @@
 - Updates of database records on each game update
 - Member `parent_view` to all custom button classes
 - Methods `build_embed` and `update_embed` to all custom view classes
+- Custom shared type `User`
 
 ### Changed
 - Renamed custom AI agent
