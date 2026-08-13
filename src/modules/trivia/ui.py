@@ -28,7 +28,7 @@ class TriviaView(discord.ui.View):
             label, is_correct = option
             self.add_item(
                 TriviaButton(
-                    game_id=self._game._match_id,
+                    parent_view=self,
                     label=label,
                     is_correct=is_correct,
                     emoji=ui.EMOJIS[chr(ord("a") + i)],
@@ -37,7 +37,7 @@ class TriviaView(discord.ui.View):
             )
 
         console.log_debug(
-            f"/trivia: New TriviaView created for game {self._game._match_id} "
+            f"/trivia: New TriviaView created for game {self._game.get_match_id()} "
             f"with {timeout}s timeout."
         )
 
@@ -88,23 +88,24 @@ class TriviaView(discord.ui.View):
 
 
 class TriviaButton(discord.ui.Button[TriviaView]):
+    _parent_view: TriviaView
     _is_correct: bool
 
-    def __init__(self, game_id: int, label: str, is_correct: bool, row: int, emoji: str = ""):
+    def __init__(
+        self, parent_view: TriviaView, label: str, is_correct: bool, row: int, emoji: str = ""
+    ):
         super().__init__(label=label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row)
 
+        self._parent_view = parent_view
         self._is_correct = is_correct
 
         console.log_debug(
-            f"/trivia: New TriviaButton created for game {game_id}: "
+            f"/trivia: New TriviaButton created for game {parent_view.get_game().get_match_id()}: "
             f"label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
-            parent_view = self.view
-            assert isinstance(parent_view, TriviaView)
-
             message: discord.Message | None = interaction.message
             assert message is not None
 
@@ -114,12 +115,12 @@ class TriviaButton(discord.ui.Button[TriviaView]):
             # hide a second icon appearing above the embed
             embed.set_thumbnail(url="attachment://icon.png")
 
-            parent_view.disable_buttons()
+            self._parent_view.disable_buttons()
 
             answer: str = self.label if self.label else ""
-            await parent_view.get_game().select_answer(answer=answer)
+            await self._parent_view.get_game().select_answer(answer=answer)
 
-            match parent_view.get_game().get_status():
+            match self._parent_view.get_game().get_status():
                 case models.EMatchStatus.WIN:
                     embed.color = discord.Color.green()
                     self.style = discord.ButtonStyle.green
@@ -129,10 +130,10 @@ class TriviaButton(discord.ui.Button[TriviaView]):
                     self.style = discord.ButtonStyle.red
                     self.emoji = ui.EMOJIS["trivia_wrong_answer_selected"]
                 case _:
-                    raise ValueError(parent_view.get_game().get_status())
+                    raise ValueError(self._parent_view.get_game().get_status())
 
             # Edit the original message to show disabled buttons
-            await interaction.response.edit_message(embed=embed, view=parent_view)
+            await interaction.response.edit_message(embed=embed, view=self._parent_view)
         except Exception:
             await ui.handle_error(command="/trivia", interaction=interaction, use_followup=False)
 

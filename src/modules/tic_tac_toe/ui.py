@@ -19,7 +19,7 @@ class TicTacToeView(discord.ui.View):
         for x in range(game.get_grid_size()):
             for y in range(game.get_grid_size()):
                 self.add_item(
-                    TicTacToeButton(game_id=self._game.get_match_id(), position=Position(x, y))
+                    TicTacToeButton(parent_view=self, position=Position(x, y))
                 )
 
         console.log_debug(
@@ -84,17 +84,20 @@ class TicTacToeView(discord.ui.View):
 
 
 class TicTacToeButton(discord.ui.Button[TicTacToeView]):
+    _parent_view: TicTacToeView
     _position: Position
 
-    def __init__(self, game_id: int, position: Position) -> None:
+    def __init__(self, parent_view: TicTacToeView, position: Position) -> None:
         super().__init__(
             label=ui.EMOJIS["tic_empty_cell"], style=discord.ButtonStyle.secondary, row=position.y
         )
 
+        self._parent_view = parent_view
         self._position = position
 
         console.log_debug(
-            f"/tic-tac-toe: New TicTacToeButton created for game {game_id}: pos = {position}."
+            f"/tic-tac-toe: New TicTacToeButton created "
+            f"for game {parent_view.get_game().get_match_id()}: pos = {position}."
         )
 
     def get_position(self) -> Position:
@@ -102,10 +105,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
-            parent_view = self.view
-            assert isinstance(parent_view, TicTacToeView)
-
-            game: TicTacToeGame = parent_view.get_game()
+            game: TicTacToeGame = self._parent_view.get_game()
 
             success: bool = await game.play(position=self._position)
 
@@ -129,7 +129,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                     await game.play(position=bot_pos)
 
                     # Disable button played by bot
-                    for child in parent_view.children:
+                    for child in self._parent_view.children:
                         if isinstance(child, TicTacToeButton) and child.get_position() == bot_pos:
                             child.label = opponent_emoji
                             child.disabled = True
@@ -187,17 +187,19 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
 
             if game.get_status() == models.EMatchStatus.PENDING:
                 ui.embed.update_field(
-                    embed=embed, name="Timeout", value=ui.get_timeout_timestamp(view=parent_view)
+                    embed=embed,
+                    name="Timeout",
+                    value=ui.get_timeout_timestamp(view=self._parent_view),
                 )
             else:
                 ui.embed.remove_field(embed=embed, name="Timeout")
-                parent_view.disable_buttons()
+                self._parent_view.disable_buttons()
 
             assert status_message
             ui.embed.update_field(embed=embed, name="Status", value=status_message)
 
             # Edit the original message to show disabled buttons
-            await interaction.response.edit_message(embed=embed, view=parent_view)
+            await interaction.response.edit_message(embed=embed, view=self._parent_view)
         except Exception:
             await ui.handle_error(
                 command="/tic-tac-toe", interaction=interaction, use_followup=False
