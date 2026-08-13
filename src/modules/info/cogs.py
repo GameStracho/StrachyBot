@@ -22,9 +22,11 @@ class UtilsCog(commands.Cog):
             uptime: datetime.timedelta = discord.utils.utcnow() - self.bot.start_time
 
             embed: discord.Embed = discord.Embed(
-                color=discord.Color.blue(),
+                color=discord.Color.teal(),
                 title="StrachyBot 🤖",
-                description="Discord bot with fun mini-games like *Trivia*, *Tic-Tac-Toe* and *Wordle*.",
+                description=(
+                    "Discord bot with fun mini-games like *Trivia*, *Tic-Tac-Toe* and *Wordle*.",
+                ),
             )
 
             embed.add_field(

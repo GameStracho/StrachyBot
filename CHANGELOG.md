@@ -17,6 +17,7 @@
 - Balanced `Tic-Tac-Toe` 4x4 and 5x5 boards
 - Moved database calls of all mini-games from `ui.py` to `game.py`
 - Renamed `utils` module to `info`
+- Changed color of `/info` command from `blue` to `teal`
 
 ### Removed
 - Google Drive backups
