@@ -190,31 +190,39 @@ class WordleGame:
             f"is_daily: {self._is_daily})"
         )
 
-    def get_match_id(self) -> int:
+    @property
+    def match_id(self) -> int:
         return self._match_id
 
-    def get_player(self) -> types.User:
+    @property
+    def player(self) -> types.User:
         return self._player
 
-    def get_secret_word(self) -> str:
+    @property
+    def secret_word(self) -> str:
         return self._secret_word
 
+    @property
     def is_daily(self) -> bool:
         return self._is_daily
 
-    def get_guesses_count(self) -> int:
+    @property
+    def guesses_count(self) -> int:
         return len(self._guesses)
 
-    def get_available_letters(self) -> dict[str, WordleLetterCategory]:
+    @property
+    def available_letters(self) -> dict[str, WordleLetterCategory]:
         return self._available_letters
 
-    def get_last_guess(self) -> str:
+    @property
+    def last_guess(self) -> str:
         if not len(self._guesses):
             return ""
 
         return self._guesses[len(self._guesses) - 1]
 
-    def get_status(self) -> models.EMatchStatus:
+    @property
+    def status(self) -> models.EMatchStatus:
         return self._status
 
     def is_valid_word(self, word: str) -> bool:

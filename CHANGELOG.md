@@ -22,6 +22,7 @@
 - Moved database calls of all mini-games from `ui.py` to `game.py`
 - Renamed `utils` module to `info`
 - Changed color of `/info` command from `blue` to `teal`
+- Simplified getters
 
 ### Removed
 - Google Drive backups

@@ -59,28 +59,36 @@ class TriviaGame:
         self._correct_answer = response.results[0].correct_answer
         self._incorrect_answers = response.results[0].incorrect_answers
 
-    def get_match_id(self) -> int:
+    @property
+    def match_id(self) -> int:
         return self._match_id
 
-    def get_status(self) -> models.EMatchStatus:
+    @property
+    def status(self) -> models.EMatchStatus:
         return self._status
 
-    def get_player(self) -> types.User:
+    @property
+    def player(self) -> types.User:
         return self._player
 
-    def get_category(self) -> ETriviaCategory:
+    @property
+    def category(self) -> ETriviaCategory:
         return self._category
 
-    def get_difficulty(self) -> ETriviaDifficulty:
+    @property
+    def difficulty(self) -> ETriviaDifficulty:
         return self._difficulty
 
-    def get_question(self) -> str:
+    @property
+    def question(self) -> str:
         return self._question
 
-    def get_incorrect_answers(self) -> list[str]:
+    @property
+    def incorrect_answers(self) -> list[str]:
         return self._incorrect_answers
 
-    def get_correct_answer(self) -> str:
+    @property
+    def correct_answer(self) -> str:
         return self._correct_answer
 
     async def connect_database(self, bot: StrachyBot) -> None:

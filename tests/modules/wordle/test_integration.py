@@ -136,6 +136,6 @@ async def test_wordle_view_timeout_disables_buttons_and_updates_db(
 
     await view.on_timeout()
 
-    assert game.get_status() == models.EMatchStatus.TIMEOUT
+    assert game.status == models.EMatchStatus.TIMEOUT
     update_match_mock.assert_called_once()
     assert all(child.disabled for child in view.children if isinstance(child, discord.ui.Button))

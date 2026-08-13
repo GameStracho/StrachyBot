@@ -22,7 +22,8 @@ class TicTacToeGrid:
         self._size = size
         self._grid = [ETicTacToeCell.EMPTY for _ in range(pow(size, 2))]
 
-    def get_size(self) -> int:
+    @property
+    def size(self) -> int:
         return self._size
 
     def get_cell_value(self, pos: Position) -> ETicTacToeCell | None:
@@ -69,28 +70,35 @@ class TicTacToeGame:
             f"Tic-Tac-Toe game {self._match_id} for player {self._player} "
             f"against opponent {self._opponent} "
             f"(status: {self._status}, total moves: {self._total_moves}, "
-            f"grid_size: {self._grid.get_size()})."
+            f"grid_size: {self._grid.size})."
         )
 
-    def get_match_id(self) -> int:
+    @property
+    def match_id(self) -> int:
         return self._match_id
 
-    def get_status(self) -> models.EMatchStatus:
+    @property
+    def status(self) -> models.EMatchStatus:
         return self._status
 
-    def get_player(self) -> User:
+    @property
+    def player(self) -> User:
         return self._player
 
-    def get_opponent(self) -> User:
+    @property
+    def opponent(self) -> User:
         return self._opponent
 
-    def get_total_moves(self) -> int:
+    @property
+    def total_moves(self) -> int:
         return self._total_moves
 
-    def get_grid_size(self) -> int:
-        return self._grid.get_size()
+    @property
+    def grid_size(self) -> int:
+        return self._grid.size
 
-    def get_winner(self) -> User | None:
+    @property
+    def winner(self) -> User | None:
         match self._status:
             case models.EMatchStatus.WIN:
                 return self._player
@@ -99,15 +107,17 @@ class TicTacToeGame:
             case _:
                 return None
 
-    def get_target_length(self) -> int:
+    @property
+    def target_length(self) -> int:
         """Returns the optimal target line length based on board dimension."""
-        if self._grid.get_size() <= 3:
+        if self._grid.size <= 3:
             return 3
-        elif self._grid.get_size() in (4, 5):
+        elif self._grid.size in (4, 5):
             return 4
         else:
             return 5
 
+    @property
     def is_players_turn(self) -> bool:
         return self._total_moves % 2 == 0
 
@@ -119,7 +129,7 @@ class TicTacToeGame:
             db_func=create_match,
             player_id=self._player.id,
             opponent_id=self._opponent.id,
-            grid_size=self._grid.get_size(),
+            grid_size=self._grid.size,
         )
 
         if match_id:
@@ -160,7 +170,7 @@ class TicTacToeGame:
         Priority 2: Block opponent's win in 1 move.
         Priority 3: Strategic positional move (center, corners, setup).
         """
-        grid_size: int = self._grid.get_size()
+        grid_size: int = self._grid.size
         empty_positions: list[Position] = []
 
         for x in range(grid_size):
@@ -214,7 +224,7 @@ class TicTacToeGame:
 
     def _score_position(self, pos: Position) -> int:
         score: int = 0
-        grid_size: int = self._grid.get_size()
+        grid_size: int = self._grid.size
 
         # Center preference
         if grid_size % 2 == 1 and pos.x == grid_size // 2 and pos.y == grid_size // 2:
@@ -226,11 +236,11 @@ class TicTacToeGame:
 
         # Check alignment with existing bot cells (creation of threats)
         for axis in EDirection.get_axes():
-            for start_offset in range(self.get_target_length()):
+            for start_offset in range(self.target_length):
                 opponent_count: int = 0
                 player_count: int = 0
 
-                for i in range(self.get_target_length()):
+                for i in range(self.target_length):
                     col: int = pos.x + (i - start_offset) * axis.x
                     row: int = pos.y + (i - start_offset) * axis.y
                     cell: ETicTacToeCell | None = self._grid.get_cell_value(Position(col, row))
@@ -275,7 +285,7 @@ class TicTacToeGame:
             return False
 
         cell_value: ETicTacToeCell = (
-            ETicTacToeCell.PLAYER if self.is_players_turn() else ETicTacToeCell.OPPONENT
+            ETicTacToeCell.PLAYER if self.is_players_turn else ETicTacToeCell.OPPONENT
         )
 
         self._grid.set_cell_value(pos=position, value=cell_value)
@@ -300,7 +310,7 @@ class TicTacToeGame:
                 )
                 return
 
-        if self._total_moves == pow(self._grid.get_size(), 2):
+        if self._total_moves == pow(self._grid.size, 2):
             self._status = models.EMatchStatus.DRAW
 
     def _check_axis(self, pos: Position, axis: Vector, control_value: ETicTacToeCell) -> bool:
@@ -309,10 +319,10 @@ class TicTacToeGame:
         """
         assert control_value != ETicTacToeCell.EMPTY
 
-        for start_offset in range(self.get_target_length()):
+        for start_offset in range(self.target_length):
             connected: bool = True
 
-            for i in range(self.get_target_length()):
+            for i in range(self.target_length):
                 # Move in positive direction
                 col: int = pos.x + (i - start_offset) * axis.x
                 row: int = pos.y + (i - start_offset) * axis.y

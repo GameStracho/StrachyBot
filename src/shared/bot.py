@@ -41,7 +41,8 @@ class StrachyBot(commands.Bot):
         self._db_engine = db_engine
         self._db_session_factory = create_session_factory(db_engine)
 
-    def get_db_session_factory(self) -> async_sessionmaker[AsyncSession] | None:
+    @property
+    def db_session_factory(self) -> async_sessionmaker[AsyncSession] | None:
         return self._db_session_factory
 
     async def close(self) -> None:

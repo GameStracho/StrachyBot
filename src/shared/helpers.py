@@ -72,7 +72,7 @@ async def execute_db_operation(
     if not strachy_bot:
         return None
 
-    session_factory = strachy_bot.get_db_session_factory()
+    session_factory = strachy_bot.db_session_factory
     if not session_factory:
         return None
 

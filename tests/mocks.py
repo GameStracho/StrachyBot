@@ -29,7 +29,7 @@ class DummyUser(types.User):
         return self._id
 
     @property
-    def name(self) -> str:  # type: ignore[override]
+    def name(self) -> str:
         return self._name
 
     @property
@@ -37,7 +37,7 @@ class DummyUser(types.User):
         return self._display_name
 
     @property
-    def mention(self) -> str:  # type: ignore[override]
+    def mention(self) -> str:
         return self._mention
 
     @property

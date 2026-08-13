@@ -1,7 +1,6 @@
 ## [2.0.0] Harder, Better, Faster, Stronger
 
 ### Polishing
-- vylepšit gettery pomocí @property
 - FIX: zmenšit počet Trivia API requestů
 - vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)
 - přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných

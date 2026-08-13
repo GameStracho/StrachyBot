@@ -59,5 +59,5 @@ async def test_view_timeout_disables_buttons_and_updates_match(
     monkeypatch.setattr("modules.trivia.game.update_match", AsyncMock(return_value=True))
     await view.on_timeout()
 
-    assert game.get_status() is models.EMatchStatus.TIMEOUT
+    assert game.status is models.EMatchStatus.TIMEOUT
     assert all(child.disabled for child in view.children if isinstance(child, TriviaButton))

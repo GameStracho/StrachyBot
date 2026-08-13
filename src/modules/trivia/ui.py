@@ -17,9 +17,9 @@ class TriviaView(discord.ui.View):
 
         self._game = game
 
-        options: list[tuple[str, bool]] = [(self._game.get_correct_answer(), True)]
+        options: list[tuple[str, bool]] = [(self._game.correct_answer, True)]
 
-        for incorrect_answer in self._game.get_incorrect_answers():
+        for incorrect_answer in self._game.incorrect_answers:
             options.append((incorrect_answer, False))
 
         random.shuffle(options)
@@ -37,22 +37,23 @@ class TriviaView(discord.ui.View):
             )
 
         console.log_debug(
-            f"/trivia: New TriviaView created for game {self._game.get_match_id()} "
+            f"/trivia: New TriviaView created for game {self._game.match_id} "
             f"with {timeout}s timeout."
         )
 
-    def get_game(self) -> TriviaGame:
+    @property
+    def game(self) -> TriviaGame:
         return self._game
 
     def build_embed(self) -> tuple[discord.Embed, discord.File]:
-        user: types.User = self._game.get_player()
+        user: types.User = self._game.player
 
         embed: discord.Embed = discord.Embed(title="Trivia", color=discord.Color.dark_gold())
         embed.set_author(name=user.display_name, icon_url=user.display_avatar)
 
-        embed.add_field(name="Category", value=self._game.get_category(), inline=True)
-        embed.add_field(name="Difficulty", value=self._game.get_difficulty(), inline=True)
-        embed.add_field(name="Question", value=self._game.get_question(), inline=False)
+        embed.add_field(name="Category", value=self._game.category, inline=True)
+        embed.add_field(name="Difficulty", value=self._game.difficulty, inline=True)
+        embed.add_field(name="Question", value=self._game.question, inline=False)
         embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=self), inline=False)
 
         icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
@@ -61,32 +62,32 @@ class TriviaView(discord.ui.View):
         return (embed, icon)
 
     def update_embed(self, embed: discord.Embed) -> None:
-        match self._game.get_status():
+        match self._game.status:
             case models.EMatchStatus.WIN:
                 embed.color = discord.Color.green()
             case models.EMatchStatus.LOSS:
                 embed.color = discord.Color.red()
             case _:
-                raise ValueError(self._game.get_status())
+                raise ValueError(self._game.status)
 
         self.disable_buttons()
         self.stop()
         ui.embed.remove_field(embed=embed, name="Timeout")
 
     def disable_buttons(self) -> None:
-        console.log_debug(f"/trivia: Revealing answers for game {self._game.get_match_id()}...")
+        console.log_debug(f"/trivia: Revealing answers for game {self._game.match_id}...")
         for child in self.children:
             if isinstance(child, TriviaButton):
                 child.disable()
-        console.log_debug(f"/trivia: Answers revealed for game {self._game.get_match_id()}.")
+        console.log_debug(f"/trivia: Answers revealed for game {self._game.match_id}.")
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
-            if interaction.user.id != self._game.get_player().id:
+            if interaction.user.id != self._game.player.id:
                 console.log_warning(
                     f"/trivia: Ineligible user {interaction.user.display_name} "
                     f"({interaction.user.id}) "
-                    f"responded to game {self._game.get_match_id()}"
+                    f"responded to game {self._game.match_id}"
                 )
                 await interaction.response.send_message(
                     "You cannot respond to this game.", ephemeral=True
@@ -99,7 +100,7 @@ class TriviaView(discord.ui.View):
             return False
 
     async def on_timeout(self) -> None:
-        if self._game.get_status() != models.EMatchStatus.PENDING or self.message is None:
+        if self._game.status != models.EMatchStatus.PENDING or self.message is None:
             return
 
         self.disable_buttons()
@@ -128,14 +129,14 @@ class TriviaButton(discord.ui.Button[TriviaView]):
         self._is_correct = is_correct
 
         console.log_debug(
-            f"/trivia: New TriviaButton created for game {parent_view.get_game().get_match_id()}: "
+            f"/trivia: New TriviaButton created for game {parent_view.game.match_id}: "
             f"label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
             answer: str = self.label if self.label else ""
-            await self._parent_view.get_game().select_answer(answer=answer)
+            await self._parent_view.game.select_answer(answer=answer)
 
             embed: discord.Embed = ui.embed.extract(
                 interaction=interaction, index=0, hide_icon=True

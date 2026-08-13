@@ -102,13 +102,13 @@ def test_wordle_game_initialization() -> None:
     player = mocks.DummyUser(user_id=123)
     game = WordleGame(player=player, is_daily=False)
 
-    assert game.get_player() == player
-    assert game.is_daily() is False
-    assert game.get_match_id() == -1
-    assert game.get_status() == models.EMatchStatus.PENDING
-    assert game.get_guesses_count() == 0
-    assert game.get_last_guess() == ""
-    assert len(game.get_secret_word()) == 5
+    assert game.player == player
+    assert game.is_daily is False
+    assert game.match_id == -1
+    assert game.status == models.EMatchStatus.PENDING
+    assert game.guesses_count == 0
+    assert game.last_guess == ""
+    assert len(game.secret_word) == 5
     assert "Wordle game" in str(game)
 
 
@@ -123,7 +123,7 @@ async def test_wordle_game_connect_database(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr("modules.wordle.game.execute_db_operation", mock_execute)
 
     await game.connect_database(bot_mock)
-    assert game.get_match_id() == 999
+    assert game.match_id == 999
 
 
 @pytest.mark.asyncio
@@ -139,9 +139,9 @@ async def test_wordle_game_add_guess_win(monkeypatch: pytest.MonkeyPatch) -> Non
 
     await game.add_guess("apple")
 
-    assert game.get_guesses_count() == 1
-    assert game.get_last_guess() == "apple"
-    assert game.get_status() == models.EMatchStatus.WIN
+    assert game.guesses_count == 1
+    assert game.last_guess == "apple"
+    assert game.status == models.EMatchStatus.WIN
     update_mock.assert_called_once()
 
 
@@ -159,15 +159,15 @@ async def test_wordle_game_add_guess_loss(monkeypatch: pytest.MonkeyPatch) -> No
     # 5 wrong guesses
     for _ in range(5):
         await game.add_guess("pears")
-        assert game.get_status() == models.EMatchStatus.PENDING
+        assert game.status == models.EMatchStatus.PENDING
 
     update_mock.assert_called()
 
     # 6th wrong guess triggers LOSS
     update_mock.reset_mock()
     await game.add_guess("pears")
-    assert game.get_status() == models.EMatchStatus.LOSS
-    assert game.get_guesses_count() == 6
+    assert game.status == models.EMatchStatus.LOSS
+    assert game.guesses_count == 6
     update_mock.assert_called_once()
 
 
@@ -179,7 +179,7 @@ async def test_wordle_game_add_guess_not_pending() -> None:
 
     await game.add_guess("pears")
     # Guess should be ignored
-    assert game.get_guesses_count() == 0
+    assert game.guesses_count == 0
 
 
 @pytest.mark.asyncio
@@ -202,8 +202,8 @@ async def test_wordle_game_guess_random_word(monkeypatch: pytest.MonkeyPatch) ->
     game._guesses = ["pears"]
 
     await game.guess_random_word()
-    assert game.get_guesses_count() == 2
-    assert game.get_last_guess() == "about"
+    assert game.guesses_count == 2
+    assert game.last_guess == "about"
 
 
 @pytest.mark.asyncio
@@ -217,7 +217,7 @@ async def test_wordle_game_handle_timeout(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
 
     await game.handle_timeout()
-    assert game.get_status() == models.EMatchStatus.TIMEOUT
+    assert game.status == models.EMatchStatus.TIMEOUT
     update_mock.assert_called_once()
 
     # Call it again when not pending, it should do nothing
@@ -237,7 +237,7 @@ async def test_wordle_game_handle_surrender(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
 
     await game.handle_surrender()
-    assert game.get_status() == models.EMatchStatus.SURRENDER
+    assert game.status == models.EMatchStatus.SURRENDER
     update_mock.assert_called_once()
 
     # Call it again when not pending, it should do nothing
@@ -261,7 +261,7 @@ def test_wordle_game_categorize_word() -> None:
     ]
 
     # Verify available letters updates
-    avail = game.get_available_letters()
+    avail = game.available_letters
     assert avail["p"] == WordleLetterCategory.MISPLACED
     assert avail["e"] == WordleLetterCategory.MISPLACED
     assert avail["a"] == WordleLetterCategory.MISPLACED
@@ -280,7 +280,7 @@ def test_wordle_game_categorize_word() -> None:
     ]
 
     # Verify available letters updates
-    avail = game.get_available_letters()
+    avail = game.available_letters
     assert avail["p"] == WordleLetterCategory.CORRECT
     assert avail["e"] == WordleLetterCategory.MISPLACED
     assert avail["a"] == WordleLetterCategory.MISPLACED
@@ -299,7 +299,7 @@ def test_wordle_game_categorize_word() -> None:
     ]
 
     # Verify available letters updates
-    avail = game.get_available_letters()
+    avail = game.available_letters
     assert avail["p"] == WordleLetterCategory.CORRECT
     assert avail["e"] == WordleLetterCategory.CORRECT
     assert avail["a"] == WordleLetterCategory.CORRECT
@@ -457,14 +457,14 @@ async def test_wordle_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     # Message is None
     view.message = None
     await view.on_timeout()
-    assert game.get_status() == models.EMatchStatus.PENDING
+    assert game._status == models.EMatchStatus.PENDING
 
     # Game is WIN (not PENDING)
     game._status = models.EMatchStatus.WIN
     message_mock = AsyncMock()
     view.message = message_mock
     await view.on_timeout()
-    assert game.get_status() == models.EMatchStatus.WIN
+    assert game._status == models.EMatchStatus.WIN
     message_mock.edit.assert_not_called()
 
     # Normal timeout path
@@ -482,7 +482,7 @@ async def test_wordle_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
 
     await view.on_timeout()
 
-    assert game.get_status() == models.EMatchStatus.TIMEOUT
+    assert game._status == models.EMatchStatus.TIMEOUT
     assert not any(field.name == "Timeout" for field in embed.fields)
     message_mock.edit.assert_called_once()
 

@@ -28,7 +28,7 @@ def test_cell_enum_values() -> None:
 
 def test_grid_initialization_and_bounds() -> None:
     grid = TicTacToeGrid(size=3)
-    assert grid.get_size() == 3
+    assert grid.size == 3
 
     # Initial cells empty
     for x in range(3):
@@ -60,13 +60,13 @@ def test_game_initialization() -> None:
     opponent = mocks.DummyUser(user_id=200, username="Bob")
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
-    assert game.get_match_id() == -1
-    assert game.get_player() == player
-    assert game.get_opponent() == opponent
-    assert game.get_total_moves() == 0
-    assert game.get_grid_size() == 3
-    assert game.get_status() is EMatchStatus.PENDING
-    assert game.is_players_turn() is True
+    assert game.match_id == -1
+    assert game.player == player
+    assert game.opponent == opponent
+    assert game.total_moves == 0
+    assert game.grid_size == 3
+    assert game.status is EMatchStatus.PENDING
+    assert game.is_players_turn is True
     assert "Tic-Tac-Toe game" in str(game)
 
 
@@ -94,20 +94,20 @@ async def test_game_horizontal_win() -> None:
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
     assert await game.play(Position(0, 0)) is True  # Player (turn 0)
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game._status == EMatchStatus.PENDING
 
     assert await game.play(Position(0, 1)) is True  # Opponent (turn 1)
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game._status == EMatchStatus.PENDING
 
     assert await game.play(Position(1, 0)) is True  # Player (turn 2)
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game._status == EMatchStatus.PENDING
 
     assert await game.play(Position(1, 1)) is True  # Opponent (turn 3)
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game._status == EMatchStatus.PENDING
 
     assert await game.play(Position(2, 0)) is True  # Player (turn 4)
-    assert game.get_status() is EMatchStatus.WIN
-    assert game.get_winner() == player
+    assert game.status == EMatchStatus.WIN
+    assert game.winner == player
 
     # Further move on finished game fails
     assert await game.play(Position(2, 2)) is False
@@ -120,23 +120,23 @@ async def test_game_vertical_win() -> None:
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
     await game.play(Position(0, 0))  # Player (turn 0)
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game._status == EMatchStatus.PENDING
 
     await game.play(Position(1, 0))  # Opponent (turn 1)
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game._status == EMatchStatus.PENDING
 
     await game.play(Position(0, 1))  # Player (turn 2)
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game._status == EMatchStatus.PENDING
 
     await game.play(Position(1, 1))  # Opponent (turn 3)
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game._status == EMatchStatus.PENDING
 
     await game.play(Position(2, 2))  # Player (turn 4)
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game._status == EMatchStatus.PENDING
 
     await game.play(Position(1, 2))  # Opponent (turn 5)
-    assert game.get_status() is EMatchStatus.LOSS
-    assert game.get_winner() == opponent
+    assert game.status == EMatchStatus.LOSS
+    assert game.winner == opponent
 
 
 @pytest.mark.asyncio
@@ -146,39 +146,39 @@ async def test_game_diagonal_wins() -> None:
     opponent = mocks.DummyUser(user_id=200, username="Bob")
     game_main = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
     await game_main.play(Position(0, 0))  # Player (turn 0)
-    assert game_main.get_status() is EMatchStatus.PENDING
+    assert game_main._status == EMatchStatus.PENDING
 
     await game_main.play(Position(0, 1))  # Opponent (turn 1)
-    assert game_main.get_status() is EMatchStatus.PENDING
+    assert game_main._status == EMatchStatus.PENDING
 
     await game_main.play(Position(1, 1))  # Player (turn 2)
-    assert game_main.get_status() is EMatchStatus.PENDING
+    assert game_main._status == EMatchStatus.PENDING
 
     await game_main.play(Position(0, 2))  # Opponent (turn 3)
-    assert game_main.get_status() is EMatchStatus.PENDING
+    assert game_main._status == EMatchStatus.PENDING
 
     await game_main.play(Position(2, 2))  # Player (turn 4)
-    assert game_main.get_status() is EMatchStatus.WIN
-    assert game_main.get_winner() == player
+    assert game_main.status == EMatchStatus.WIN
+    assert game_main.winner == player
 
     # Anti-diagonal: (2,0), (1,1), (0,2)
     game_anti = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
 
     await game_anti.play(Position(2, 0))  # Player (turn 0)
-    assert game_anti.get_status() is EMatchStatus.PENDING
+    assert game_anti._status == EMatchStatus.PENDING
 
     await game_anti.play(Position(0, 0))  # Opponent (turn 1)
-    assert game_anti.get_status() is EMatchStatus.PENDING
+    assert game_anti._status == EMatchStatus.PENDING
 
     await game_anti.play(Position(1, 1))  # Player (turn 2)
-    assert game_anti.get_status() is EMatchStatus.PENDING
+    assert game_anti._status == EMatchStatus.PENDING
 
     await game_anti.play(Position(0, 1))  # Opponent (turn 3)
-    assert game_anti.get_status() is EMatchStatus.PENDING
+    assert game_anti._status == EMatchStatus.PENDING
 
     await game_anti.play(Position(0, 2))  # Player (turn 4)
-    assert game_anti.get_status() is EMatchStatus.WIN
-    assert game_anti.get_winner() == player
+    assert game_anti.status == EMatchStatus.WIN
+    assert game_anti.winner == player
 
 
 @pytest.mark.asyncio
@@ -199,11 +199,11 @@ async def test_game_draw() -> None:
         Position(2, 2),
     ]
     for pos in moves:
-        assert game.get_status() is EMatchStatus.PENDING
+        assert game.status is EMatchStatus.PENDING
         await game.play(pos)
 
-    assert game.get_status() is EMatchStatus.DRAW
-    assert game.get_winner() is None
+    assert game.status is EMatchStatus.DRAW
+    assert game.winner is None
 
 
 # ---------------------------------------------------------------------------
@@ -322,7 +322,7 @@ async def test_view_and_button_interaction_check() -> None:
 
     view = TicTacToeView(game=game, timeout=15.0)
     assert len(view.children) == 9
-    assert view.get_game() == game
+    assert view.game == game
 
     # Eligible user check
     valid_interaction = mocks.DummyInteraction(user=player)
@@ -345,7 +345,7 @@ async def test_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     # Early return when message is None
     view.message = None
     await view.on_timeout()
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game.status is EMatchStatus.PENDING
 
     # Setup dummy message with embed
     embed = discord.Embed(title="Tic-Tac-Toe")
@@ -391,7 +391,7 @@ async def test_button_callback_human_and_bot_moves(monkeypatch: pytest.MonkeyPat
     await button.callback(interaction)
 
     assert button.disabled is True
-    assert game.get_total_moves() == 2  # Human move + Bot move
+    assert game.total_moves == 2  # Human move + Bot move
     assert interaction.response.edit_message.called
 
 
@@ -408,7 +408,7 @@ async def test_button_callback_game_ended_win(monkeypatch: pytest.MonkeyPatch) -
     await game.play(Position(0, 1))  # Opponent (turn 1)
     await game.play(Position(1, 0))  # Player (turn 2)
     await game.play(Position(1, 1))  # Opponent (turn 3)
-    assert game.get_status() is EMatchStatus.PENDING
+    assert game.status is EMatchStatus.PENDING
 
     view = TicTacToeView(game=game, timeout=15.0)
     win_button = next(
@@ -434,7 +434,7 @@ async def test_button_callback_game_ended_win(monkeypatch: pytest.MonkeyPatch) -
     await win_button.callback(interaction)
     player_color, _ = ui.get_player_colors()
 
-    assert game.get_status() is EMatchStatus.WIN
-    assert game.get_winner() == player
+    assert game._status is EMatchStatus.WIN
+    assert game.winner == player
     assert embed.color == player_color
     assert update_match_mock.called

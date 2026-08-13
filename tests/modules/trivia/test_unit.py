@@ -94,12 +94,12 @@ async def test_fetch_api_builds_expected_url_and_populates_game(
     game = TriviaGame(player=player, category=ETriviaCategory.GENERAL_KNOWLEDGE)
     await game.fetch_api()
 
-    assert game.get_player() == player
-    assert game.get_category() == ETriviaCategory.COMPUTERS
-    assert game.get_difficulty() == ETriviaDifficulty.MEDIUM
-    assert game.get_question() == "Question?"
-    assert game.get_correct_answer() == "Answer"
-    assert game.get_incorrect_answers() == ["Wrong 1", "Wrong 2", "Wrong 3"]
+    assert game.player == player
+    assert game.category == ETriviaCategory.COMPUTERS
+    assert game.difficulty == ETriviaDifficulty.MEDIUM
+    assert game.question == "Question?"
+    assert game.correct_answer == "Answer"
+    assert game.incorrect_answers == ["Wrong 1", "Wrong 2", "Wrong 3"]
 
 
 @pytest.mark.asyncio
@@ -166,7 +166,7 @@ async def test_trivia_button_correct_answer_updates_embed_and_status(
 
     await button.callback(interaction)
 
-    assert game.get_status() is models.EMatchStatus.WIN
+    assert game.status is models.EMatchStatus.WIN
     assert embed.color == discord.Color.green()
     assert button.style == discord.ButtonStyle.green
     assert str(button.emoji) == "✔️"

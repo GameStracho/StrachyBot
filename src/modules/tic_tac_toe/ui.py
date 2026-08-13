@@ -16,16 +16,17 @@ class TicTacToeView(discord.ui.View):
 
         self._game = game
 
-        for x in range(game.get_grid_size()):
-            for y in range(game.get_grid_size()):
+        for x in range(game.grid_size):
+            for y in range(game.grid_size):
                 self.add_item(TicTacToeButton(parent_view=self, position=Position(x, y)))
 
         console.log_debug(
-            f"/tic-tac-toe: New TicTacToeView created for game {self._game.get_match_id()} "
+            f"/tic-tac-toe: New TicTacToeView created for game {self._game.match_id} "
             f"with {timeout}s timeout."
         )
 
-    def get_game(self) -> TicTacToeGame:
+    @property
+    def game(self) -> TicTacToeGame:
         return self._game
 
     def build_embed(self) -> tuple[discord.Embed, discord.File]:
@@ -34,23 +35,23 @@ class TicTacToeView(discord.ui.View):
         embed = discord.Embed(
             color=player_color,
             title="Tic-Tac-Toe",
-            description=f"Connect {self._game.get_target_length()} cells to win.",
+            description=f"Connect {self._game.target_length} cells to win.",
         )
 
-        user: User = self._game.get_player()
+        user: User = self._game.player
         embed.set_author(name=user.display_name, icon_url=user.display_avatar)
 
         embed.add_field(
             name="Players",
             value=(
-                f"{player_emoji} {self._game.get_player().mention}"
-                f"\n{opponent_emoji} {self._game.get_opponent().mention}"
+                f"{player_emoji} {self._game.player.mention}"
+                f"\n{opponent_emoji} {self._game.opponent.mention}"
             ),
             inline=False,
         )
         embed.add_field(
             name="Status",
-            value=f"It's {player_emoji} {self._game.get_player().mention}'s turn.",
+            value=f"It's {player_emoji} {self._game.player.mention}'s turn.",
             inline=False,
         )
         embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=self), inline=False)
@@ -63,12 +64,12 @@ class TicTacToeView(discord.ui.View):
     def update_embed(self, embed: discord.Embed) -> None:
         status_message: str = ""
         player_color, opponent_color = ui.get_player_colors()
-        player: User = self._game.get_player()
-        opponent: User = self._game.get_opponent()
+        player: User = self._game.player
+        opponent: User = self._game.opponent
 
-        match self._game.get_status():
+        match self._game.status:
             case models.EMatchStatus.WIN | models.EMatchStatus.LOSS:
-                winner: User | None = self._game.get_winner()
+                winner: User | None = self._game.winner
                 assert winner
 
                 embed.color = player_color if winner == player else opponent_color
@@ -81,9 +82,9 @@ class TicTacToeView(discord.ui.View):
                 embed.set_author(name="", icon_url="")
                 status_message = "Game ended in draw. " + ui.EMOJIS["game_draw"]
             case models.EMatchStatus.PENDING:
-                current_player: User = player if self._game.is_players_turn() else opponent
+                current_player: User = player if self._game.is_players_turn else opponent
 
-                embed.color = player_color if self._game.is_players_turn() else opponent_color
+                embed.color = player_color if self._game.is_players_turn else opponent_color
                 embed.set_author(
                     name=current_player.display_name,
                     icon_url=current_player.display_avatar,
@@ -93,9 +94,9 @@ class TicTacToeView(discord.ui.View):
                     + ui.EMOJIS["game_turn"]
                 )
             case _:
-                raise ValueError(self._game.get_status())
+                raise ValueError(self._game.status)
 
-        if self._game.get_status() == models.EMatchStatus.PENDING:
+        if self._game.status == models.EMatchStatus.PENDING:
             ui.embed.update_field(
                 embed=embed,
                 name="Timeout",
@@ -114,20 +115,18 @@ class TicTacToeView(discord.ui.View):
             if isinstance(child, TicTacToeButton):
                 child.disabled = True
 
-        console.log_debug(f"/tic-tac-toe: Buttons disabled for game {self._game.get_match_id()}.")
+        console.log_debug(f"/tic-tac-toe: Buttons disabled for game {self._game.match_id}.")
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
             current_player: User = (
-                self._game.get_player()
-                if self._game.is_players_turn()
-                else self._game.get_opponent()
+                self._game.player if self._game.is_players_turn else self._game.opponent
             )
 
             if interaction.user.id != current_player.id:
                 console.log_debug(
                     f"Ineligible user {interaction.user.display_name} ({interaction.user.id}) "
-                    f"tried to respond to game {self._game.get_match_id()}."
+                    f"tried to respond to game {self._game.match_id}."
                 )
 
                 await interaction.response.send_message("It's not your turn!", ephemeral=True)
@@ -141,7 +140,7 @@ class TicTacToeView(discord.ui.View):
             return False
 
     async def on_timeout(self) -> None:
-        if self._game.get_status() != models.EMatchStatus.PENDING or self.message is None:
+        if self._game.status != models.EMatchStatus.PENDING or self.message is None:
             return
 
         self.disable_buttons()
@@ -176,15 +175,16 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
 
         console.log_debug(
             f"/tic-tac-toe: New TicTacToeButton created "
-            f"for game {parent_view.get_game().get_match_id()}: pos = {position}."
+            f"for game {parent_view.game.match_id}: pos = {position}."
         )
 
-    def get_position(self) -> Position:
+    @property
+    def position(self) -> Position:
         return self._position
 
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
-            game: TicTacToeGame = self._parent_view.get_game()
+            game: TicTacToeGame = self._parent_view.game
 
             success: bool = await game.play(position=self._position)
 
@@ -193,14 +193,14 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                 return
 
             player_emoji, opponent_emoji = ui.get_player_emojis()
-            self.label = opponent_emoji if game.is_players_turn() else player_emoji
+            self.label = opponent_emoji if game.is_players_turn else player_emoji
             self.disabled = True
 
             # Check if opponent is a bot and should make an automatic counter-move
             if (
-                game.get_status() == models.EMatchStatus.PENDING
-                and game.get_opponent().is_bot
-                and not game.is_players_turn()
+                game.status == models.EMatchStatus.PENDING
+                and game.opponent.is_bot
+                and not game.is_players_turn
             ):
                 bot_pos: Position | None = game.calculate_bot_move()
 
@@ -209,7 +209,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
 
                     # Disable button played by bot
                     for child in self._parent_view.children:
-                        if isinstance(child, TicTacToeButton) and child.get_position() == bot_pos:
+                        if isinstance(child, TicTacToeButton) and child.position == bot_pos:
                             child.label = opponent_emoji
                             child.disabled = True
                             break
