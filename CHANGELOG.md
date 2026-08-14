@@ -6,23 +6,17 @@
 - Enabled database interface (`adminer` service) in production
 - Script for restoring backups
 - Updates of database records on each game update
-- Member `parent_view` to all custom button classes
-- Methods `build_embed` and `update_embed` to all custom view classes
 - Custom shared type `User`
 
 ### Changed
 - Renamed custom AI agent
-- Updated `ruff` configuration - check line length, spacing, import order, naming style, etc.
-- Formatted source code
+- Updated formatter (`ruff`) configuration - check line length, spacing, import order, naming style, etc.
 - Moved console log functions to a separate module `console`
 - Restructured `shared` module and simplified `shared` imports
-- Moved `src/images` to `src/shared/images`
-- Removed custom container names
 - Balanced `Tic-Tac-Toe` 4x4 and 5x5 boards
-- Moved database calls of all mini-games from `ui.py` to `game.py`
-- Renamed `utils` module to `info`
-- Changed color of `/info` command from `blue` to `teal`
-- Simplified getters
+- Separated game logic of all mini-games from UI
+- Renamed `utils` module to `info` and changed its color from `blue` to `teal`
+- Unified code style of all mini-games
 
 ### Removed
 - Google Drive backups

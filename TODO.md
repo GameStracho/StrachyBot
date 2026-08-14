@@ -3,9 +3,9 @@
 ### Polishing
 - FIX: zmenšit počet Trivia API requestů
 - vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)
+- ukládat do databáze počty použitých příkazů
 - přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných
 - aktualizovat README - přidat zmínku o existujících skriptech a co dělají, zjednodušit setup a zmínit adminer
-- zjednodušit nejnovější změny v CHANGELOG.md (ponechat jen to podstatné)
 - ručně otestovat všechny provedené změny
 
 ### Better Console Logs
@@ -18,21 +18,42 @@
 ### Web Command
 - přidat příkaz `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
 
+### Coin Toss Command
+- přídat příkaz `/coin-toss`, který hodí mincí
+
 ### Missing tests
 - přidat chybějící testy pro moduly: Wordle, Trivia a Shared + zkontrolovat testy pro Tic-Tac-Toe a Wordle
 
---
+---
 
-## [2.1.0] Česká lokalizace
+## [2.1.0] Simple commands
+
+- přidat příkaz `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
+- přidat příkaz `/coin-toss`, který hodí mincí
+- přidat příkaz `/f1`, který vypíše náhodnou hlášku s Formule 1
+- přidat příkaz `/kanye`, která výpiše náhodnou hlášku od Kanyeho Westa
+
+---
+
+## [2.2.0] Songless & Rock Paper Scissors
+
+- přidat minihru `songless`
+- přídat minihru `kámen-nůžky-papír`
+
+---
+
+## [2.3.0] Uživatelské statistiky
+
+## [2.4.0] Česká lokalizace
 
 - vytvořit české varianty dostupných her a ostatních funkcí jako samostatné příkazy (trivia -> kvíz, wordle -> hádej slovo, tic-tac-toe -> piškvorky, info -> informace)
 - tyto české varianty budou sdílet herní logiku a UI, jenom budou mít jiné texty
 - kvíz bude mít otázky týkající se české republiky
 - hádej slovo bude obsahovat slova místo anglických
 
---
+---
 
-## [2.2.0] Web API
+## [2.5.0] Web API
 
 https://share.gemini.google/prmBNFuzUWzR
 https://share.gemini.google/WblCzbkuTEP8
@@ -41,11 +62,7 @@ https://share.gemini.google/WblCzbkuTEP8
 - do projektu `strachy.win` přidat stránku používající @derockdev/discord-components-react knihovnu s chatovacím oknem, ve kterém se zobrazí UI bota a bude možné používat jeho commandy
 - do projektu `strachy.win` navíc přidat stránky pro minihry s vlastním webovým rozhraním, které bude používat `StrachBot` (python) backend
 
---
-
-## [2.3.0] Uživatelské statistiky
-
---
+---
 
 ## Nové mini-hry
 - Songless
