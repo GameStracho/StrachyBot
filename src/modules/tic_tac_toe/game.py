@@ -2,7 +2,7 @@ import random
 from enum import Enum
 
 import console
-from shared import StrachyBot, execute_db_operation, models
+from shared import StrachyBot, models
 from shared.types import EDirection, Position, User, Vector
 
 from .repository import create_match, update_match
@@ -124,8 +124,7 @@ class TicTacToeGame:
     async def connect_database(self, bot: StrachyBot) -> None:
         self._bot = bot
 
-        match_id: int | None = await execute_db_operation(
-            target=self._bot,
+        match_id: int | None = await self._bot.execute_db_operation(
             db_func=create_match,
             player_id=self._player.id,
             opponent_id=self._opponent.id,
@@ -145,8 +144,7 @@ class TicTacToeGame:
             )
             return
 
-        await execute_db_operation(
-            target=self._bot,
+        await self._bot.execute_db_operation(
             db_func=update_match,
             match_id=self._match_id,
             status=self._status,

@@ -1,5 +1,5 @@
 import console
-from shared import StrachyBot, execute_db_operation, helpers, models, types
+from shared import StrachyBot, helpers, models, types
 
 from .models import ETriviaCategory, ETriviaDifficulty
 from .repository import create_match, update_match
@@ -94,8 +94,7 @@ class TriviaGame:
     async def connect_database(self, bot: StrachyBot) -> None:
         self._bot = bot
 
-        match_id: int | None = await execute_db_operation(
-            target=self._bot,
+        match_id: int | None = await self._bot.execute_db_operation(
             db_func=create_match,
             player_id=self._player.id,
             category=self._category,
@@ -113,8 +112,8 @@ class TriviaGame:
             console.log_warning(f"/trivia: Database is not connected. Skipping update of {self}.")
             return
 
-        await execute_db_operation(
-            target=self._bot, db_func=update_match, match_id=self._match_id, status=self._status
+        await self._bot.execute_db_operation(
+            db_func=update_match, match_id=self._match_id, status=self._status
         )
 
         console.log_debug(f"/trivia: Updated database record for game {self._match_id}.")

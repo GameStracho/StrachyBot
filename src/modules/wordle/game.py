@@ -6,7 +6,7 @@ from datetime import UTC, date, datetime
 from enum import Enum
 
 import console
-from shared import StrachyBot, execute_db_operation, models, types
+from shared import StrachyBot, models, types
 
 from .repository import create_match, update_match
 
@@ -234,8 +234,7 @@ class WordleGame:
     async def connect_database(self, bot: StrachyBot) -> None:
         self._bot = bot
 
-        match_id: int | None = await execute_db_operation(
-            target=self._bot,
+        match_id: int | None = await self._bot.execute_db_operation(
             db_func=create_match,
             player_id=self._player.id,
             secret_word=self._secret_word,
@@ -251,8 +250,7 @@ class WordleGame:
             console.log_warning(f"/wordle: Database is not connected. Skipping update of {self}.")
             return
 
-        await execute_db_operation(
-            target=self._bot,
+        await self._bot.execute_db_operation(
             db_func=update_match,
             match_id=self._match_id,
             status=self._status,

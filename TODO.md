@@ -3,7 +3,6 @@
 ### Polishing
 - FIX: zmenšit počet Trivia API requestů
 - vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)
-- ukládat do databáze počty použitých příkazů
 - přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných
 - aktualizovat README - přidat zmínku o existujících skriptech a co dělají, zjednodušit setup a zmínit adminer
 - ručně otestovat všechny provedené změny

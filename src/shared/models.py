@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from enum import Enum as PyEnum
 
-from sqlalchemy import BigInteger, Enum
+from sqlalchemy import BigInteger, Enum, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -37,3 +37,12 @@ class Match(Base):
     status: Mapped[EMatchStatus] = mapped_column(
         Enum(EMatchStatus, native_enum=True), nullable=False, default=EMatchStatus.PENDING
     )
+
+
+class CommandLog(Base):
+    __tablename__ = "command_log"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True)
+    command_name: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_time_without_timezone)

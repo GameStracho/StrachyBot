@@ -7,6 +7,7 @@
 - Script for restoring backups
 - Updates of database records on each game update
 - Custom shared type `User`
+- Logging of used valid commands
 
 ### Changed
 - Renamed custom AI agent
