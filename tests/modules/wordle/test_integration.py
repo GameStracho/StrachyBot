@@ -78,7 +78,8 @@ async def test_wordle_cog_daily_challenge_already_played(monkeypatch: pytest.Mon
 
     assert interaction.response.send_message.await_count == 1
     _, kwargs = interaction.response.send_message.call_args
-    assert "already played" in kwargs.get("content", "")
+    embed = kwargs.get("embed") or (kwargs.get("embeds")[0] if kwargs.get("embeds") else None)
+    assert "already played" in (embed.description or None)
     assert kwargs.get("ephemeral") is True
 
 
