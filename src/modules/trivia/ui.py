@@ -119,6 +119,7 @@ class TriviaView(discord.ui.View):
 class TriviaButton(discord.ui.Button[TriviaView]):
     _parent_view: TriviaView
     _is_correct: bool
+    _is_selected: bool
 
     def __init__(
         self, parent_view: TriviaView, label: str, is_correct: bool, row: int, emoji: str = ""
@@ -127,6 +128,7 @@ class TriviaButton(discord.ui.Button[TriviaView]):
 
         self._parent_view = parent_view
         self._is_correct = is_correct
+        self._is_selected = False
 
         console.log_debug(
             f"/trivia: New TriviaButton created for game {parent_view.game.match_id}: "
@@ -138,9 +140,8 @@ class TriviaButton(discord.ui.Button[TriviaView]):
             answer: str = self.label if self.label else ""
             await self._parent_view.game.select_answer(answer=answer)
 
-            embed: discord.Embed = ui.embed.extract(
-                interaction=interaction, index=0, hide_icon=True
-            )
+            self._is_selected = True
+            embed: discord.Embed = ui.embed.extract(interaction=interaction, index=0, hide_icon=True)
             self._parent_view.update_embed(embed=embed)
 
             # Edit the original message to show disabled buttons
@@ -151,9 +152,15 @@ class TriviaButton(discord.ui.Button[TriviaView]):
     def disable(self) -> None:
         """Disable the button and reveal whether the answer was correct or wrong."""
         self.disabled = True
-        if self._is_correct:
-            self.style = discord.ButtonStyle.green
-            self.emoji = ui.EMOJIS["trivia_correct_answer_selected"]
-        else:
-            self.style = discord.ButtonStyle.red
-            self.emoji = ui.EMOJIS["trivia_wrong_answer"]
+
+        match (self._is_selected, self._is_correct):
+            case (True, True):
+                self.style = discord.ButtonStyle.green
+                self.emoji = ui.EMOJIS["trivia_correct_answer_selected"]
+            case (True, False):
+                self.style = discord.ButtonStyle.red
+                self.emoji = ui.EMOJIS["trivia_wrong_answer_selected"]
+            case (False, True):
+                self.emoji = ui.EMOJIS["trivia_correct_answer"]
+            case (False, False):
+                self.emoji = ui.EMOJIS["trivia_wrong_answer"]
