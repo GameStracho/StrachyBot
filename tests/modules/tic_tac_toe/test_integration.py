@@ -6,6 +6,7 @@ import pytest
 
 from modules.tic_tac_toe import setup
 from modules.tic_tac_toe.cogs import TicCog
+from shared import StrachyBot
 from tests import mocks
 
 
@@ -24,9 +25,7 @@ async def test_tic_cog_command_success(monkeypatch: pytest.MonkeyPatch) -> None:
 
     create_match_mock = AsyncMock(return_value=123)
     monkeypatch.setattr("modules.tic_tac_toe.game.create_match", create_match_mock)
-    monkeypatch.setattr(
-        "modules.tic_tac_toe.game.execute_db_operation", mocks.dummy_execute_db_operation
-    )
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", mocks.dummy_execute_db_operation)
 
     grid_choice = discord.app_commands.Choice(name="3x3", value=3)
 
@@ -47,7 +46,8 @@ async def test_tic_cog_command_error_handling(monkeypatch: pytest.MonkeyPatch) -
 
     # Force error by raising during execute_db_operation
     monkeypatch.setattr(
-        "modules.tic_tac_toe.game.execute_db_operation",
+        StrachyBot,
+        "execute_db_operation",
         AsyncMock(side_effect=Exception("DB Error")),
     )
     handle_error_mock = AsyncMock()

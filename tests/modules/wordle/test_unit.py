@@ -9,7 +9,7 @@ import pytest
 import modules.wordle.game as game_mod
 from modules.wordle.game import WordleDictionary, WordleGame, WordleLetterCategory
 from modules.wordle.ui import WordleGuessModal, WordleView
-from shared import models, ui
+from shared import StrachyBot, models, ui
 from tests import mocks
 
 
@@ -120,7 +120,7 @@ async def test_wordle_game_connect_database(monkeypatch: pytest.MonkeyPatch) -> 
     async def mock_execute(*args: Any, **kwargs: Any) -> int:
         return 999
 
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", mock_execute)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", mock_execute)
 
     await game.connect_database(bot_mock)
     assert game.match_id == 999
@@ -135,7 +135,7 @@ async def test_wordle_game_add_guess_win(monkeypatch: pytest.MonkeyPatch) -> Non
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
 
     await game.add_guess("apple")
 
@@ -154,7 +154,7 @@ async def test_wordle_game_add_guess_loss(monkeypatch: pytest.MonkeyPatch) -> No
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
 
     # 5 wrong guesses
     for _ in range(5):
@@ -214,7 +214,7 @@ async def test_wordle_game_handle_timeout(monkeypatch: pytest.MonkeyPatch) -> No
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
 
     await game.handle_timeout()
     assert game.status == models.EMatchStatus.TIMEOUT
@@ -234,7 +234,7 @@ async def test_wordle_game_handle_surrender(monkeypatch: pytest.MonkeyPatch) -> 
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
 
     await game.handle_surrender()
     assert game.status == models.EMatchStatus.SURRENDER
@@ -478,7 +478,7 @@ async def test_wordle_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     view.message = message_mock
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
 
     await view.on_timeout()
 
