@@ -18,6 +18,7 @@
 - Separated game logic of all mini-games from UI
 - Renamed `utils` module to `info` and changed its color from `blue` to `teal`
 - Unified code style of all mini-games
+- Improved appearance of warning messages
 
 ### Removed
 - Google Drive backups

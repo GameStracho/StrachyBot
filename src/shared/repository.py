@@ -16,12 +16,10 @@ async def create_command_log(session: AsyncSession, user_id: int, command_name: 
         f"shared: Creating a new command log "
         f"(user_id = {user_id}, command_name = {command_name})..."
     )
-    record_id: int = 0
+    record: CommandLog = CommandLog(user_id=user_id, command_name=command_name)
 
     async with session.begin():
-        record: CommandLog = CommandLog(user_id=user_id, command_name=command_name)
         session.add(record)
-        record_id = record.id
 
-    console.log_debug(f"wordle: New command log ({record_id}) created.")
-    return record_id
+    console.log_debug(f"shared: New command log ({record.id}) created.")
+    return record.id

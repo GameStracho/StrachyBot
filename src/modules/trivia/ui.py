@@ -89,9 +89,10 @@ class TriviaView(discord.ui.View):
                     f"({interaction.user.id}) "
                     f"responded to game {self._game.match_id}"
                 )
-                await interaction.response.send_message(
-                    "You cannot respond to this game.", ephemeral=True
-                )
+
+                embed, icon = ui.embed.build_warning(message="You cannot respond to this game.")
+
+                await interaction.response.send_message(embed=embed, file=icon, ephemeral=True)
                 return False  # Aborts processing and DOES NOT reset/extend the view timeout
 
             return True  # Authorized click; allow execution

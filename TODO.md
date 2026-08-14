@@ -2,10 +2,8 @@
 
 ### Polishing
 - FIX: zmenšit počet Trivia API requestů
-- vylepšit vzhled informačních zpráv (reakce na hru cizího hráče a další ephemeral zprávy)
 - přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných
 - aktualizovat README - přidat zmínku o existujících skriptech a co dělají, zjednodušit setup a zmínit adminer
-- ručně otestovat všechny provedené změny
 
 ### Better Console Logs
 
@@ -13,12 +11,6 @@
 - přidat možnosti pro vypnutí logování do databáze, vypnutí vypisování logů do konzole, nastavení log levelu (debug, info, success, atd.) - přidat ke každé zprávě parametr "module" (ten bude značit, ke kterému modulu zpráva patří)
 - přidat více info a debug logů ke stávajícím modulům
 - zlepšit error handling (pomocí override 'on_error' metod v custom button a view třídách)
-
-### Web Command
-- přidat příkaz `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
-
-### Coin Toss Command
-- přídat příkaz `/coin-toss`, který hodí mincí
 
 ### Missing tests
 - přidat chybějící testy pro moduly: Wordle, Trivia a Shared + zkontrolovat testy pro Tic-Tac-Toe a Wordle

@@ -29,9 +29,12 @@ class WordleCog(commands.Cog):
                     f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                     f"already played the daily challenge."
                 )
-                await interaction.response.send_message(
-                    content="You already played today's daily challenge.", ephemeral=True
+
+                embed, icon = ui.embed.build_warning(
+                    message="You already played today's daily challenge."
                 )
+
+                await interaction.response.send_message(embed=embed, file=icon, ephemeral=True)
                 return
 
             game: WordleGame = WordleGame(

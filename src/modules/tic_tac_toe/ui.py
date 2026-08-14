@@ -129,7 +129,9 @@ class TicTacToeView(discord.ui.View):
                     f"tried to respond to game {self._game.match_id}."
                 )
 
-                await interaction.response.send_message("It's not your turn!", ephemeral=True)
+                embed, icon = ui.embed.build_warning(message="It's not your turn!")
+
+                await interaction.response.send_message(embed=embed, file=icon, ephemeral=True)
                 return False  # Aborts processing and DOES NOT reset/extend the view timeout
 
             return True  # Authorized click; allow execution
@@ -189,7 +191,11 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
             success: bool = await game.play(position=self._position)
 
             if not success:
-                await interaction.response.send_message("Invalid move! ☹️", ephemeral=True)
+                warning_embed, warning_icon = ui.embed.build_warning(message="Invalid move! ☹️")
+
+                await interaction.response.send_message(
+                    embed=warning_embed, file=warning_icon, ephemeral=True
+                )
                 return
 
             player_emoji, opponent_emoji = ui.get_player_emojis()

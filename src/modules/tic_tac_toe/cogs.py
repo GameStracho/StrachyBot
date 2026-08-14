@@ -39,9 +39,17 @@ class TicCog(commands.Cog):
                 console.log_debug(
                     "/tic-tac-toe: Player and opponent have the same id. Game start abandoned."
                 )
+
+                embed, icon = ui.embed.build_warning(
+                    message=(
+                        "You cannot play against yourself!\n"
+                        "Select a bot as your opponent if you want to play singleplayer. "
+                    )
+                )
+
                 await interaction.response.send_message(
-                    "You cannot play against yourself!\n"
-                    "Select a bot as your opponent if you want to play singleplayer. ",
+                    embed=embed,
+                    file=icon,
                     ephemeral=True,
                 )
                 return
