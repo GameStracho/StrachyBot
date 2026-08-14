@@ -15,14 +15,17 @@ def remove_field(embed: discord.Embed, name: str) -> None:
             return
 
 
-def extract(interaction: discord.Interaction, index: int, hide_icon: bool) -> discord.Embed:
-    message: discord.Message | None = interaction.message
+def extract(
+    target: discord.Interaction | discord.Message, index: int, hide_icon: bool
+) -> discord.Embed:
+    message: discord.Message | None = None
+
+    if isinstance(target, discord.Interaction):
+        message = target.message
+    else:
+        message = target
+
     assert message is not None
-
-    return extract_from_message(message=message, index=index, hide_icon=hide_icon)
-
-
-def extract_from_message(message: discord.Message, index: int, hide_icon: bool) -> discord.Embed:
     embed: discord.Embed = message.embeds[index]
 
     if hide_icon:

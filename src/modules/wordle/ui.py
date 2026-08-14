@@ -194,9 +194,7 @@ class WordleView(discord.ui.View):
         await self._game.handle_timeout()
         self.disable_buttons()
 
-        embed: discord.Embed = ui.embed.extract_from_message(
-            message=self.message, index=0, hide_icon=True
-        )
+        embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
         ui.embed.remove_field(embed=embed, name="Timeout")
         ui.embed.update_field(
             embed=embed,
@@ -225,9 +223,7 @@ class WordleView(discord.ui.View):
             )
 
             assert self.message is not None
-            embed: discord.Embed = ui.embed.extract_from_message(
-                message=self.message, index=0, hide_icon=True
-            )
+            embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
             ui.embed.update_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
             await self.message.edit(embed=embed, view=self)
 
@@ -259,8 +255,8 @@ class WordleView(discord.ui.View):
                 )
 
                 assert self.message is not None
-                embed: discord.Embed = ui.embed.extract_from_message(
-                    message=self.message, index=0, hide_icon=True
+                embed: discord.Embed = ui.embed.extract(
+                    target=self.message, index=0, hide_icon=True
                 )
 
                 await self._game.guess_random_word()
@@ -268,8 +264,8 @@ class WordleView(discord.ui.View):
                 await self.message.edit(embed=embed, view=self)
 
             assert self.message is not None
-            wordle_embed: discord.Embed = ui.embed.extract_from_message(
-                message=self.message, index=0, hide_icon=True
+            wordle_embed: discord.Embed = ui.embed.extract(
+                target=self.message, index=0, hide_icon=True
             )
             ui.embed.update_field(
                 embed=wordle_embed, name="Timeout", value=ui.get_timeout_timestamp(self)
@@ -310,8 +306,8 @@ class WordleView(discord.ui.View):
                 )
 
                 assert self.message is not None
-                embed: discord.Embed = ui.embed.extract_from_message(
-                    message=self.message, index=0, hide_icon=True
+                embed: discord.Embed = ui.embed.extract(
+                    target=self.message, index=0, hide_icon=True
                 )
 
                 await self._game.handle_surrender()
@@ -319,8 +315,8 @@ class WordleView(discord.ui.View):
                 await self.message.edit(embed=embed, view=self)
 
             assert self.message is not None
-            wordle_embed: discord.Embed = ui.embed.extract_from_message(
-                message=self.message, index=0, hide_icon=True
+            wordle_embed: discord.Embed = ui.embed.extract(
+                target=self.message, index=0, hide_icon=True
             )
             ui.embed.update_field(
                 embed=wordle_embed, name="Timeout", value=ui.get_timeout_timestamp(self)
@@ -395,9 +391,7 @@ class WordleGuessModal(discord.ui.Modal):
             guess: str = self.guess_input.value.lower()
             updated_status: str = ""
 
-            embed: discord.Embed = ui.embed.extract(
-                interaction=interaction, index=0, hide_icon=True
-            )
+            embed: discord.Embed = ui.embed.extract(target=interaction, index=0, hide_icon=True)
 
             if not game.is_valid_word(guess):
                 console.log_info(

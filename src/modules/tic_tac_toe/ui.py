@@ -214,9 +214,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
                             child.disabled = True
                             break
 
-            embed: discord.Embed = ui.embed.extract(
-                interaction=interaction, index=0, hide_icon=True
-            )
+            embed: discord.Embed = ui.embed.extract(target=interaction, index=0, hide_icon=True)
             self._parent_view.update_embed(embed=embed)
 
             # Edit the original message to show disabled buttons

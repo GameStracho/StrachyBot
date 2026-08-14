@@ -106,9 +106,7 @@ class TriviaView(discord.ui.View):
         self.disable_buttons()
         await self._game.handle_timeout()
 
-        embed: discord.Embed = ui.embed.extract_from_message(
-            message=self.message, index=0, hide_icon=True
-        )
+        embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
         embed.color = ui.COLORS["game_timeout"]
         ui.embed.remove_field(embed=embed, name="Timeout")
 
@@ -141,7 +139,7 @@ class TriviaButton(discord.ui.Button[TriviaView]):
             await self._parent_view.game.select_answer(answer=answer)
 
             self._is_selected = True
-            embed: discord.Embed = ui.embed.extract(interaction=interaction, index=0, hide_icon=True)
+            embed: discord.Embed = ui.embed.extract(target=interaction, index=0, hide_icon=True)
             self._parent_view.update_embed(embed=embed)
 
             # Edit the original message to show disabled buttons
