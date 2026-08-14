@@ -49,10 +49,6 @@ async def update_match(
 
     Returns true on success.
     """
-    if status == EMatchStatus.PENDING:
-        console.log_warning(f"tic: Cannot update match status to {status}.")
-        return False
-
     console.log_debug(
         f"tic: Updating match ({match_id}) "
         f"with status ({status}) and total_moves ({total_moves})..."
