@@ -203,7 +203,7 @@ class WordleView(discord.ui.View):
             name="Status",
             value=(
                 f"Game timed out! {ui.EMOJIS['game_timeout']} "
-                f"The secret word was '{self._game.secret_word}'."
+                f"The secret word was '{self.spoil(self._game.secret_word)}'."
             ),
         )
 

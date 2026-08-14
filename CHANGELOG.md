@@ -1,7 +1,7 @@
 ## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-10
 
 ### Added
-- [TODO.md](TODO.md) to-do list
+- To-do list ([TODO.md](TODO.md) )
 - Enabled `strict` type checking in CI
 - Enabled database interface (`adminer` service) in production
 - Script for restoring backups
@@ -36,7 +36,7 @@
 - Moved `alembic-postgresql-enum` from `requirements-dev` to `requirements`
 - Prevented starting the `Tic-Tac-Toe` game against oneself
 - Automated `Tic-Tac-Toe` auto-play moves
-- Hide invalid words and already guessed words in `Wordle` daily challenge
+- Hiding of secret words in `Wordle` daily challenge
 
 ---
 
