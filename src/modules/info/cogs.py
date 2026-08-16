@@ -20,7 +20,9 @@ class UtilsCog(commands.Cog):
 
         try:
             uptime: datetime.timedelta = discord.utils.utcnow() - self.bot.start_time
-            description: str = "Discord bot with fun mini-games like *Trivia*, *Wordle* and *Tic-Tac-Toe*."
+            description: str = (
+                "Discord bot with fun mini-games like *Trivia*, *Wordle* and *Tic-Tac-Toe*."
+            )
 
             embed: discord.Embed = discord.Embed(
                 color=discord.Color.teal(),
