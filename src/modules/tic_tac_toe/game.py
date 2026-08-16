@@ -1,9 +1,11 @@
+import random
 from enum import Enum
 
-import discord
-
 import console
-from shared.types import EDirection, Position, Vector
+from shared import StrachyBot, models
+from shared.types import EDirection, Position, User, Vector
+
+from .repository import create_match, update_match
 
 
 class ETicTacToeCell(Enum):
@@ -20,7 +22,8 @@ class TicTacToeGrid:
         self._size = size
         self._grid = [ETicTacToeCell.EMPTY for _ in range(pow(size, 2))]
 
-    def get_size(self) -> int:
+    @property
+    def size(self) -> int:
         return self._size
 
     def get_cell_value(self, pos: Position) -> ETicTacToeCell | None:
@@ -43,48 +46,120 @@ class TicTacToeGrid:
 
 
 class TicTacToeGame:
-    match_id: int
-    _player: discord.User
-    _opponent: discord.User
-    _total_moves: int
-    _grid: TicTacToeGrid
-    _is_over: bool
-    _winner: discord.User | None
+    _bot: StrachyBot | None
 
-    def __init__(self, player: discord.User, opponent: discord.User, grid_size: int) -> None:
-        self.match_id = -1
+    _match_id: int
+    _status: models.EMatchStatus
+    _player: User
+    _opponent: User
+    _total_moves: int
+
+    _grid: TicTacToeGrid
+
+    def __init__(self, player: User, opponent: User, grid_size: int) -> None:
+        self._bot = None
+        self._match_id = -1
+        self._status = models.EMatchStatus.PENDING
         self._player = player
         self._opponent = opponent
         self._total_moves = 0
         self._grid = TicTacToeGrid(grid_size)
-        self._is_over = False
-        self._winner = None
 
     def __str__(self) -> str:
         return (
-            f"Tic-Tac-Toe game {self.match_id} for player {self._player.id} "
-            f"against opponent {self._opponent.id} "
-            f"(total moves: {self._total_moves}, grid_size: {self._grid.get_size()}, "
-            f"is_over: {self._is_over}, winner: {self._winner})."
+            f"Tic-Tac-Toe game {self._match_id} for player {self._player} "
+            f"against opponent {self._opponent} "
+            f"(status: {self._status}, total moves: {self._total_moves}, "
+            f"grid_size: {self._grid.size})."
         )
 
-    def get_player(self) -> discord.User:
+    @property
+    def match_id(self) -> int:
+        return self._match_id
+
+    @property
+    def status(self) -> models.EMatchStatus:
+        return self._status
+
+    @property
+    def player(self) -> User:
         return self._player
 
-    def get_opponent(self) -> discord.User:
+    @property
+    def opponent(self) -> User:
         return self._opponent
 
-    def get_total_moves(self) -> int:
+    @property
+    def total_moves(self) -> int:
         return self._total_moves
 
-    def get_grid_size(self) -> int:
-        return self._grid.get_size()
+    @property
+    def grid_size(self) -> int:
+        return self._grid.size
 
-    def get_winner(self) -> discord.User | None:
-        return self._winner
+    @property
+    def winner(self) -> User | None:
+        match self._status:
+            case models.EMatchStatus.WIN:
+                return self._player
+            case models.EMatchStatus.LOSS:
+                return self._opponent
+            case _:
+                return None
 
-    def is_opponent_bot(self) -> bool:
-        return self._opponent.bot
+    @property
+    def target_length(self) -> int:
+        """Returns the optimal target line length based on board dimension."""
+        if self._grid.size <= 3:
+            return 3
+        elif self._grid.size in (4, 5):
+            return 4
+        else:
+            return 5
+
+    @property
+    def is_players_turn(self) -> bool:
+        return self._total_moves % 2 == 0
+
+    async def connect_database(self, bot: StrachyBot) -> None:
+        self._bot = bot
+
+        match_id: int | None = await self._bot.execute_db_operation(
+            db_func=create_match,
+            player_id=self._player.id,
+            opponent_id=self._opponent.id,
+            grid_size=self._grid.size,
+        )
+
+        if match_id:
+            self._match_id = match_id
+            console.log_debug(
+                f"/tic-tac-toe: Created new database record with id {self._match_id}."
+            )
+
+    async def _update_database_record(self) -> None:
+        if not self._bot:
+            console.log_warning(
+                f"/tic-tac-toe: Database is not connected. Skipping update of {self}."
+            )
+            return
+
+        await self._bot.execute_db_operation(
+            db_func=update_match,
+            match_id=self._match_id,
+            status=self._status,
+            total_moves=self._total_moves,
+        )
+
+        console.log_debug(f"/tic-tac-toe: Updated database record for game {self._match_id}.")
+
+    async def handle_timeout(self) -> None:
+        if self._status != models.EMatchStatus.PENDING:
+            return
+
+        console.log_info(f"/tic-tac-toe: Game {self._match_id} timed out.")
+        self._status = models.EMatchStatus.TIMEOUT
+        await self._update_database_record()
 
     def calculate_bot_move(self) -> Position | None:
         """
@@ -93,7 +168,7 @@ class TicTacToeGame:
         Priority 2: Block opponent's win in 1 move.
         Priority 3: Strategic positional move (center, corners, setup).
         """
-        grid_size: int = self._grid.get_size()
+        grid_size: int = self._grid.size
         empty_positions: list[Position] = []
 
         for x in range(grid_size):
@@ -117,7 +192,7 @@ class TicTacToeGame:
                 return pos
 
         # Priority 3: Strategic positional selection based on score
-        best_pos: Position = empty_positions[0]
+        best_positions: list[Position] = [empty_positions[0]]
         best_score: int = -1
 
         for pos in empty_positions:
@@ -125,9 +200,11 @@ class TicTacToeGame:
 
             if score > best_score:
                 best_score = score
-                best_pos = pos
+                best_positions = [pos]
+            elif score == best_score:
+                best_positions.append(pos)
 
-        return best_pos
+        return random.choice(best_positions)
 
     def _simulate_win(self, pos: Position, control_value: ETicTacToeCell) -> bool:
         assert self._grid.get_cell_value(pos=pos) == ETicTacToeCell.EMPTY
@@ -145,7 +222,7 @@ class TicTacToeGame:
 
     def _score_position(self, pos: Position) -> int:
         score: int = 0
-        grid_size: int = self._grid.get_size()
+        grid_size: int = self._grid.size
 
         # Center preference
         if grid_size % 2 == 1 and pos.x == grid_size // 2 and pos.y == grid_size // 2:
@@ -157,11 +234,11 @@ class TicTacToeGame:
 
         # Check alignment with existing bot cells (creation of threats)
         for axis in EDirection.get_axes():
-            for start_offset in range(3):
+            for start_offset in range(self.target_length):
                 opponent_count: int = 0
                 player_count: int = 0
 
-                for i in range(3):
+                for i in range(self.target_length):
                     col: int = pos.x + (i - start_offset) * axis.x
                     row: int = pos.y + (i - start_offset) * axis.y
                     cell: ETicTacToeCell | None = self._grid.get_cell_value(Position(col, row))
@@ -176,22 +253,16 @@ class TicTacToeGame:
 
         return score
 
-    def is_players_turn(self) -> bool:
-        return self._total_moves % 2 == 0
-
-    def has_game_ended(self) -> bool:
-        return self._is_over
-
-    def play(self, position: Position) -> bool:
+    async def play(self, position: Position) -> bool:
         """
         Perform a move by a player who is currently on turn.
 
         Returns True if move is valid, False otherwise.
         """
 
-        if self._is_over or self._winner:
+        if self._status != models.EMatchStatus.PENDING:
             console.log_fail(
-                f"/tic-tac-toe: Invalid move for game {self.match_id} - the game already finished."
+                f"/tic-tac-toe: Invalid move for game {self._match_id} - the game already finished."
             )
             return False
 
@@ -199,56 +270,57 @@ class TicTacToeGame:
 
         if not old_value:
             console.log_fail(
-                f"/tic-tac-toe: Invalid move for game {self.match_id} "
+                f"/tic-tac-toe: Invalid move for game {self._match_id} "
                 f"- position {position} out of bounds."
             )
             return False
 
         if old_value != ETicTacToeCell.EMPTY:
             console.log_fail(
-                f"/tic-tac-toe: Invalid move for game {self.match_id} "
+                f"/tic-tac-toe: Invalid move for game {self._match_id} "
                 f"- cell at position {position} is occupied ({old_value})."
             )
             return False
 
-        current_player: discord.User = self._player if self.is_players_turn() else self._opponent
         cell_value: ETicTacToeCell = (
-            ETicTacToeCell.PLAYER if self.is_players_turn() else ETicTacToeCell.OPPONENT
+            ETicTacToeCell.PLAYER if self.is_players_turn else ETicTacToeCell.OPPONENT
         )
 
         self._grid.set_cell_value(pos=position, value=cell_value)
         self._total_moves += 1
-        self._end_game(pos=position, current_player=current_player, control_value=cell_value)
+        self._end_game(pos=position, control_value=cell_value)
 
+        await self._update_database_record()
         return True
 
-    def _end_game(
-        self, pos: Position, current_player: discord.User, control_value: ETicTacToeCell
-    ) -> None:
+    def _end_game(self, pos: Position, control_value: ETicTacToeCell) -> None:
         """
         Determines whether the game has ended and assigns a winner.
         """
-        assert not self._is_over and not self._winner
+        assert self._status is models.EMatchStatus.PENDING
 
         for axis in EDirection.get_axes():
             if self._check_axis(pos=pos, axis=axis, control_value=control_value):
-                self._winner = current_player
-                self._is_over = True
+                self._status = (
+                    models.EMatchStatus.WIN
+                    if control_value == ETicTacToeCell.PLAYER
+                    else models.EMatchStatus.LOSS
+                )
                 return
 
-        # Check for draw
-        self._is_over = self._total_moves == pow(self._grid.get_size(), 2)
+        if self._total_moves == pow(self._grid.size, 2):
+            self._status = models.EMatchStatus.DRAW
 
     def _check_axis(self, pos: Position, axis: Vector, control_value: ETicTacToeCell) -> bool:
         """
-        Checks axis for 3 connected cells passing through given position.
+        Checks axis for connected cells passing through given position.
         """
         assert control_value != ETicTacToeCell.EMPTY
 
-        for start_offset in range(3):
+        for start_offset in range(self.target_length):
             connected: bool = True
 
-            for i in range(3):
+            for i in range(self.target_length):
                 # Move in positive direction
                 col: int = pos.x + (i - start_offset) * axis.x
                 row: int = pos.y + (i - start_offset) * axis.y

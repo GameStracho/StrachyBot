@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-from shared.database import Base
+from shared.models import Base
 
 project_root = Path(__file__).resolve().parents[1]
 if (project_root / ".env").exists():

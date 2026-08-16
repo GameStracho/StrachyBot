@@ -23,7 +23,7 @@ jobs:
       run: ruff check .
 
     - name: Type check with Mypy
-      run: mypy .
+      run: mypy . --strict
 
     - name: Run Tests with Pytest
       run: python3 -m pytest

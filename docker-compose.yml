@@ -1,11 +1,12 @@
 services:
   postgres:
     image: postgres:15
-    container_name: StrachyBotDB
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-Password1234}
       POSTGRES_DB: StrachyBot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d StrachyBot" ]
       interval: 5s
@@ -26,6 +27,7 @@ services:
     image: dockette/adminer:postgres
     profiles:
       - development
+      - production
     env_file: .env
     ports:
       - ${ADMINER_PORT:-8080}:80
@@ -33,21 +35,13 @@ services:
       postgres:
         condition: "service_healthy"
         required: true
-    environment:
-      # Enable the autologin plugin
-      ADMINER_PLUGIN_AUTOLOGIN: "1"
-      
-      # Provide the unified DSN connection string
-      # Format: pgsql://username:password@host:port/database
-      ADMINER_AUTOLOGIN_SERVER: "pgsql://postgres:${DATABASE_PASSWORD:-Password1234}@postgres:5432/StrachyBot"
   bot:
     build: .
-    container_name: StrachyBot
     profiles:
       - production
     restart: always
     env_file: .env
-    command: sh -c "alembic upgrade head && python src/main.py" 
+    command: sh -c "alembic upgrade head && python src/main.py"
     depends_on:
       postgres:
         condition: "service_healthy"
@@ -57,3 +51,6 @@ services:
 
       # Force Python logs to show instantly
       PYTHONUNBUFFERED: "1"
+
+volumes:
+  postgres_data:

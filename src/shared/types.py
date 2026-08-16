@@ -42,3 +42,62 @@ class EDirection(Vector, Enum):
             (cls.SOUTH_EAST.value),  # Main diagonal (\)
             (cls.SOUTH_WEST.value),  # Anti-diagonal (/)
         ]
+
+
+class User:
+    _id: int
+    _name: str
+    _display_name: str
+    _display_avatar: str
+    _mention: str
+    _is_bot: bool
+    _emoji: str
+
+    def __init__(
+        self,
+        id: int,
+        name: str,
+        display_name: str,
+        display_avatar: str,
+        mention: str,
+        is_bot: bool,
+        emoji: str = "",
+    ) -> None:
+        self._id = id
+        self._name = name
+        self._display_name = display_name
+        self._display_avatar = display_avatar
+        self._mention = mention
+        self._is_bot = is_bot
+        self._emoji = emoji
+
+    def __str__(self) -> str:
+        return f"{self._name} ({self._id})"
+
+    @property
+    def id(self) -> int:
+        return self._id
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def display_name(self) -> str:
+        return self._display_name
+
+    @property
+    def display_avatar(self) -> str:
+        return self._display_avatar
+
+    @property
+    def mention(self) -> str:
+        return self._mention
+
+    @property
+    def is_bot(self) -> bool:
+        return self._is_bot
+
+    @property
+    def emoji(self) -> str:
+        return self._emoji

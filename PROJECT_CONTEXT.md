@@ -1,5 +1,12 @@
 # 🤖 StrachyBot - Project Context & Developer Reference
 
+[![Python Version](https://img.shields.io/badge/python-3.11-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![Discord.py](https://img.shields.io/badge/discord.py-v2.3.2-5865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discordpy.readthedocs.io/)
+[![Docker](https://img.shields.io/badge/docker-compose-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Adminer](https://img.shields.io/badge/Adminer-dockette%2Fadminer-2563eb.svg?style=for-the-badge&logo=adminer&logoColor=white)](https://hub.docker.com/r/dockette/adminer)
+[![Platform](https://img.shields.io/badge/platform-Raspberry%20Pi%205-A22846.svg?style=for-the-badge&logo=raspberrypi&logoColor=white)](https://www.raspberrypi.com)
+
 This document provides a comprehensive overview of the **StrachyBot** codebase, its architecture, core components, data models, developer conventions, and operational workflows.
 
 ---

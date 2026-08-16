@@ -1,5 +1,7 @@
 import discord
 
+from .helpers import load_attachment
+
 
 def update_field(embed: discord.Embed, name: str, value: str) -> None:
     for i, field in enumerate(embed.fields):
@@ -15,14 +17,17 @@ def remove_field(embed: discord.Embed, name: str) -> None:
             return
 
 
-def extract(interaction: discord.Interaction, index: int, hide_icon: bool) -> discord.Embed:
-    message: discord.Message | None = interaction.message
+def extract(
+    target: discord.Interaction | discord.Message, index: int, hide_icon: bool
+) -> discord.Embed:
+    message: discord.Message | None = None
+
+    if isinstance(target, discord.Interaction):
+        message = target.message
+    else:
+        message = target
+
     assert message is not None
-
-    return extract_from_message(message=message, index=index, hide_icon=hide_icon)
-
-
-def extract_from_message(message: discord.Message, index: int, hide_icon: bool) -> discord.Embed:
     embed: discord.Embed = message.embeds[index]
 
     if hide_icon:
@@ -30,3 +35,16 @@ def extract_from_message(message: discord.Message, index: int, hide_icon: bool) 
         embed.set_thumbnail(url="attachment://icon.png")
 
     return embed
+
+
+def build_warning(message: str) -> tuple[discord.Embed, discord.File]:
+    embed: discord.Embed = discord.Embed(
+        title="Warning",
+        color=discord.Color.yellow(),
+        description=message,
+    )
+
+    icon, icon_url = load_attachment(path=__file__, filename="warning.png", sub_dir="../images")
+    embed.set_thumbnail(url=icon_url)
+
+    return (embed, icon)

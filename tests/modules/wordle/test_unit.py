@@ -1,7 +1,7 @@
 import re
 from datetime import date
 from typing import Any, cast
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, PropertyMock
 
 import discord
 import pytest
@@ -9,7 +9,7 @@ import pytest
 import modules.wordle.game as game_mod
 from modules.wordle.game import WordleDictionary, WordleGame, WordleLetterCategory
 from modules.wordle.ui import WordleGuessModal, WordleView
-from shared import models, ui
+from shared import StrachyBot, models, ui
 from tests import mocks
 
 
@@ -99,87 +99,92 @@ def test_wordle_dictionary_daily_secret_word() -> None:
 
 
 def test_wordle_game_initialization() -> None:
-    game = WordleGame(player_id=123, is_daily=False)
-    assert game.get_player_id() == 123
-    assert game.is_daily() is False
-    assert game.get_match_id() == -1
-    assert game.get_status() == models.EMatchStatus.PENDING
-    assert game.get_guesses_count() == 0
-    assert game.get_last_guess() == ""
-    assert len(game.get_secret_word()) == 5
+    player = mocks.DummyUser(user_id=123)
+    game = WordleGame(player=player, is_daily=False)
+
+    assert game.player == player
+    assert game.is_daily is False
+    assert game.match_id == -1
+    assert game.status == models.EMatchStatus.PENDING
+    assert game.guesses_count == 0
+    assert game.last_guess == ""
+    assert len(game.secret_word) == 5
     assert "Wordle game" in str(game)
 
 
 @pytest.mark.asyncio
 async def test_wordle_game_connect_database(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     bot_mock = mocks.DummyStrachyBot()
 
     async def mock_execute(*args: Any, **kwargs: Any) -> int:
         return 999
 
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", mock_execute)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", mock_execute)
 
     await game.connect_database(bot_mock)
-    assert game.get_match_id() == 999
+    assert game.match_id == 999
 
 
 @pytest.mark.asyncio
 async def test_wordle_game_add_guess_win(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
     bot_mock = mocks.DummyStrachyBot()
     game._bot = bot_mock
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
 
     await game.add_guess("apple")
 
-    assert game.get_guesses_count() == 1
-    assert game.get_last_guess() == "apple"
-    assert game.get_status() == models.EMatchStatus.WIN
+    assert game.guesses_count == 1
+    assert game.last_guess == "apple"
+    assert game.status == models.EMatchStatus.WIN
     update_mock.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_wordle_game_add_guess_loss(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
     bot_mock = mocks.DummyStrachyBot()
     game._bot = bot_mock
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
 
     # 5 wrong guesses
     for _ in range(5):
         await game.add_guess("pears")
-        assert game.get_status() == models.EMatchStatus.PENDING
+        assert game.status == models.EMatchStatus.PENDING
+
+    update_mock.assert_called()
 
     # 6th wrong guess triggers LOSS
+    update_mock.reset_mock()
     await game.add_guess("pears")
-    assert game.get_status() == models.EMatchStatus.LOSS
-    assert game.get_guesses_count() == 6
+    assert game.status == models.EMatchStatus.LOSS
+    assert game.guesses_count == 6
     update_mock.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_wordle_game_add_guess_not_pending() -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
     game._status = models.EMatchStatus.WIN
 
     await game.add_guess("pears")
     # Guess should be ignored
-    assert game.get_guesses_count() == 0
+    assert game.guesses_count == 0
 
 
 @pytest.mark.asyncio
 async def test_wordle_game_guess_random_word(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
 
     call_count = 0
@@ -197,22 +202,22 @@ async def test_wordle_game_guess_random_word(monkeypatch: pytest.MonkeyPatch) ->
     game._guesses = ["pears"]
 
     await game.guess_random_word()
-    assert game.get_guesses_count() == 2
-    assert game.get_last_guess() == "about"
+    assert game.guesses_count == 2
+    assert game.last_guess == "about"
 
 
 @pytest.mark.asyncio
 async def test_wordle_game_handle_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     bot_mock = mocks.DummyStrachyBot()
     game._bot = bot_mock
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
 
     await game.handle_timeout()
-    assert game.get_status() == models.EMatchStatus.TIMEOUT
+    assert game.status == models.EMatchStatus.TIMEOUT
     update_mock.assert_called_once()
 
     # Call it again when not pending, it should do nothing
@@ -223,16 +228,16 @@ async def test_wordle_game_handle_timeout(monkeypatch: pytest.MonkeyPatch) -> No
 
 @pytest.mark.asyncio
 async def test_wordle_game_handle_surrender(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     bot_mock = mocks.DummyStrachyBot()
     game._bot = bot_mock
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
 
     await game.handle_surrender()
-    assert game.get_status() == models.EMatchStatus.SURRENDER
+    assert game.status == models.EMatchStatus.SURRENDER
     update_mock.assert_called_once()
 
     # Call it again when not pending, it should do nothing
@@ -242,7 +247,7 @@ async def test_wordle_game_handle_surrender(monkeypatch: pytest.MonkeyPatch) -> 
 
 
 def test_wordle_game_categorize_word() -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
 
     # Some misplaced, some incorrect
@@ -256,7 +261,7 @@ def test_wordle_game_categorize_word() -> None:
     ]
 
     # Verify available letters updates
-    avail = game.get_available_letters()
+    avail = game.available_letters
     assert avail["p"] == WordleLetterCategory.MISPLACED
     assert avail["e"] == WordleLetterCategory.MISPLACED
     assert avail["a"] == WordleLetterCategory.MISPLACED
@@ -275,7 +280,7 @@ def test_wordle_game_categorize_word() -> None:
     ]
 
     # Verify available letters updates
-    avail = game.get_available_letters()
+    avail = game.available_letters
     assert avail["p"] == WordleLetterCategory.CORRECT
     assert avail["e"] == WordleLetterCategory.MISPLACED
     assert avail["a"] == WordleLetterCategory.MISPLACED
@@ -294,7 +299,7 @@ def test_wordle_game_categorize_word() -> None:
     ]
 
     # Verify available letters updates
-    avail = game.get_available_letters()
+    avail = game.available_letters
     assert avail["p"] == WordleLetterCategory.CORRECT
     assert avail["e"] == WordleLetterCategory.CORRECT
     assert avail["a"] == WordleLetterCategory.CORRECT
@@ -304,25 +309,25 @@ def test_wordle_game_categorize_word() -> None:
 
 
 def test_wordle_view_build_embed() -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    user = mocks.DummyUser(user_id=123, username="Alice")
+    game = WordleGame(player=user, is_daily=False)
     view = WordleView(game=game)
-    user = mocks.create_dummy_user(123, "Alice")
 
-    embed, file = view.build_embed(user)
+    embed, file = view.build_embed()
     assert embed.title == "Wordle"
     assert embed.author.name == "Alice"
     assert len(embed.fields) == 9
     assert file.filename == "icon.png"
 
     # Daily challenge title contains date
-    game_daily = WordleGame(player_id=123, is_daily=True)
+    game_daily = WordleGame(player=user, is_daily=True)
     view_daily = WordleView(game=game_daily)
-    embed_daily, _ = view_daily.build_embed(user)
+    embed_daily, _ = view_daily.build_embed()
     assert "Wordle 20" in cast(str, embed_daily.title)
 
 
 def test_wordle_view_disable_buttons() -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     view = WordleView(game=game)
 
     for child in view.children:
@@ -337,7 +342,7 @@ def test_wordle_view_disable_buttons() -> None:
 
 
 def test_wordle_view_get_letter_category_emoji() -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     view = WordleView(game=game)
 
     assert view._get_letter_category_emoji(WordleLetterCategory.CORRECT) is not None
@@ -350,7 +355,7 @@ def test_wordle_view_get_letter_category_emoji() -> None:
 
 
 def test_wordle_view_uncover_word() -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
     view = WordleView(game=game)
 
@@ -358,7 +363,7 @@ def test_wordle_view_uncover_word() -> None:
     assert val is not None
 
     # Spoiler wrapping for daily
-    game_daily = WordleGame(player_id=123, is_daily=True)
+    game_daily = WordleGame(player=mocks.DummyUser(), is_daily=True)
     game_daily._secret_word = "apple"
     view_daily = WordleView(game=game_daily)
     val_daily = view_daily._uncover_word("apple")
@@ -366,7 +371,7 @@ def test_wordle_view_uncover_word() -> None:
 
 
 def test_wordle_view_update_embed() -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
     view = WordleView(game=game)
 
@@ -420,45 +425,46 @@ def test_wordle_view_update_embed() -> None:
 
 @pytest.mark.asyncio
 async def test_wordle_view_interaction_check(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    user = mocks.DummyUser(user_id=123)
+    game = WordleGame(player=user, is_daily=False)
     view = WordleView(game=game)
 
     # Eligible
-    interaction_valid = mocks.DummyInteraction(user_id=123, username="Alice")
+    interaction_valid = mocks.DummyInteraction(user=user)
     assert await view.interaction_check(interaction_valid) is True
 
     # Ineligible
-    interaction_invalid = mocks.DummyInteraction(user_id=456, username="Bob")
+    interaction_invalid = mocks.DummyInteraction(user=mocks.DummyUser(user_id=456, username="Bob"))
     assert await view.interaction_check(interaction_invalid) is False
     assert interaction_invalid.response.send_message.called
 
     # Exception
-    monkeypatch.setattr(game, "get_player_id", MagicMock(side_effect=Exception("Failed")))
+    monkeypatch.setattr(WordleGame, "player", PropertyMock(side_effect=Exception("Failed")))
     error_mock = AsyncMock()
     monkeypatch.setattr("modules.wordle.ui.ui.handle_error", error_mock)
 
-    interaction_err = mocks.DummyInteraction(user_id=123, username="Alice")
+    interaction_err = mocks.DummyInteraction(user=user)
     assert await view.interaction_check(interaction_err) is False
     error_mock.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_wordle_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
     view = WordleView(game=game)
 
     # Message is None
     view.message = None
     await view.on_timeout()
-    assert game.get_status() == models.EMatchStatus.PENDING
+    assert game._status == models.EMatchStatus.PENDING
 
     # Game is WIN (not PENDING)
     game._status = models.EMatchStatus.WIN
     message_mock = AsyncMock()
     view.message = message_mock
     await view.on_timeout()
-    assert game.get_status() == models.EMatchStatus.WIN
+    assert game._status == models.EMatchStatus.WIN
     message_mock.edit.assert_not_called()
 
     # Normal timeout path
@@ -472,18 +478,19 @@ async def test_wordle_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     view.message = message_mock
 
     update_mock = AsyncMock()
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", update_mock)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
 
     await view.on_timeout()
 
-    assert game.get_status() == models.EMatchStatus.TIMEOUT
+    assert game._status == models.EMatchStatus.TIMEOUT
     assert not any(field.name == "Timeout" for field in embed.fields)
     message_mock.edit.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_wordle_view_enter_guess_button(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    user = mocks.DummyUser(user_id=123)
+    game = WordleGame(player=user, is_daily=False)
     view = WordleView(game=game)
 
     embed = discord.Embed(title="Wordle")
@@ -492,7 +499,7 @@ async def test_wordle_view_enter_guess_button(monkeypatch: pytest.MonkeyPatch) -
     message_mock.embeds = [embed]
     view.message = message_mock
 
-    interaction = mocks.DummyInteraction(user_id=123, username="Alice")
+    interaction = mocks.DummyInteraction(user=user)
 
     # Happy path
     callback = view.enter_guess_button.callback
@@ -513,7 +520,8 @@ async def test_wordle_view_enter_guess_button(monkeypatch: pytest.MonkeyPatch) -
 
 @pytest.mark.asyncio
 async def test_wordle_view_random_guess_button(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    user = mocks.DummyUser(user_id=123)
+    game = WordleGame(player=user, is_daily=False)
     view = WordleView(game=game)
 
     embed = discord.Embed(title="Wordle")
@@ -522,7 +530,7 @@ async def test_wordle_view_random_guess_button(monkeypatch: pytest.MonkeyPatch) 
     message_mock.embeds = [embed]
     view.message = message_mock
 
-    interaction = mocks.DummyInteraction(user_id=123, username="Alice")
+    interaction = mocks.DummyInteraction(user=user)
 
     confirm_view_inst = None
     original_init = ui.ConfirmView.__init__
@@ -546,7 +554,7 @@ async def test_wordle_view_random_guess_button(monkeypatch: pytest.MonkeyPatch) 
     guess_mock = AsyncMock()
     monkeypatch.setattr(game, "guess_random_word", guess_mock)
 
-    confirm_interaction = mocks.DummyInteraction(user_id=123, username="Alice")
+    confirm_interaction = mocks.DummyInteraction(user=user)
     confirm_interaction.message = message_mock
 
     await confirm_view_inst._on_confirm(confirm_interaction)
@@ -566,7 +574,8 @@ async def test_wordle_view_random_guess_button(monkeypatch: pytest.MonkeyPatch) 
 
 @pytest.mark.asyncio
 async def test_wordle_view_give_up_button(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    user = mocks.DummyUser(user_id=123)
+    game = WordleGame(player=user, is_daily=False)
     view = WordleView(game=game)
 
     embed = discord.Embed(title="Wordle")
@@ -575,7 +584,7 @@ async def test_wordle_view_give_up_button(monkeypatch: pytest.MonkeyPatch) -> No
     message_mock.embeds = [embed]
     view.message = message_mock
 
-    interaction = mocks.DummyInteraction(user_id=123, username="Alice")
+    interaction = mocks.DummyInteraction(user=user)
 
     confirm_view_inst = None
     original_init = ui.ConfirmView.__init__
@@ -599,7 +608,7 @@ async def test_wordle_view_give_up_button(monkeypatch: pytest.MonkeyPatch) -> No
     surrender_mock = AsyncMock()
     monkeypatch.setattr(game, "handle_surrender", surrender_mock)
 
-    confirm_interaction = mocks.DummyInteraction(user_id=123, username="Alice")
+    confirm_interaction = mocks.DummyInteraction(user=user)
     confirm_interaction.message = message_mock
 
     await confirm_view_inst._on_confirm(confirm_interaction)
@@ -618,7 +627,7 @@ async def test_wordle_view_give_up_button(monkeypatch: pytest.MonkeyPatch) -> No
 
 
 def test_wordle_guess_modal_get_uncovered_guess() -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
     view = WordleView(game=game)
     modal = WordleGuessModal(parent_view=view)
@@ -630,14 +639,14 @@ def test_wordle_guess_modal_get_uncovered_guess() -> None:
 
 @pytest.mark.asyncio
 async def test_wordle_guess_modal_on_submit(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = WordleGame(player_id=123, is_daily=False)
+    user = mocks.DummyUser(user_id=123, username="Alice")
+    game = WordleGame(player=user, is_daily=False)
     game._secret_word = "apple"
     view = WordleView(game=game)
 
     embed = discord.Embed(title="Wordle")
     embed.add_field(name="Status", value="active")
-    interaction = mocks.DummyInteraction(user_id=123, username="Alice")
-    interaction.user = mocks.create_dummy_user(123, "Alice")
+    interaction = mocks.DummyInteraction(user=user)
 
     monkeypatch.setattr("modules.wordle.ui.ui.embed.extract", lambda *args, **kwargs: embed)
 

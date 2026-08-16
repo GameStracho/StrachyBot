@@ -3,6 +3,3 @@ ruff == 0.16.0
 mypy == 2.3.0
 pytest == 9.1.1
 pytest-asyncio == 1.4.0
-
-# Management of enums during migration generation
-alembic-postgresql-enum == 1.10.0

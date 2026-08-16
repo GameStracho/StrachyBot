@@ -6,7 +6,7 @@ from datetime import UTC, date, datetime
 from enum import Enum
 
 import console
-from shared import StrachyBot, execute_db_operation, models
+from shared import StrachyBot, models, types
 
 from .repository import create_match, update_match
 
@@ -148,19 +148,21 @@ class WordleDictionary:
 
 class WordleGame:
     _bot: StrachyBot | None
+
     _match_id: int
     _status: models.EMatchStatus
-    _player_id: int
+    _player: types.User
     _secret_word: str
     _is_daily: bool
     _guesses: list[str]
+
     _available_letters: dict[str, WordleLetterCategory]
     _dictionary: WordleDictionary
 
-    def __init__(self, player_id: int, is_daily: bool) -> None:
+    def __init__(self, player: types.User, is_daily: bool) -> None:
         self._bot = None
         self._match_id = -1
-        self._player_id = player_id
+        self._player = player
         self._is_daily = is_daily
         self._guesses = []
         self._status = models.EMatchStatus.PENDING
@@ -183,49 +185,44 @@ class WordleGame:
 
     def __str__(self) -> str:
         return (
-            f"Wordle game {self._match_id} for user {self._player_id} "
+            f"Wordle game {self._match_id} for user {self._player} "
             f"(secret_word: {self._secret_word}, guesses: {self._guesses},"
             f"is_daily: {self._is_daily})"
         )
 
-    async def _update_database_record(self) -> None:
-        if not self._bot:
-            return
-
-        await execute_db_operation(
-            target=self._bot,
-            db_func=update_match,
-            match_id=self._match_id,
-            status=self._status,
-            guesses_count=len(self._guesses),
-            guesses=self._guesses,
-        )
-
-    def get_match_id(self) -> int:
+    @property
+    def match_id(self) -> int:
         return self._match_id
 
-    def get_player_id(self) -> int:
-        return self._player_id
+    @property
+    def player(self) -> types.User:
+        return self._player
 
-    def get_secret_word(self) -> str:
+    @property
+    def secret_word(self) -> str:
         return self._secret_word
 
+    @property
     def is_daily(self) -> bool:
         return self._is_daily
 
-    def get_guesses_count(self) -> int:
+    @property
+    def guesses_count(self) -> int:
         return len(self._guesses)
 
-    def get_available_letters(self) -> dict[str, WordleLetterCategory]:
+    @property
+    def available_letters(self) -> dict[str, WordleLetterCategory]:
         return self._available_letters
 
-    def get_last_guess(self) -> str:
+    @property
+    def last_guess(self) -> str:
         if not len(self._guesses):
             return ""
 
         return self._guesses[len(self._guesses) - 1]
 
-    def get_status(self) -> models.EMatchStatus:
+    @property
+    def status(self) -> models.EMatchStatus:
         return self._status
 
     def is_valid_word(self, word: str) -> bool:
@@ -237,48 +234,31 @@ class WordleGame:
     async def connect_database(self, bot: StrachyBot) -> None:
         self._bot = bot
 
-        match_id: int | None = await execute_db_operation(
-            target=self._bot,
+        match_id: int | None = await self._bot.execute_db_operation(
             db_func=create_match,
-            player_id=self._player_id,
+            player_id=self._player.id,
             secret_word=self._secret_word,
             is_daily=self._is_daily,
         )
 
         if match_id:
             self._match_id = match_id
+            console.log_debug(f"/wordle: Created new database record with id {self._match_id}.")
 
-    async def add_guess(self, word: str) -> None:
-        if self._status != models.EMatchStatus.PENDING:
+    async def _update_database_record(self) -> None:
+        if not self._bot:
+            console.log_warning(f"/wordle: Database is not connected. Skipping update of {self}.")
             return
 
-        self._guesses.append(word)
-        console.log_info(
-            f"/wordle: User '{self._player_id}' guessed word '{word}' in game {self._match_id}."
+        await self._bot.execute_db_operation(
+            db_func=update_match,
+            match_id=self._match_id,
+            status=self._status,
+            guesses_count=len(self._guesses),
+            guesses=self._guesses,
         )
 
-        if word == self._secret_word:
-            console.log_info(f"/wordle: User '{self._player_id}' won game {self._match_id}.")
-            self._status = models.EMatchStatus.WIN
-            await self._update_database_record()
-            return
-
-        if len(self._guesses) == 6:
-            console.log_info(f"/wordle: User '{self._player_id}' lost game {self._match_id}.")
-            self._status = models.EMatchStatus.LOSS
-            await self._update_database_record()
-
-    async def guess_random_word(self) -> None:
-        random_guess: str = self._dictionary.get_random_allowed_guess()
-
-        while self.is_previous_guess(random_guess):
-            random_guess = self._dictionary.get_random_allowed_guess()
-
-        console.log_info(
-            f"/wordle: generated random word '{random_guess}' for game {self._match_id}"
-        )
-
-        await self.add_guess(word=random_guess)
+        console.log_debug(f"/wordle: Updated database record for game {self._match_id}.")
 
     async def handle_timeout(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
@@ -288,11 +268,44 @@ class WordleGame:
         self._status = models.EMatchStatus.TIMEOUT
         await self._update_database_record()
 
+    async def add_guess(self, word: str) -> None:
+        if self._status != models.EMatchStatus.PENDING:
+            return
+
+        self._guesses.append(word)
+        console.log_info(
+            f"/wordle: User {self._player} guessed word '{word}' in game {self._match_id}."
+        )
+
+        if word == self._secret_word:
+            console.log_info(f"/wordle: User {self._player} won game {self._match_id}.")
+            self._status = models.EMatchStatus.WIN
+            await self._update_database_record()
+            return
+
+        if len(self._guesses) == 6:
+            console.log_info(f"/wordle: User {self._player} lost game {self._match_id}.")
+            self._status = models.EMatchStatus.LOSS
+
+        await self._update_database_record()
+
+    async def guess_random_word(self) -> None:
+        random_guess: str = self._dictionary.get_random_allowed_guess()
+
+        while self.is_previous_guess(random_guess):
+            random_guess = self._dictionary.get_random_allowed_guess()
+
+        console.log_info(
+            f"/wordle: Generated random word '{random_guess}' for game {self._match_id}"
+        )
+
+        await self.add_guess(word=random_guess)
+
     async def handle_surrender(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        console.log_info(f"/wordle: Player '{self._player_id}' gave up game {self._match_id}.")
+        console.log_info(f"/wordle: User {self._player} gave up game {self._match_id}.")
         self._status = models.EMatchStatus.SURRENDER
         await self._update_database_record()
 

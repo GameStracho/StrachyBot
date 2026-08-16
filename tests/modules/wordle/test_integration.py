@@ -7,24 +7,19 @@ import pytest
 from modules.wordle.cogs import WordleCog
 from modules.wordle.game import WordleGame
 from modules.wordle.ui import WordleView
-from shared import bot, models
+from shared import StrachyBot, bot, models
 from tests import mocks
 
 
 @pytest.mark.asyncio
 async def test_wordle_cog_starts_game_and_sends_embed(monkeypatch: pytest.MonkeyPatch) -> None:
-    interaction = mocks.DummyInteraction(user_id=13, username="Alice")
-    interaction.user = mocks.create_dummy_user(13, "Alice")
+    interaction = mocks.DummyInteraction(mocks.DummyUser(user_id=13, username="Alice"))
 
     async def fake_create_match(*args: Any, **kwargs: Any) -> int:
         return 42
 
-    monkeypatch.setattr(
-        "modules.wordle.game.execute_db_operation", mocks.dummy_execute_db_operation
-    )
-    monkeypatch.setattr(
-        "modules.wordle.cogs.execute_db_operation", mocks.dummy_execute_db_operation
-    )
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", mocks.dummy_execute_db_operation)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", mocks.dummy_execute_db_operation)
     monkeypatch.setattr("modules.wordle.game.create_match", fake_create_match)
 
     mock_msg = AsyncMock(spec=discord.Message)
@@ -41,8 +36,7 @@ async def test_wordle_cog_starts_game_and_sends_embed(monkeypatch: pytest.Monkey
 
 @pytest.mark.asyncio
 async def test_wordle_cog_daily_challenge_not_played(monkeypatch: pytest.MonkeyPatch) -> None:
-    interaction = mocks.DummyInteraction(user_id=13, username="Alice")
-    interaction.user = mocks.create_dummy_user(13, "Alice")
+    interaction = mocks.DummyInteraction(user=mocks.DummyUser(user_id=13, username="Alice"))
 
     async def fake_execute_db_operation(
         target: Any, db_func: Any, *args: Any, **kwargs: Any
@@ -53,8 +47,8 @@ async def test_wordle_cog_daily_challenge_not_played(monkeypatch: pytest.MonkeyP
             return 42
         return await db_func(None, *args, **kwargs)
 
-    monkeypatch.setattr("modules.wordle.cogs.execute_db_operation", fake_execute_db_operation)
-    monkeypatch.setattr("modules.wordle.game.execute_db_operation", fake_execute_db_operation)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", fake_execute_db_operation)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", fake_execute_db_operation)
 
     cog = WordleCog(bot=bot.StrachyBot())
     wordle_callback = cast(Any, cog.wordle.callback)
@@ -66,8 +60,7 @@ async def test_wordle_cog_daily_challenge_not_played(monkeypatch: pytest.MonkeyP
 
 @pytest.mark.asyncio
 async def test_wordle_cog_daily_challenge_already_played(monkeypatch: pytest.MonkeyPatch) -> None:
-    interaction = mocks.DummyInteraction(user_id=13, username="Alice")
-    interaction.user = mocks.create_dummy_user(13, "Alice")
+    interaction = mocks.DummyInteraction(user=mocks.DummyUser(user_id=13, username="Alice"))
 
     async def fake_execute_db_operation(
         target: Any, db_func: Any, *args: Any, **kwargs: Any
@@ -76,7 +69,7 @@ async def test_wordle_cog_daily_challenge_already_played(monkeypatch: pytest.Mon
             return True
         return None
 
-    monkeypatch.setattr("modules.wordle.cogs.execute_db_operation", fake_execute_db_operation)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", fake_execute_db_operation)
 
     cog = WordleCog(bot=bot.StrachyBot())
     wordle_callback = cast(Any, cog.wordle.callback)
@@ -85,19 +78,23 @@ async def test_wordle_cog_daily_challenge_already_played(monkeypatch: pytest.Mon
 
     assert interaction.response.send_message.await_count == 1
     _, kwargs = interaction.response.send_message.call_args
-    assert "already played" in kwargs.get("content", "")
+    embed: discord.Embed | None = kwargs.get("embed") or (
+        kwargs.get("embeds")[0] if kwargs.get("embeds") else None
+    )
+
+    assert embed is not None
+    assert "already played" in (embed.description or "")
     assert kwargs.get("ephemeral") is True
 
 
 @pytest.mark.asyncio
 async def test_wordle_cog_error_handling(monkeypatch: pytest.MonkeyPatch) -> None:
-    interaction = mocks.DummyInteraction(user_id=13, username="Alice")
-    interaction.user = mocks.create_dummy_user(13, "Alice")
+    interaction = mocks.DummyInteraction(user=mocks.DummyUser(user_id=13, username="Alice"))
 
     async def fake_execute_db_operation(*args: Any, **kwargs: Any) -> Any:
         raise mocks.TestError("DB Error")
 
-    monkeypatch.setattr("modules.wordle.cogs.execute_db_operation", fake_execute_db_operation)
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", fake_execute_db_operation)
 
     error_mock = AsyncMock()
     monkeypatch.setattr("modules.wordle.cogs.ui.handle_error", error_mock)
@@ -114,7 +111,7 @@ async def test_wordle_cog_error_handling(monkeypatch: pytest.MonkeyPatch) -> Non
 async def test_wordle_view_timeout_disables_buttons_and_updates_db(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    game = WordleGame(player_id=8, is_daily=False)
+    game = WordleGame(player=mocks.DummyUser(user_id=8), is_daily=False)
     game._match_id = 55
     game._secret_word = "apple"
     game._bot = mocks.DummyStrachyBot()
@@ -133,13 +130,11 @@ async def test_wordle_view_timeout_disables_buttons_and_updates_db(
     view.message = mock_message
 
     update_match_mock = AsyncMock(return_value=True)
-    monkeypatch.setattr(
-        "modules.wordle.game.execute_db_operation", mocks.dummy_execute_db_operation
-    )
+    monkeypatch.setattr(StrachyBot, "execute_db_operation", mocks.dummy_execute_db_operation)
     monkeypatch.setattr("modules.wordle.game.update_match", update_match_mock)
 
     await view.on_timeout()
 
-    assert game.get_status() == models.EMatchStatus.TIMEOUT
+    assert game.status == models.EMatchStatus.TIMEOUT
     update_match_mock.assert_called_once()
     assert all(child.disabled for child in view.children if isinstance(child, discord.ui.Button))

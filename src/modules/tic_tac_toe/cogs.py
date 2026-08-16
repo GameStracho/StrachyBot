@@ -3,10 +3,9 @@ from discord import app_commands
 from discord.ext import commands
 
 import console
-from shared import StrachyBot, execute_db_operation, ui
+from shared import StrachyBot, ui
 
 from .game import TicTacToeGame
-from .repository import create_match
 from .ui import TicTacToeView
 
 
@@ -36,55 +35,35 @@ class TicCog(commands.Cog):
                 f"({interaction.user.id})"
             )
 
-            player: discord.User
+            if opponent.id == interaction.user.id:
+                console.log_debug(
+                    "/tic-tac-toe: Player and opponent have the same id. Game start abandoned."
+                )
 
-            if isinstance(interaction.user, discord.User):
-                player = interaction.user
-            else:
-                temp_player: discord.User | None = await self.bot.fetch_user(interaction.user.id)
-                assert temp_player
-                player = temp_player
+                embed, icon = ui.embed.build_warning(
+                    message=(
+                        "You cannot play against yourself!\n"
+                        "Select a bot as your opponent if you want to play singleplayer. "
+                    )
+                )
 
+                await interaction.response.send_message(
+                    embed=embed,
+                    file=icon,
+                    ephemeral=True,
+                )
+                return
+
+            player_emoji, opponent_emoji = ui.get_player_emojis()
             game: TicTacToeGame = TicTacToeGame(
-                player=player, opponent=opponent, grid_size=grid_size.value
+                player=ui.get_user(user=interaction.user, emoji=player_emoji),
+                opponent=ui.get_user(user=opponent, emoji=opponent_emoji),
+                grid_size=grid_size.value,
             )
-
-            match_id: int | None = await execute_db_operation(
-                target=self.bot,
-                db_func=create_match,
-                player_id=game.get_player().id,
-                opponent_id=game.get_opponent().id,
-                grid_size=game.get_grid_size(),
-            )
-
-            if match_id:
-                game.match_id = match_id
+            await game.connect_database(bot=self.bot)
 
             view: TicTacToeView = TicTacToeView(game=game, timeout=60.0)
-            player_emoji, opponent_emoji = ui.get_player_emojis()
-            player_color, _ = ui.get_player_colors()
-            embed = discord.Embed(color=player_color, title="Tic-Tac-Toe")
-            embed.set_author(
-                name=interaction.user.display_name, icon_url=interaction.user.display_avatar
-            )
-
-            embed.add_field(
-                name="Players",
-                value=(
-                    f"{player_emoji} {game.get_player().mention}\n{opponent_emoji} "
-                    f"{game.get_opponent().mention}"
-                ),
-                inline=False,
-            )
-            embed.add_field(
-                name="Status",
-                value=f"It's {player_emoji} {game.get_player().mention}'s turn.",
-                inline=False,
-            )
-            embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=view), inline=False)
-
-            icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
-            embed.set_thumbnail(url=icon_url)
+            embed, icon = view.build_embed()
 
             console.log_info(
                 f"/tic-tac-toe: User {interaction.user.display_name} ({interaction.user.id}) "

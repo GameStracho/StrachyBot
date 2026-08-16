@@ -1,21 +1,40 @@
-## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-10
+## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-16
 
 ### Added
-- [TODO.md](TODO.md) to-do list
+- To-do list ([TODO.md](TODO.md) )
+- Enabled `strict` type checking in CI
+- Enabled database interface (`adminer` service) in production
+- Scripts `restore.sh` for restoring backups and `setup.sh` for setting up the environment
+- Updates of database records on each game update
+- Custom shared type `User`
+- Logging of used valid commands
 
 ### Changed
 - Renamed custom AI agent
-- Updated `ruff` configuration - check line length, spacing, import order, naming style, etc.
-- Formatted source code
-- Moved console log functions to separate module `console`
+- Updated formatter (`ruff`) configuration - check line length, spacing, import order, naming style, etc.
+- Moved console log functions to a separate module `console`
 - Restructured `shared` module and simplified `shared` imports
-- Moved `src/images` to `src/shared/images`
+- Balanced `Tic-Tac-Toe` 4x4 and 5x5 boards
+- Separated game logic of all mini-games from UI
+- Renamed `utils` module to `info` and changed its color from `blue` to `teal`
+- Unified code style of all mini-games
+- Improved appearance of warning messages
 
 ### Removed
 - Google Drive backups
 - User statistics recorded into JSON files
 - Files that are not used anymore
-- member `_timeout` from `TicTacToeView`
+- Unused `/announcement` command
+- Adminer auto-login
+
+### Fixed
+- Increased `Trivia` timeout to 60 seconds
+- Enabled permanent database storage for `postgres` service
+- Moved `alembic-postgresql-enum` from `requirements-dev` to `requirements`
+- Prevented starting the `Tic-Tac-Toe` game against oneself
+- Automated `Tic-Tac-Toe` auto-play moves
+- Hiding of secret words in `Wordle` daily challenge
+- Reduced API calls by caching `Trivia` questions
 
 ---
 

@@ -58,10 +58,6 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
 
     Returns true on success.
     """
-    if status == EMatchStatus.PENDING:
-        console.log_warning(f"trivia: Cannot update match status to {status}.")
-        return False
-
     console.log_debug(f"trivia: Updating match ({match_id}) with status ({status})...")
 
     async with session.begin():
