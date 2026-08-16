@@ -52,8 +52,6 @@ def get_player_colors(date: datetime | None = None) -> tuple[discord.Color, disc
     """
     Returns player's and opponent's colors based on selected date.
     """
-    return (discord.Color.purple(), discord.Color.orange())
-
     if not date:
         date = datetime.now(UTC)
 
@@ -97,8 +95,6 @@ def get_player_emojis(date: datetime | None = None) -> tuple[str, str]:
     """
     Returns player's and opponent's emojis based on selected date.
     """
-    return ("🟣", "🟠")
-
     if not date:
         date = datetime.now(UTC)
 
