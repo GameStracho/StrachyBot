@@ -1,8 +1,5 @@
 ## [2.0.0] Harder, Better, Faster, Stronger
 
-### Polishing
-- aktualizovat README - přidat zmínku o existujících skriptech a co dělají, zjednodušit setup a zmínit adminer
-
 ### Better Console Logs
 
 - logovat zprávy přímo do databáze
