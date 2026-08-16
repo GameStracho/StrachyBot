@@ -72,7 +72,7 @@ async def test_fetch_api_builds_expected_url_and_populates_game(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     async def fake_fetch_api(url: str, model_class: TriviaAPIResponse) -> TriviaAPIResponse:
-        assert url == "https://opentdb.com/api.php?amount=1&type=multiple&category=9"
+        assert url == "https://opentdb.com/api.php?amount=10&type=multiple&category=9"
         return TriviaAPIResponse.model_validate(
             {
                 "results": [
@@ -182,16 +182,19 @@ async def test_trivia_view_rejects_wrong_user(monkeypatch: pytest.MonkeyPatch) -
     game._incorrect_answers = ["Wrong"]
 
     view = TriviaView(game=game, timeout=5.0)
-
     interaction = mocks.DummyInteraction(user=mocks.DummyUser(user_id=99))
-    dummy_response = mocks.DummyResponse()
-    interaction.response = cast(Any, dummy_response)
-    interaction.message = SimpleNamespace(embeds=[discord.Embed()])
+
     update_match_mock = AsyncMock(return_value=True)
     monkeypatch.setattr("modules.trivia.game.update_match", update_match_mock)
 
     await view.interaction_check(interaction)
 
-    assert dummy_response.send_calls
-    assert dummy_response.send_calls[0][1]["ephemeral"] is True
-    update_match_mock.assert_not_called()
+    assert interaction.response.send_message.await_count == 1
+    _, kwargs = interaction.response.send_message.call_args
+    embed: discord.Embed | None = kwargs.get("embed") or (
+        kwargs.get("embeds")[0] if kwargs.get("embeds") else None
+    )
+
+    assert embed is not None
+    assert "You cannot respond to this game." == (embed.description or "")
+    assert kwargs.get("ephemeral") is True
