@@ -25,6 +25,7 @@
 - User statistics recorded into JSON files
 - Files that are not used anymore
 - Unused `/announcement` command
+- Adminer auto-login
 
 ### Fixed
 - Increased `Trivia` timeout to 60 seconds
