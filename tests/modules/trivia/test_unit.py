@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock
 import discord
 import pytest
 
+from modules.trivia.api import TriviaAPIResponse
 from modules.trivia.game import TriviaGame
 from modules.trivia.models import ETriviaCategory, ETriviaDifficulty
-from modules.trivia.response import TriviaResponse
 from modules.trivia.ui import TriviaButton, TriviaView
 from shared import helpers, models
 from tests import mocks
@@ -56,10 +56,10 @@ def test_trivia_response_parses_html_and_normalizes_values() -> None:
         ]
     }
 
-    response = TriviaResponse.model_validate(payload)
+    response = TriviaAPIResponse.model_validate(payload)
     result = response.results[0]
 
-    assert isinstance(response, TriviaResponse)
+    assert isinstance(response, TriviaAPIResponse)
     assert result.difficulty == ETriviaDifficulty.EASY
     assert result.category == ETriviaCategory.VIDEO_GAMES
     assert result.question == 'What is "A"?'
@@ -71,9 +71,9 @@ def test_trivia_response_parses_html_and_normalizes_values() -> None:
 async def test_fetch_api_builds_expected_url_and_populates_game(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def fake_fetch_api(url: str, model_class: TriviaResponse) -> TriviaResponse:
+    async def fake_fetch_api(url: str, model_class: TriviaAPIResponse) -> TriviaAPIResponse:
         assert url == "https://opentdb.com/api.php?amount=1&type=multiple&category=9"
-        return TriviaResponse.model_validate(
+        return TriviaAPIResponse.model_validate(
             {
                 "results": [
                     {
@@ -106,8 +106,8 @@ async def test_fetch_api_builds_expected_url_and_populates_game(
 async def test_fetch_api_raises_when_api_returns_no_results(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def fake_fetch_api(_url: str, _model_class: TriviaResponse) -> TriviaResponse:
-        return TriviaResponse(results=[])
+    async def fake_fetch_api(_url: str, _model_class: TriviaAPIResponse) -> TriviaAPIResponse:
+        return TriviaAPIResponse(results=[])
 
     monkeypatch.setattr(target=helpers, name="fetch_api", value=fake_fetch_api)
 

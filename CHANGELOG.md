@@ -33,6 +33,7 @@
 - Prevented starting the `Tic-Tac-Toe` game against oneself
 - Automated `Tic-Tac-Toe` auto-play moves
 - Hiding of secret words in `Wordle` daily challenge
+- Reduced API calls by caching `Trivia` questions
 
 ---
 

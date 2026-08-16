@@ -1,9 +1,9 @@
 import console
-from shared import StrachyBot, helpers, models, types
+from shared import StrachyBot, models, types
 
+from .api import TriviaQuestion, api_manager
 from .models import ETriviaCategory, ETriviaDifficulty
 from .repository import create_match, update_match
-from .response import TriviaResponse
 
 
 class TriviaGame:
@@ -41,23 +41,15 @@ class TriviaGame:
         )
 
     async def fetch_api(self) -> None:
-        url: str = (
-            f"https://opentdb.com/api.php?amount=1&type=multiple&category={int(self._category)}"
+        fetched: TriviaQuestion = await api_manager.get_question(
+            category=self._category, difficulty=self._difficulty
         )
 
-        if self._difficulty != ETriviaDifficulty.ANY:
-            url = f"{url}&difficulty={str(self._difficulty).lower()}"
-
-        response: TriviaResponse = await helpers.fetch_api(url, TriviaResponse)
-
-        if not len(response.results):
-            raise types.NoAPIResponseError()
-
-        self._category = response.results[0].category
-        self._difficulty = response.results[0].difficulty
-        self._question = response.results[0].question
-        self._correct_answer = response.results[0].correct_answer
-        self._incorrect_answers = response.results[0].incorrect_answers
+        self._category = fetched.category
+        self._difficulty = fetched.difficulty
+        self._question = fetched.question
+        self._correct_answer = fetched.correct_answer
+        self._incorrect_answers = fetched.incorrect_answers
 
     @property
     def match_id(self) -> int:
