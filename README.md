@@ -1,22 +1,18 @@
-# 🤖 Discord Bot
+# 🤖 StrachyBot
 
-[![Python Version](https://img.shields.io/badge/python-3.11-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![Discord.py](https://img.shields.io/badge/discord.py-v2.3.2-5865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discordpy.readthedocs.io/)
-[![Docker](https://img.shields.io/badge/docker-compose-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
-[![Adminer](https://img.shields.io/badge/Adminer-dockette%2Fadminer-2563eb.svg?style=for-the-badge&logo=adminer&logoColor=white)](https://hub.docker.com/r/dockette/adminer)
-[![Platform](https://img.shields.io/badge/platform-Raspberry%20Pi%205-A22846.svg?style=for-the-badge&logo=raspberrypi&logoColor=white)](https://www.raspberrypi.com)
 [![](https://img.shields.io/badge/Invite_Bot-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/oauth2/authorize?client_id=1024635572591001630&permissions=378880&integration_type=0&scope=bot+applications.commands)
 
 ## 📌 About
 Discord bot with fun mini-games like *Trivia*, *Wordle* and *Tic-Tac-Toe* built with **Python** and **[discord.py](https://discordpy.readthedocs.io/en/stable/)**. 
+
+---
 
 ## 🎮 Features & Commands
 
 | Command | Description | Showcase |
 |---|---|---|
 | `/wordle` | Try to guess a 5-letter word in 6 tries. | ![Wordle Demo](docs/assets/wordle-demo.png) |
-| `/tic-tac-toe @user` | Challenge someone in a 1v1 Tic-Tac-Toe match. | ![TTT Demo](docs/assets/tic-tac-toe-demo.png) |
+| `/tic-tac-toe` | Challenge someone in a 1v1 Tic-Tac-Toe match. | ![TTT Demo](docs/assets/tic-tac-toe-demo.png) |
 | `/trivia` | Try to answer a quiz question by selecting 1 of 4 answers. | ![Trivia Demo](docs/assets/trivia-demo.png) |
 | `/info` | Show important information about the bot. | ![Info Demo](docs/assets/info-demo.png) |
 
