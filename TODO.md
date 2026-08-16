@@ -12,30 +12,13 @@
 - přidat více info a debug logů ke stávajícím modulům
 - zlepšit error handling (pomocí override 'on_error' metod v custom button a view třídách)
 
-### Missing tests
-- přidat chybějící testy pro moduly: Wordle, Trivia a Shared + zkontrolovat testy pro Tic-Tac-Toe a Wordle
+---
+
+## Uživatelské statistiky
 
 ---
 
-## [2.1.0] Simple commands
-
-- přidat příkaz `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
-- přidat příkaz `/coin-toss`, který hodí mincí
-- přidat příkaz `/f1`, který vypíše náhodnou hlášku s Formule 1
-- přidat příkaz `/kanye`, která výpiše náhodnou hlášku od Kanyeho Westa
-
----
-
-## [2.2.0] Songless & Rock Paper Scissors
-
-- přidat minihru `songless`
-- přídat minihru `kámen-nůžky-papír`
-
----
-
-## [2.3.0] Uživatelské statistiky
-
-## [2.4.0] Česká lokalizace
+## Česká lokalizace
 
 - vytvořit české varianty dostupných her a ostatních funkcí jako samostatné příkazy (trivia -> kvíz, wordle -> hádej slovo, tic-tac-toe -> piškvorky, info -> informace)
 - tyto české varianty budou sdílet herní logiku a UI, jenom budou mít jiné texty
@@ -44,7 +27,7 @@
 
 ---
 
-## [2.5.0] Web API
+## Web API
 
 https://share.gemini.google/prmBNFuzUWzR
 https://share.gemini.google/WblCzbkuTEP8
@@ -55,11 +38,25 @@ https://share.gemini.google/WblCzbkuTEP8
 
 ---
 
-## Nové mini-hry
+## Automatické testy
+- přidat chybějící testy pro moduly: Wordle, Trivia a Shared + zkontrolovat testy pro Tic-Tac-Toe a Wordle
+
+---
+
+## Další mini-hry
 - Songless
+- Spoj 4 (Connect 4)
+- Kámen-nůžky-papír(-spock-lizard)
+- 2048
 - Sudoku
 - Šachy
 - Lodě
 - Blackjack
 - Poker
-- Kámen-nůžky-papír(-spock-lizard)
+
+--
+
+## Další příkazy
+- `/f1`, který vypíše náhodnou hlášku z Formule 1
+- `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
+- `/coin-toss`, který hodí mincí
