@@ -22,6 +22,9 @@ class EMatchStatus(PyEnum):
     DRAW = "Draw"
     SURRENDER = "Surrender"
 
+    def __str__(self) -> str:
+        return self.value
+
 
 class Match(Base):
     __tablename__ = "match"
