@@ -15,7 +15,7 @@ class TriviaCog(commands.Cog):
         self.bot = bot
 
     @app_commands.command(
-        name="trivia", description="Try to answer a question by selecting 1 of 4 answers."
+        name="trivia", description="Try to answer a quiz question by selecting 1 of 4 answers."
     )
     async def trivia(
         self,
