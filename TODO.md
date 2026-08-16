@@ -1,7 +1,6 @@
 ## [2.0.0] Harder, Better, Faster, Stronger
 
 ### Polishing
-- přidat skripty setup.sh a setup.ps1 pro nastavení ENV proměnných
 - aktualizovat README - přidat zmínku o existujících skriptech a co dělají, zjednodušit setup a zmínit adminer
 
 ### Better Console Logs

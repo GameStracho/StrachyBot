@@ -1,10 +1,10 @@
-## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-10
+## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-16
 
 ### Added
 - To-do list ([TODO.md](TODO.md) )
 - Enabled `strict` type checking in CI
 - Enabled database interface (`adminer` service) in production
-- Script for restoring backups
+- Scripts `restore.sh` for restoring backups and `setup.sh` for setting up the environment
 - Updates of database records on each game update
 - Custom shared type `User`
 - Logging of used valid commands
