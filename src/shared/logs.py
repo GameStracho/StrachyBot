@@ -3,6 +3,38 @@ import logging
 from collections.abc import Mapping
 from types import FrameType
 from typing import Any, override
+from colorama import Fore, Style, init
+
+# Initialize colorama for cross-platform support
+init(autoreset=True)
+
+class ColoredFormatter(logging.Formatter):
+    """Custom Formatter to add colorama styling to python logging output."""
+
+    # Map log levels to colorama styles
+    LEVEL_COLORS: dict[int, str] = {
+        logging.DEBUG: Fore.BLACK + Style.BRIGHT,
+        logging.INFO: Fore.GREEN + Style.BRIGHT,
+        logging.WARNING: Fore.YELLOW + Style.BRIGHT,
+        logging.ERROR: Fore.RED + Style.BRIGHT,
+        logging.CRITICAL: Fore.MAGENTA + Style.BRIGHT,
+    }
+
+    @override
+    def format(self, record: logging.LogRecord) -> str:
+        # Get color for current log level (default to reset)
+        level_color: str = self.LEVEL_COLORS.get(record.levelno, Style.RESET_ALL)
+
+        # Style individual components
+        timestamp: str = f"{Fore.BLACK}{self.formatTime(record, '%Y-%m-%d %H:%M:%S')}{Style.RESET_ALL}"
+        module_name: str = f"{Fore.BLACK}[{record.name}]{Style.RESET_ALL}"
+        
+        # Right-pad category for clean alignment
+        level_tag:str = f"{level_color}{record.levelname:<8}{Style.RESET_ALL}"
+
+        message: str = record.getMessage()
+
+        return f"{timestamp} {module_name} {level_tag} {message}"
 
 
 class ModuleLogger(logging.Logger):
@@ -51,11 +83,8 @@ def setup_logger(level: int = logging.INFO) -> logging.Logger:
 
     if not logger.handlers:
         console_handler = logging.StreamHandler()
+        console_handler.setFormatter(ColoredFormatter())
         console_handler.setLevel(level)
-
-        # Apply your formatter
-        formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)-8s %(message)s")
-        console_handler.setFormatter(formatter)
 
         logger.addHandler(console_handler)
 

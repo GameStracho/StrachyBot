@@ -33,4 +33,10 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # asyncio.run(main())
+
+    logger.debug("Debug message.")
+    logger.info("Info message.")
+    logger.warning("Warning message.")
+    logger.error("Error message.")
+    logger.critical("Critical message.")
