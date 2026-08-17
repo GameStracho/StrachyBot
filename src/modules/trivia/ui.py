@@ -2,8 +2,7 @@ import random
 
 import discord
 
-import console
-from shared import models, types, ui
+from shared import logger, models, types, ui
 
 from .game import TriviaGame
 
@@ -36,7 +35,7 @@ class TriviaView(discord.ui.View):
                 )
             )
 
-        console.log_debug(
+        logger.debug(
             f"/trivia: New TriviaView created for game {self._game.match_id} "
             f"with {timeout}s timeout."
         )
@@ -75,16 +74,16 @@ class TriviaView(discord.ui.View):
         ui.embed.remove_field(embed=embed, name="Timeout")
 
     def disable_buttons(self) -> None:
-        console.log_debug(f"/trivia: Revealing answers for game {self._game.match_id}...")
+        logger.debug(f"/trivia: Revealing answers for game {self._game.match_id}...")
         for child in self.children:
             if isinstance(child, TriviaButton):
                 child.disable()
-        console.log_debug(f"/trivia: Answers revealed for game {self._game.match_id}.")
+        logger.debug(f"/trivia: Answers revealed for game {self._game.match_id}.")
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
             if interaction.user.id != self._game.player.id:
-                console.log_warning(
+                logger.warning(
                     f"/trivia: Ineligible user {interaction.user.display_name} "
                     f"({interaction.user.id}) "
                     f"responded to game {self._game.match_id}"
@@ -129,7 +128,7 @@ class TriviaButton(discord.ui.Button[TriviaView]):
         self._is_correct = is_correct
         self._is_selected = False
 
-        console.log_debug(
+        logger.debug(
             f"/trivia: New TriviaButton created for game {parent_view.game.match_id}: "
             f"label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
         )

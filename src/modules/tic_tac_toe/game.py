@@ -1,8 +1,7 @@
 import random
 from enum import Enum
 
-import console
-from shared import StrachyBot, models
+from shared import StrachyBot, logger, models
 from shared.types import EDirection, Position, User, Vector
 
 from .repository import create_match, update_match
@@ -133,15 +132,11 @@ class TicTacToeGame:
 
         if match_id:
             self._match_id = match_id
-            console.log_debug(
-                f"/tic-tac-toe: Created new database record with id {self._match_id}."
-            )
+            logger.debug(f"/tic-tac-toe: Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
         if not self._bot:
-            console.log_warning(
-                f"/tic-tac-toe: Database is not connected. Skipping update of {self}."
-            )
+            logger.warning(f"/tic-tac-toe: Database is not connected. Skipping update of {self}.")
             return
 
         await self._bot.execute_db_operation(
@@ -151,13 +146,13 @@ class TicTacToeGame:
             total_moves=self._total_moves,
         )
 
-        console.log_debug(f"/tic-tac-toe: Updated database record for game {self._match_id}.")
+        logger.debug(f"/tic-tac-toe: Updated database record for game {self._match_id}.")
 
     async def handle_timeout(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        console.log_info(f"/tic-tac-toe: Game {self._match_id} timed out.")
+        logger.info(f"/tic-tac-toe: Game {self._match_id} timed out.")
         self._status = models.EMatchStatus.TIMEOUT
         await self._update_database_record()
 
@@ -261,7 +256,7 @@ class TicTacToeGame:
         """
 
         if self._status != models.EMatchStatus.PENDING:
-            console.log_fail(
+            logger.error(
                 f"/tic-tac-toe: Invalid move for game {self._match_id} - the game already finished."
             )
             return False
@@ -269,14 +264,14 @@ class TicTacToeGame:
         old_value: ETicTacToeCell | None = self._grid.get_cell_value(pos=position)
 
         if not old_value:
-            console.log_fail(
+            logger.error(
                 f"/tic-tac-toe: Invalid move for game {self._match_id} "
                 f"- position {position} out of bounds."
             )
             return False
 
         if old_value != ETicTacToeCell.EMPTY:
-            console.log_fail(
+            logger.error(
                 f"/tic-tac-toe: Invalid move for game {self._match_id} "
                 f"- cell at position {position} is occupied ({old_value})."
             )

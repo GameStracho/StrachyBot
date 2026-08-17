@@ -2,8 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-import console
-from shared import StrachyBot, ui
+from shared import StrachyBot, logger, ui
 
 from .game import WordleGame
 from .repository import has_played_daily_challenge
@@ -17,7 +16,7 @@ class WordleCog(commands.Cog):
     @app_commands.command(name="wordle", description="Try to guess a 5-letter word in 6 tries.")
     async def wordle(self, interaction: discord.Interaction, daily_challenge: bool = False) -> None:
         try:
-            console.log_debug(
+            logger.debug(
                 f"/wordle: Command used by user {interaction.user.display_name} "
                 f"({interaction.user.id})"
             )
@@ -25,7 +24,7 @@ class WordleCog(commands.Cog):
             if daily_challenge and await self.bot.execute_db_operation(
                 db_func=has_played_daily_challenge, player_id=interaction.user.id
             ):
-                console.log_info(
+                logger.info(
                     f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                     f"already played the daily challenge."
                 )
@@ -44,7 +43,7 @@ class WordleCog(commands.Cog):
             view: WordleView = WordleView(game=game, timeout=300.0)
             embed, icon = view.build_embed()
 
-            console.log_info(
+            logger.info(
                 f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                 f"started a new {game}."
             )

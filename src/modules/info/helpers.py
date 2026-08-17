@@ -1,6 +1,6 @@
 import re
 
-import console
+from shared import logger
 
 
 def __strip_header(text: str) -> str:
@@ -14,7 +14,7 @@ def parse_changelog() -> list[tuple[str, str]]:
     - section names and contents.
     """
     sections: list[tuple[str, str]] = []
-    console.log_debug("utils: Parsing 'CHANGELOG.md' file...")
+    logger.debug("utils: Parsing 'CHANGELOG.md' file...")
 
     with open("CHANGELOG.md") as file:
         line: str = file.readline()
@@ -26,7 +26,7 @@ def parse_changelog() -> list[tuple[str, str]]:
         section_content: str = ""
 
         line = file.readline()
-        console.log_debug(f"utils: Parsing version '{sections[0][1]}'...")
+        logger.debug(f"utils: Parsing version '{sections[0][1]}'...")
 
         while line and line != "---\n":
             # parse empty line
@@ -36,7 +36,7 @@ def parse_changelog() -> list[tuple[str, str]]:
                     section_content = section_content.rstrip()
                     sections.append((section_name, section_content))
                     indented_content: str = re.sub(r"\n", "\n\t", section_content)
-                    console.log_debug(
+                    logger.debug(
                         f"utils: {section_name} section parsed with content: \n\t{indented_content}"
                     )
                     section_name = ""
@@ -55,6 +55,6 @@ def parse_changelog() -> list[tuple[str, str]]:
             section_content += line
             line = file.readline()
 
-    console.log_success("utils: All sections parsed.")
+    logger.info("utils: All sections parsed.")
 
     return sections

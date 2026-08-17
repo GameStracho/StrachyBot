@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import console
+from shared import logger
 from shared.models import EMatchStatus, Match
 
 from .models import ETriviaCategory, ETriviaDifficulty, TriviaMatch
@@ -21,7 +21,7 @@ async def create_match(
     Returns id of the created match.
     """
 
-    console.log_debug(
+    logger.debug(
         f"trivia: Creating a new match (player_id = {player_id}, category = {category}, "
         f"difficulty = {difficulty}, question = {question}, "
         f"correct_answer = {correct_answer})..."
@@ -48,7 +48,7 @@ async def create_match(
 
         match_id = parent_match.match_id
 
-    console.log_debug(f"trivia: New match ({match_id}) created.")
+    logger.debug(f"trivia: New match ({match_id}) created.")
     return match_id
 
 
@@ -58,7 +58,7 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
 
     Returns true on success.
     """
-    console.log_debug(f"trivia: Updating match ({match_id}) with status ({status})...")
+    logger.debug(f"trivia: Updating match ({match_id}) with status ({status})...")
 
     async with session.begin():
         match: Match | None = (
@@ -66,14 +66,14 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
         ).scalar_one_or_none()
 
         if not match:
-            console.log_warning(f"trivia: Match ({match_id}) not found, update aborted.")
+            logger.warning(f"trivia: Match ({match_id}) not found, update aborted.")
             return False
 
         if match.status != EMatchStatus.PENDING:
-            console.log_error("trivia: Only 'pending' matches can be updated.")
+            logger.error("trivia: Only 'pending' matches can be updated.")
             return False
 
         match.status = status
 
-    console.log_debug(f"trivia: Match ({match_id}) updated.")
+    logger.debug(f"trivia: Match ({match_id}) updated.")
     return True

@@ -1,5 +1,4 @@
-import console
-from shared import StrachyBot, models, types
+from shared import StrachyBot, logger, models, types
 
 from .api import TriviaQuestion, api_manager
 from .models import ETriviaCategory, ETriviaDifficulty
@@ -97,41 +96,41 @@ class TriviaGame:
 
         if match_id:
             self._match_id = match_id
-            console.log_debug(f"/trivia: Created new database record with id {self._match_id}.")
+            logger.debug(f"/trivia: Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
         if not self._bot:
-            console.log_warning(f"/trivia: Database is not connected. Skipping update of {self}.")
+            logger.warning(f"/trivia: Database is not connected. Skipping update of {self}.")
             return
 
         await self._bot.execute_db_operation(
             db_func=update_match, match_id=self._match_id, status=self._status
         )
 
-        console.log_debug(f"/trivia: Updated database record for game {self._match_id}.")
+        logger.debug(f"/trivia: Updated database record for game {self._match_id}.")
 
     async def handle_timeout(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        console.log_info(f"/trivia: Game {self._match_id} timed out.")
+        logger.info(f"/trivia: Game {self._match_id} timed out.")
         self._status = models.EMatchStatus.TIMEOUT
         await self._update_database_record()
 
     async def select_answer(self, answer: str) -> bool:
-        console.log_debug(
+        logger.debug(
             f"/trivia: User {self._player.id} selected answer '{answer}' for game {self._match_id}"
         )
 
         if self._status != models.EMatchStatus.PENDING:
-            console.log_fail(
+            logger.error(
                 f"/trivia: Game {self._match_id} already finished. Cannot select an answer."
             )
             return False
 
         is_correct: bool = answer == self._correct_answer
 
-        console.log_info(
+        logger.info(
             f"/trivia: {'Correct' if is_correct else 'Incorrect'} answer '{answer}' "
             f"chosen for game {self._match_id} by user {self._player.id}."
         )

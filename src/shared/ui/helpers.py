@@ -4,7 +4,7 @@ import traceback
 
 import discord
 
-import console
+from shared import logger
 from shared.types import User
 
 
@@ -25,7 +25,7 @@ async def handle_error(
     Print error message with details to console and send generic message to user.
     IMPORTANT: only call from an except block!
     """
-    console.log_error(
+    logger.critical(
         f"{command}: An unexpected error occurred for {interaction.user.display_name}: "
         f"\n{traceback.format_exc()}"
     )
@@ -55,7 +55,7 @@ def load_attachment(path: str, filename: str, sub_dir: str = "") -> tuple[discor
     )
     attachment: discord.File = discord.File(fp=attachment_path, filename=filename)
 
-    console.log_debug(f"Attachment '{attachment_path}' loaded.")
+    logger.debug(f"Attachment '{attachment_path}' loaded.")
 
     return (attachment, f"attachment://{filename}")
 

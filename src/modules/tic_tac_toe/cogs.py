@@ -2,8 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-import console
-from shared import StrachyBot, ui
+from shared import StrachyBot, logger, ui
 
 from .game import TicTacToeGame
 from .ui import TicTacToeView
@@ -30,13 +29,13 @@ class TicCog(commands.Cog):
         grid_size: app_commands.Choice[int],
     ) -> None:
         try:
-            console.log_debug(
+            logger.debug(
                 f"/tic-tac-toe: Command used by user {interaction.user.display_name} "
                 f"({interaction.user.id})"
             )
 
             if opponent.id == interaction.user.id:
-                console.log_debug(
+                logger.debug(
                     "/tic-tac-toe: Player and opponent have the same id. Game start abandoned."
                 )
 
@@ -65,7 +64,7 @@ class TicCog(commands.Cog):
             view: TicTacToeView = TicTacToeView(game=game, timeout=60.0)
             embed, icon = view.build_embed()
 
-            console.log_info(
+            logger.info(
                 f"/tic-tac-toe: User {interaction.user.display_name} ({interaction.user.id}) "
                 f"started a new {game}."
             )

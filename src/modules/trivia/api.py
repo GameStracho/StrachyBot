@@ -6,8 +6,7 @@ from typing import NamedTuple
 
 from pydantic import BaseModel, field_validator
 
-import console
-from shared import helpers, types
+from shared import helpers, logger, types
 
 from .models import ETriviaCategory, ETriviaDifficulty
 
@@ -110,7 +109,7 @@ class TriviaAPIManager:
         if difficulty != ETriviaDifficulty.ANY:
             url = f"{url}&difficulty={str(difficulty).lower()}"
 
-        console.log_debug(
+        logger.debug(
             f"/trivia: Fetching {self._batch_size} question(s) "
             f"for category {category} in difficulty {difficulty} from '{url}'..."
         )
@@ -118,7 +117,7 @@ class TriviaAPIManager:
         response: TriviaAPIResponse = await helpers.fetch_api(url, TriviaAPIResponse)
 
         if not response.results:
-            console.log_fail(
+            logger.critical(
                 f"/trivia: Failed to fetch API. (category = {category}, difficulty = {difficulty})"
             )
             raise types.NoAPIResponseError()
@@ -126,7 +125,7 @@ class TriviaAPIManager:
         key = CacheKey(category, difficulty)
         self._cache[key].extend(response.results)
 
-        console.log_debug(
+        logger.debug(
             f"/trivia: Fetched questions loaded into cache. "
             f"(category = {category}, difficulty = {difficulty})"
         )

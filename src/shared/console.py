@@ -1,12 +1,14 @@
-import logging
 import inspect
-from typing import Any, Mapping
+import logging
+from collections.abc import Mapping
 from types import FrameType
+from typing import Any, override
 
 
 class ModuleLogger(logging.Logger):
     """Custom Logger that dynamically replaces record.name with the caller's module name."""
 
+    @override
     def makeRecord(
         self,
         name: str,

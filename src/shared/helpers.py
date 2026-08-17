@@ -4,9 +4,8 @@ import aiohttp
 import discord
 from pydantic import BaseModel
 
-import console
-
 from .bot import StrachyBot
+from .console import logger
 
 # Define a TypeVar bound to Pydantic's BaseModel
 T = TypeVar("T", bound=BaseModel)
@@ -17,7 +16,7 @@ async def fetch_api(url: str, model_class: type[T]) -> T:
     Fetches JSON data from a URL and parses it into the specified Pydantic model.
     """
 
-    console.log_debug(f"Fetching '{url}' into '{model_class}'...")
+    logger.debug(f"Fetching '{url}' into '{model_class}'...")
 
     async with aiohttp.ClientSession() as session, session.get(url) as response:
         # Automatically raises an HTTPError for 4xx or 5xx responses
@@ -25,11 +24,11 @@ async def fetch_api(url: str, model_class: type[T]) -> T:
 
         raw_json = await response.json()
 
-        console.log_debug(f"Fetched '{url}'. Response received: \n\t{raw_json}")
+        logger.debug(f"Fetched '{url}'. Response received: \n\t{raw_json}")
 
         # Type-safe validation and parsing
         model: T = model_class.model_validate(raw_json)
-        console.log_debug(f"Fetched '{url}' into \n\t{model}.")
+        logger.debug(f"Fetched '{url}' into \n\t{model}.")
         return model
 
 

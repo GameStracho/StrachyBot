@@ -4,8 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-import console
-from shared import StrachyBot, ui
+from shared import StrachyBot, logger, ui
 
 from .helpers import parse_changelog
 
@@ -16,7 +15,7 @@ class UtilsCog(commands.Cog):
 
     @app_commands.command(name="info", description="Show important information about the bot")
     async def info(self, interaction: discord.Interaction) -> None:
-        console.log_info(f"/info: User {interaction.user.display_name} used the command.")
+        logger.info(f"/info: User {interaction.user.display_name} used the command.")
 
         try:
             uptime: datetime.timedelta = discord.utils.utcnow() - self.bot.start_time

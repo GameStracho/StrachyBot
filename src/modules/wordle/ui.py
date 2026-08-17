@@ -2,8 +2,7 @@ from datetime import UTC, datetime
 
 import discord
 
-import console
-from shared import models, types, ui
+from shared import logger, models, types, ui
 
 from .game import WordleGame, WordleLetterCategory
 
@@ -17,7 +16,7 @@ class WordleView(discord.ui.View):
         super().__init__(timeout=timeout)
 
         self._game = game
-        console.log_debug(
+        logger.debug(
             f"/trivia: New WordleView created for game {self._game.match_id}"
             f" with {timeout}s timeout."
         )
@@ -107,7 +106,7 @@ class WordleView(discord.ui.View):
         for child in self.children:
             if isinstance(child, discord.ui.Button):
                 child.disabled = True
-        console.log_debug(f"/wordle: Buttons disabled for game {self._game.match_id}.")
+        logger.debug(f"/wordle: Buttons disabled for game {self._game.match_id}.")
 
     def spoil(self, string: str) -> str:
         spoiler = "||" if self._game.is_daily else ""
@@ -172,7 +171,7 @@ class WordleView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
             if interaction.user.id != self._game.player.id:
-                console.log_warning(
+                logger.warning(
                     f"/wordle: Ineligible user {interaction.user.display_name} "
                     f"({interaction.user.id}) "
                     f"responded to game {self._game.match_id}."
@@ -218,7 +217,7 @@ class WordleView(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button["WordleView"]
     ) -> None:
         try:
-            console.log_debug(
+            logger.debug(
                 f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                 f"pressed the 'Enter guess' button for game {self._game.match_id}."
             )
@@ -231,7 +230,7 @@ class WordleView(discord.ui.View):
             modal: WordleGuessModal = WordleGuessModal(parent_view=self)
             await interaction.response.send_modal(modal)
 
-            console.log_debug(
+            logger.debug(
                 f"/wordle: Modal for game {self._game.match_id} "
                 f"sent to User {interaction.user.display_name} ({interaction.user.id})."
             )
@@ -249,7 +248,7 @@ class WordleView(discord.ui.View):
         try:
 
             async def handle_random_guess(confirm_interaction: discord.Interaction) -> None:
-                console.log_debug(
+                logger.debug(
                     f"/wordle: User {confirm_interaction.user.display_name} "
                     f"({confirm_interaction.user.id}) "
                     f"pressed the 'Random guess' button for game {self._game.match_id}."
@@ -300,7 +299,7 @@ class WordleView(discord.ui.View):
         try:
 
             async def handle_surrender(confirm_interaction: discord.Interaction) -> None:
-                console.log_debug(
+                logger.debug(
                     f"/wordle: User {confirm_interaction.user.display_name} "
                     f"({confirm_interaction.user.id}) "
                     f"pressed the 'Give up' button for game {self._game.match_id}."
@@ -350,7 +349,7 @@ class WordleGuessModal(discord.ui.Modal):
         super().__init__(title="Wordle Guess")
 
         self._parent_view = parent_view
-        console.log_debug(
+        logger.debug(
             f"/wordle: New WordleGuessModal created for game {self._parent_view.game.match_id}."
         )
 
@@ -395,20 +394,20 @@ class WordleGuessModal(discord.ui.Modal):
             embed: discord.Embed = ui.embed.extract(target=interaction, index=0, hide_icon=True)
 
             if not game.is_valid_word(guess):
-                console.log_info(
+                logger.info(
                     f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                     f"entered an invalid word '{guess}'."
                 )
                 updated_status = f"Entered invalid word '{self._parent_view.spoil(guess)}'."
             elif game.is_previous_guess(word=guess):
-                console.log_info(
+                logger.info(
                     f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                     f"entered an already guesses word '{guess}'."
                 )
                 updated_status = f"You already guessed the word '{self._parent_view.spoil(guess)}'."
             else:
                 await game.add_guess(word=guess)
-                console.log_info(
+                logger.info(
                     f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
                     f"guessed '{self.guess_input.value}' "
                     f"in game {self._parent_view.game.match_id}."

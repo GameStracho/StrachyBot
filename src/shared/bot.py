@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 import console
 
+from .console import logger
 from .database import create_db_engine, create_session_factory
 from .repository import create_command_log
 
@@ -40,6 +41,9 @@ class StrachyBot(commands.Bot):
         Create database session factory from a db_engine for accessing the database.
         Creates a new engine if db_engine is None.
         """
+
+        logger.debug("YEP")
+
         if not db_engine:
             db_engine = create_db_engine()
 
@@ -83,9 +87,9 @@ class StrachyBot(commands.Bot):
     async def close(self) -> None:
         """Called when the bot shuts down. Handles resource cleanup."""
         if self._db_engine is not None:
-            console.log_info("Disposing database engine connection pool...")
+            logger.info("Disposing database engine connection pool...")
             await self._db_engine.dispose()
-            console.log_debug("Database engine successfully disposed.")
+            logger.debug("Database engine successfully disposed.")
 
         await super().close()
 
@@ -95,7 +99,7 @@ class StrachyBot(commands.Bot):
 
         # import shared database models
         importlib.import_module("shared.models")
-        console.log_debug("Shared database models loaded.")
+        logger.debug("Shared database models loaded.")
 
         # sync commands with Discord
         synced: list[app_commands.AppCommand] = await self.tree.sync()
@@ -106,13 +110,11 @@ class StrachyBot(commands.Bot):
             else:
                 synced_commands += command.name
 
-        console.log_info(
-            f"Slash commands synced: {console.highlight(Fore.YELLOW, synced_commands)}"
-        )
+        logger.info(f"Slash commands synced: {console.highlight(Fore.YELLOW, synced_commands)}")
 
     async def on_ready(self) -> None:
         """Called when the bot starts."""
-        console.log_success(
+        logger.info(
             console.highlight(Fore.YELLOW, str(self.user)) + " is now online and ready to serve!"
         )
 
@@ -152,17 +154,17 @@ class StrachyBot(commands.Bot):
                 # Load existing cogs from '__init.py__'
                 if os.path.exists(os.path.join(module_path, "cogs.py")):
                     await self.load_extension(f"modules.{module_name}")
-                    console.log_debug(f"Loaded cog file for module '{module_name}'.")
+                    logger.debug(f"Loaded cog file for module '{module_name}'.")
 
                 # Import database models from 'models.py'
                 if os.path.exists(os.path.join(module_path, "models.py")):
                     importlib.import_module(f"modules.{module_name}.models")
-                    console.log_debug(f"Registered database models for module '{module_name}'.")
+                    logger.debug(f"Registered database models for module '{module_name}'.")
 
-                console.log_info(f"Module '{module_name}' successfully loaded.")
+                logger.info(f"Module '{module_name}' successfully loaded.")
             except Exception as e:
-                console.log_error(f"Failed to load module '{module_name}': {e}.")
+                logger.critical(f"Failed to load module '{module_name}': {e}.")
                 success = False
 
         if success:
-            console.log_success("All modules loaded.")
+            logger.info("All modules loaded.")

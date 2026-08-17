@@ -1,7 +1,6 @@
 import discord
 
-import console
-from shared import models, ui
+from shared import logger, models, ui
 from shared.types import Position, User
 
 from .game import TicTacToeGame
@@ -20,7 +19,7 @@ class TicTacToeView(discord.ui.View):
             for y in range(game.grid_size):
                 self.add_item(TicTacToeButton(parent_view=self, position=Position(x, y)))
 
-        console.log_debug(
+        logger.debug(
             f"/tic-tac-toe: New TicTacToeView created for game {self._game.match_id} "
             f"with {timeout}s timeout."
         )
@@ -115,7 +114,7 @@ class TicTacToeView(discord.ui.View):
             if isinstance(child, TicTacToeButton):
                 child.disabled = True
 
-        console.log_debug(f"/tic-tac-toe: Buttons disabled for game {self._game.match_id}.")
+        logger.debug(f"/tic-tac-toe: Buttons disabled for game {self._game.match_id}.")
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
@@ -124,7 +123,7 @@ class TicTacToeView(discord.ui.View):
             )
 
             if interaction.user.id != current_player.id:
-                console.log_debug(
+                logger.debug(
                     f"Ineligible user {interaction.user.display_name} ({interaction.user.id}) "
                     f"tried to respond to game {self._game.match_id}."
                 )
@@ -175,7 +174,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
         self._parent_view = parent_view
         self._position = position
 
-        console.log_debug(
+        logger.debug(
             f"/tic-tac-toe: New TicTacToeButton created "
             f"for game {parent_view.game.match_id}: pos = {position}."
         )
