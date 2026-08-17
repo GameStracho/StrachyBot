@@ -6,15 +6,12 @@ from datetime import datetime
 from typing import Any, Concatenate, ParamSpec, TypeVar
 
 import discord
-from colorama import Fore
 from discord import app_commands
 from discord.ext import commands
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
-import console
-
 from .database import create_db_engine, create_session_factory
-from .logs import logger
+from .logs import highlight, logger
 from .repository import create_command_log
 
 P = ParamSpec("P")  # parameter type
@@ -41,9 +38,6 @@ class StrachyBot(commands.Bot):
         Create database session factory from a db_engine for accessing the database.
         Creates a new engine if db_engine is None.
         """
-
-        logger.debug("YEP")
-
         if not db_engine:
             db_engine = create_db_engine()
 
@@ -110,13 +104,11 @@ class StrachyBot(commands.Bot):
             else:
                 synced_commands += command.name
 
-        logger.info(f"Slash commands synced: {console.highlight(Fore.YELLOW, synced_commands)}")
+        logger.info(f"Slash commands synced: {highlight(synced_commands)}")
 
     async def on_ready(self) -> None:
         """Called when the bot starts."""
-        logger.info(
-            console.highlight(Fore.YELLOW, str(self.user)) + " is now online and ready to serve!"
-        )
+        logger.info(highlight(str(self.user)) + " is now online and ready to serve!")
 
     async def on_app_command_completion(
         self, interaction: discord.Interaction, command: discord.app_commands.Command[Any, Any, Any]

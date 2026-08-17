@@ -3,10 +3,17 @@ import logging
 from collections.abc import Mapping
 from types import FrameType
 from typing import Any, override
+
 from colorama import Fore, Style, init
 
 # Initialize colorama for cross-platform support
 init(autoreset=True)
+
+
+def highlight(text: str) -> str:
+    """Apply style (color, bold, etc.) to text for prints"""
+    return Fore.YELLOW + text + Style.RESET_ALL
+
 
 class ColoredFormatter(logging.Formatter):
     """Custom Formatter to add colorama styling to python logging output."""
@@ -26,11 +33,13 @@ class ColoredFormatter(logging.Formatter):
         level_color: str = self.LEVEL_COLORS.get(record.levelno, Style.RESET_ALL)
 
         # Style individual components
-        timestamp: str = f"{Fore.BLACK}{self.formatTime(record, '%Y-%m-%d %H:%M:%S')}{Style.RESET_ALL}"
+        timestamp: str = (
+            f"{Fore.BLACK}{self.formatTime(record, '%Y-%m-%d %H:%M:%S')}{Style.RESET_ALL}"
+        )
         module_name: str = f"{Fore.BLACK}[{record.name}]{Style.RESET_ALL}"
-        
+
         # Right-pad category for clean alignment
-        level_tag:str = f"{level_color}{record.levelname:<8}{Style.RESET_ALL}"
+        level_tag: str = f"{level_color}{record.levelname:<8}{Style.RESET_ALL}"
 
         message: str = record.getMessage()
 
