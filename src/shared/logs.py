@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import logging
+import re
 from collections.abc import Mapping
 from types import FrameType
 from typing import Any, override
@@ -13,6 +14,8 @@ from .repository import create_log
 # Initialize colorama for cross-platform support
 init(autoreset=True)
 
+# Regex matching standard ANSI escape sequences
+ANSI_ESCAPE_PATTERN = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
 def highlight(text: str) -> str:
     """Apply style (color, bold, etc.) to text for prints"""
@@ -93,11 +96,15 @@ class AsyncDatabaseLogHandler(logging.Handler):
     def __init__(self, level: int = logging.INFO) -> None:
         super().__init__(level=level)
 
+    def _strip_ansi(self, text: str) -> str:
+        """Removes ANSI color and style sequences from a string."""
+        return ANSI_ESCAPE_PATTERN.sub("", text)
+
     def emit(self, record: logging.LogRecord) -> None:
         """Called automatically whenever a log record passes level checks."""
         try:
             # Format the raw message (expanding %s args, string formatting, etc.)
-            message = record.getMessage()
+            message = self._strip_ansi(text=record.getMessage())
 
             # Extract module name (uses record.name populated by ModuleLogger)
             module = record.name
