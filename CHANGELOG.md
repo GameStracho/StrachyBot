@@ -1,4 +1,4 @@
-## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-16
+## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-17
 
 ### Added
 - To-do list ([TODO.md](TODO.md) )
