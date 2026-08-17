@@ -37,8 +37,7 @@ class TriviaView(discord.ui.View):
             )
 
         logger.debug(
-            f"New TriviaView created for game {self._game.match_id} "
-            f"with {timeout}s timeout."
+            f"New TriviaView created for game {self._game.match_id} with {timeout}s timeout."
         )
 
     @property

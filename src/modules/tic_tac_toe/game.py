@@ -247,17 +247,14 @@ class TicTacToeGame:
         """
 
         if self._status != models.EMatchStatus.PENDING:
-            logger.error(
-                f"Invalid move for game {self._match_id} - the game already finished."
-            )
+            logger.error(f"Invalid move for game {self._match_id} - the game already finished.")
             return False
 
         old_value: ETicTacToeCell | None = self._grid.get_cell_value(pos=position)
 
         if not old_value:
             logger.error(
-                f"Invalid move for game {self._match_id} "
-                f"- position {position} out of bounds."
+                f"Invalid move for game {self._match_id} - position {position} out of bounds."
             )
             return False
 

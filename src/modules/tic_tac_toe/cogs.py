@@ -37,9 +37,7 @@ class TicCog(commands.Cog):
             )
 
             if opponent.id == interaction.user.id:
-                logger.debug(
-                    "Player and opponent have the same id. Game start abandoned."
-                )
+                logger.debug("Player and opponent have the same id. Game start abandoned.")
 
                 embed, icon = ui.embed.build_warning(
                     message=(

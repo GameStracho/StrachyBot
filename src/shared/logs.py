@@ -17,6 +17,7 @@ init(autoreset=True)
 # Regex matching standard ANSI escape sequences
 ANSI_ESCAPE_PATTERN = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
+
 def highlight(text: str) -> str:
     """Apply style (color, bold, etc.) to text for prints"""
     return Fore.YELLOW + text + Style.RESET_ALL

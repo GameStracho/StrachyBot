@@ -1,10 +1,8 @@
 from typing import TypeVar
 
 import aiohttp
-import discord
 from pydantic import BaseModel
 
-from .bot import StrachyBot
 from .logs import logger
 
 # Define a TypeVar bound to Pydantic's BaseModel

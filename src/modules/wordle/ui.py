@@ -18,8 +18,7 @@ class WordleView(discord.ui.View):
 
         self._game = game
         logger.debug(
-            f"New WordleView created for game {self._game.match_id}"
-            f" with {timeout}s timeout."
+            f"New WordleView created for game {self._game.match_id} with {timeout}s timeout."
         )
 
     @property
@@ -352,9 +351,7 @@ class WordleGuessModal(discord.ui.Modal):
         super().__init__(title="Wordle Guess")
 
         self._parent_view = parent_view
-        logger.debug(
-            f"New WordleGuessModal created for game {self._parent_view.game.match_id}."
-        )
+        logger.debug(f"New WordleGuessModal created for game {self._parent_view.game.match_id}.")
 
     guess_input: discord.ui.TextInput["WordleGuessModal"] = discord.ui.TextInput(
         label="Guess",

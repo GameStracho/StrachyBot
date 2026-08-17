@@ -22,8 +22,7 @@ class TicTacToeView(discord.ui.View):
                 self.add_item(TicTacToeButton(parent_view=self, position=Position(x, y)))
 
         logger.debug(
-            f"New TicTacToeView created for game {self._game.match_id} "
-            f"with {timeout}s timeout."
+            f"New TicTacToeView created for game {self._game.match_id} with {timeout}s timeout."
         )
 
     @property
@@ -177,8 +176,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
         self._position = position
 
         logger.debug(
-            f"New TicTacToeButton created "
-            f"for game {parent_view.game.match_id}: pos = {position}."
+            f"New TicTacToeButton created for game {parent_view.game.match_id}: pos = {position}."
         )
 
     @property

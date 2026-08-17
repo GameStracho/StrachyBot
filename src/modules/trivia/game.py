@@ -107,14 +107,10 @@ class TriviaGame:
         await self._update_database_record()
 
     async def select_answer(self, answer: str) -> bool:
-        logger.debug(
-            f"Answer '{answer}' selected for game {self._match_id} by user {self._player}"
-        )
+        logger.debug(f"Answer '{answer}' selected for game {self._match_id} by user {self._player}")
 
         if self._status != models.EMatchStatus.PENDING:
-            logger.error(
-                f"Game {self._match_id} already finished. Cannot select an answer."
-            )
+            logger.error(f"Game {self._match_id} already finished. Cannot select an answer.")
             return False
 
         is_correct: bool = answer == self._correct_answer

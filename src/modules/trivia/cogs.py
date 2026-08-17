@@ -29,9 +29,7 @@ class TriviaCog(commands.Cog):
             await interaction.response.defer()
             user = ui.get_user(user=interaction.user)
 
-            logger.debug(
-                f"Command '/trivia' used by user {user}."
-            )
+            logger.debug(f"Command '/trivia' used by user {user}.")
 
             game: TriviaGame = TriviaGame(
                 player=ui.get_user(user=interaction.user), category=category, difficulty=difficulty
@@ -42,9 +40,7 @@ class TriviaCog(commands.Cog):
             view: TriviaView = TriviaView(game=game, timeout=60.0)
             embed, icon = view.build_embed()
 
-            logger.info(
-                f"New {game} started by user {user}."
-            )
+            logger.info(f"New {game} started by user {user}.")
 
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
             await interaction.followup.send(embed=embed, view=view, file=icon)

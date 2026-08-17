@@ -20,16 +20,12 @@ class WordleCog(commands.Cog):
         try:
             user = ui.get_user(user=interaction.user)
 
-            logger.debug(
-                f"Command '/wordle' used by user {user}."
-            )
+            logger.debug(f"Command '/wordle' used by user {user}.")
 
             if daily_challenge and await db_manager.execute(
                 db_func=has_played_daily_challenge, player_id=interaction.user.id
             ):
-                logger.info(
-                    f"User {user} already played today's daily challenge."
-                )
+                logger.info(f"User {user} already played today's daily challenge.")
 
                 embed, icon = ui.embed.build_warning(
                     message="You already played today's daily challenge."
@@ -45,9 +41,7 @@ class WordleCog(commands.Cog):
             view: WordleView = WordleView(game=game, timeout=300.0)
             embed, icon = view.build_embed()
 
-            logger.info(
-                f"New {game} started by user {user}"
-            )
+            logger.info(f"New {game} started by user {user}")
 
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
             await interaction.response.send_message(embed=embed, view=view, file=icon)

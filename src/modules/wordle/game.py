@@ -53,9 +53,7 @@ class WordleDictionary:
             file.seek(random_line * self._line_size)
             result = file.read(5).decode("utf-8").lower()
 
-        logger.debug(
-            f"Found random word '{result}' on line {random_line} in file '{file_path}'."
-        )
+        logger.debug(f"Found random word '{result}' on line {random_line} in file '{file_path}'.")
         return result
 
     def get_random_secret_word(self) -> str:
@@ -89,8 +87,7 @@ class WordleDictionary:
             result = file.read(5).decode("utf-8").lower()
 
         logger.debug(
-            f"Daily challenge word '{result}' (line {line_index}) "
-            f"selected for date {date_seed}."
+            f"Daily challenge word '{result}' (line {line_index}) selected for date {date_seed}."
         )
         return result
 
@@ -121,9 +118,7 @@ class WordleDictionary:
             return False
 
         if not word.isalpha():
-            logger.debug(
-                f"Word '{word}' contains invalid characters. Only letters are allowed."
-            )
+            logger.debug(f"Word '{word}' contains invalid characters. Only letters are allowed.")
             return False
 
         if not (
