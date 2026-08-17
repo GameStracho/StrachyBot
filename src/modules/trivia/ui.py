@@ -118,24 +118,27 @@ class TriviaButton(discord.ui.Button[TriviaView]):
     _parent_view: TriviaView
     _is_correct: bool
     _is_selected: bool
+    _full_answer: str
 
     def __init__(
         self, parent_view: TriviaView, label: str, is_correct: bool, row: int, emoji: str = ""
     ):
-        super().__init__(label=label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row)
+        display_label = label[:77] + "..." if len(label) > 80 else label
+        super().__init__(label=display_label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row)
 
         self._parent_view = parent_view
         self._is_correct = is_correct
         self._is_selected = False
+        self._full_answer = label
 
         logger.debug(
             f"/trivia: New TriviaButton created for game {parent_view.game.match_id}: "
-            f"label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
+            f"label = '{display_label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
-            answer: str = self.label if self.label else ""
+            answer: str = self._full_answer
             await self._parent_view.game.select_answer(answer=answer)
 
             self._is_selected = True

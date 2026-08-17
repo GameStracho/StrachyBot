@@ -7,7 +7,8 @@
 - Scripts `restore.sh` for restoring backups and `setup.sh` for setting up the environment
 - Updates of database records on each game update
 - Custom shared type `User`
-- Logging of used valid commands
+- Logging of used valid commands and console logs
+- Singletons that manage database executions and console logs
 
 ### Changed
 - Renamed custom AI agent
@@ -35,6 +36,7 @@
 - Automated `Tic-Tac-Toe` auto-play moves
 - Hiding of secret words in `Wordle` daily challenge
 - Reduced API calls by caching `Trivia` questions
+- Truncated `Trivia` answers that exceed maximum character limit
 
 ---
 

@@ -138,6 +138,23 @@ def test_trivia_view_initializes_buttons_with_expected_labels(
     assert labels == ["Wrong C", "Wrong B", "Wrong A", "Correct"]
 
 
+def test_trivia_button_truncates_long_label() -> None:
+    user = mocks.DummyUser(user_id=5)
+    game = TriviaGame(player=user)
+    long_answer = "A" * 100
+    game._correct_answer = long_answer
+    game._incorrect_answers = ["Short"]
+
+    view = TriviaView(game=game, timeout=5.0)
+    button = next(
+        child for child in view.children if isinstance(child, TriviaButton) and child._is_correct
+    )
+
+    assert button.label == "A" * 77 + "..."
+    assert len(button.label) == 80
+    assert button._full_answer == long_answer
+
+
 @pytest.mark.asyncio
 async def test_trivia_button_correct_answer_updates_embed_and_status(
     monkeypatch: pytest.MonkeyPatch,
