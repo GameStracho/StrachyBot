@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
-from typing import override
 
 import discord
+from typing_extensions import override
 
 from shared import logger, models, types, ui
 

@@ -1,7 +1,7 @@
 from collections.abc import Awaitable, Callable
-from typing import override
 
 import discord
+from typing_extensions import override
 
 from shared.logs import logger
 
