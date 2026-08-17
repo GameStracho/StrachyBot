@@ -1,4 +1,5 @@
 import random
+from typing import override
 
 import discord
 
@@ -80,6 +81,7 @@ class TriviaView(discord.ui.View):
                 child.disable()
         logger.debug(f"/trivia: Answers revealed for game {self._game.match_id}.")
 
+    @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
             if interaction.user.id != self._game.player.id:
@@ -99,6 +101,7 @@ class TriviaView(discord.ui.View):
             await ui.handle_error(command="/trivia", interaction=interaction, use_followup=False)
             return False
 
+    @override
     async def on_timeout(self) -> None:
         if self._game.status != models.EMatchStatus.PENDING or self.message is None:
             return
@@ -138,6 +141,7 @@ class TriviaButton(discord.ui.Button[TriviaView]):
             f"label = '{display_label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
         )
 
+    @override
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
             answer: str = self._full_answer

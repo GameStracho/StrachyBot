@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import override
 
 import discord
 
@@ -168,6 +169,7 @@ class WordleView(discord.ui.View):
 
         return result
 
+    @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
             if interaction.user.id != self._game.player.id:
@@ -187,6 +189,7 @@ class WordleView(discord.ui.View):
             await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
             return False
 
+    @override
     async def on_timeout(self) -> None:
         if self._game.status != models.EMatchStatus.PENDING or self.message is None:
             return
@@ -385,6 +388,7 @@ class WordleGuessModal(discord.ui.Modal):
 
         return uncovered_letters.rstrip() + "\n" + uncovered_colors.rstrip()
 
+    @override
     async def on_submit(self, interaction: discord.Interaction) -> None:
         try:
             game: WordleGame = self._parent_view.game

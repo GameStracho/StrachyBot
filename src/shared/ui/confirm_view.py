@@ -1,4 +1,5 @@
 from collections.abc import Awaitable, Callable
+from typing import override
 
 import discord
 
@@ -73,6 +74,7 @@ class ConfirmView(discord.ui.View):
         logger.debug(f"Embed build for ConfirmView ({self.id}).")
         return (embed, icon)
 
+    @override
     async def on_timeout(self) -> None:
         logger.debug(f"ConfirmView ({self.id}) timed out.")
 
@@ -83,6 +85,7 @@ class ConfirmView(discord.ui.View):
         if self._interaction:
             await self._interaction.delete_original_response()
 
+    @override
     async def on_error(
         self,
         interaction: discord.Interaction,

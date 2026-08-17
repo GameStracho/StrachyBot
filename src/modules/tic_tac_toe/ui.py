@@ -1,3 +1,5 @@
+from typing import override
+
 import discord
 
 from shared import logger, models, ui
@@ -116,6 +118,7 @@ class TicTacToeView(discord.ui.View):
 
         logger.debug(f"/tic-tac-toe: Buttons disabled for game {self._game.match_id}.")
 
+    @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
             current_player: User = (
@@ -140,6 +143,7 @@ class TicTacToeView(discord.ui.View):
             )
             return False
 
+    @override
     async def on_timeout(self) -> None:
         if self._game.status != models.EMatchStatus.PENDING or self.message is None:
             return
@@ -183,6 +187,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
     def position(self) -> Position:
         return self._position
 
+    @override
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
             game: TicTacToeGame = self._parent_view.game
