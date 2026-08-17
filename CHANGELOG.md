@@ -7,7 +7,8 @@
 - Scripts `restore.sh` for restoring backups and `setup.sh` for setting up the environment
 - Updates of database records on each game update
 - Custom shared type `User`
-- Logging of used valid commands and console logs
+- Module identification to console logs
+- Logging of used valid commands and console logs into database
 - Singletons that manage database executions and console logs
 
 ### Changed
