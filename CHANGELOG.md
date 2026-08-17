@@ -8,7 +8,7 @@
 - Updates of database records on each game update
 - Custom shared type `User`
 - Module identification to console logs
-- Logging of used valid commands and console logs into database
+- Logging of used valid commands and console logs into the database
 - Singletons that manage database executions and console logs
 
 ### Changed
@@ -28,6 +28,7 @@
 - Files that are not used anymore
 - Unused `/announcement` command
 - Adminer auto-login
+- Command identification from console logs
 
 ### Fixed
 - Increased `Trivia` timeout to 60 seconds
