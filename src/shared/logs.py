@@ -4,9 +4,10 @@ import logging
 import re
 from collections.abc import Mapping
 from types import FrameType
-from typing import Any, override
+from typing import Any
 
 from colorama import Fore, Style, init
+from typing_extensions import override
 
 from .database import db_manager
 from .repository import create_log

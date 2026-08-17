@@ -2,11 +2,12 @@ import asyncio
 import importlib
 import os
 from datetime import UTC, datetime, timedelta
-from typing import Any, ParamSpec, TypeVar, override
+from typing import Any, ParamSpec, TypeVar
 
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
+from typing_extensions import override
 
 from .database import db_manager
 from .logs import highlight, logger
