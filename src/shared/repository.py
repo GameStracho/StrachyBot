@@ -1,7 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .logs import logger
-from .models import CommandLog
+from .models import CommandLog, Log
 
 
 async def create_command_log(session: AsyncSession, user_id: int, command_name: str) -> int:
@@ -10,15 +9,23 @@ async def create_command_log(session: AsyncSession, user_id: int, command_name: 
 
     Returns id of the created record.
     """
-
-    logger.debug(
-        f"shared: Creating a new command log "
-        f"(user_id = {user_id}, command_name = {command_name})..."
-    )
     record: CommandLog = CommandLog(user_id=user_id, command_name=command_name)
 
     async with session.begin():
         session.add(record)
 
-    logger.debug(f"shared: New command log ({record.id}) created.")
+    return record.id
+
+
+async def create_log(session: AsyncSession, level: str, module: str, message: str) -> int:
+    """
+    Creates a new log record in the database.
+
+    Returns id of the created record.
+    """
+    record: Log = Log(level=level, module=module, message=message)
+
+    async with session.begin():
+        session.add(record)
+
     return record.id
