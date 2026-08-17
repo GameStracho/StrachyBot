@@ -4,7 +4,7 @@ import traceback
 
 import discord
 
-from shared import logger
+from shared.logs import logger
 from shared.types import User
 
 

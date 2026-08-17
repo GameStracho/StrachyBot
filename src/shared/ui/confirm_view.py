@@ -2,7 +2,7 @@ from collections.abc import Awaitable, Callable
 
 import discord
 
-from shared import logger
+from shared.logs import logger
 
 from .constants import EMOJIS
 from .helpers import get_timeout_timestamp, handle_error, load_attachment
