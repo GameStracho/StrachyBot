@@ -1,10 +1,16 @@
+import asyncio
 import inspect
 import logging
 from collections.abc import Mapping
 from types import FrameType
-from typing import Any, override
+from typing import TYPE_CHECKING, Any, override
 
 from colorama import Fore, Style, init
+
+from .repository import create_log
+
+if TYPE_CHECKING:
+    from shared.bot import StrachyBot
 
 # Initialize colorama for cross-platform support
 init(autoreset=True)
@@ -81,6 +87,43 @@ class ModuleLogger(logging.Logger):
                     record.name = module.__name__
 
         return record
+
+
+class AsyncDatabaseLogHandler(logging.Handler):
+    """Logging handler that asynchronously writes log records to PostgreSQL."""
+    _bot: "StrachyBot"
+
+    def __init__(self, bot: "StrachyBot", level: int = logging.INFO, formatter: logging.Formatter | None = None) -> None:
+        super().__init__(level=level)
+        self.setFormatter(formatter)
+        self._bot = bot
+
+    def emit(self, record: logging.LogRecord) -> None:
+        """Called automatically whenever a log record passes level checks."""
+        try:
+            # Format the raw message (expanding %s args, string formatting, etc.)
+            message = record.getMessage()
+
+            # Extract module name (uses record.name populated by ModuleLogger)
+            module = record.name
+            level_name = record.levelname
+
+            # Get running loop and dispatch non-blocking DB task
+            loop = asyncio.get_running_loop()
+            if loop.is_running():
+                loop.create_task(
+                    self._bot.execute_db_operation(
+                        db_func=create_log,
+                        level=level_name,
+                        module=module,
+                        message=message,
+                    )
+                )
+        except RuntimeError:
+            # Event loop is not running yet (e.g., during initial script startup)
+            pass
+        except Exception:
+            self.handleError(record)
 
 
 def setup_logger(level: int = logging.INFO) -> logging.Logger:
