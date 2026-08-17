@@ -111,7 +111,7 @@ class AsyncDatabaseLogHandler(logging.Handler):
                         db_func=create_log,
                         level=level_name,
                         module=module,
-                        message=message,
+                        message=(message[:4092] + "...") if len(message) > 4096 else message,
                     )
                 )
         except RuntimeError:

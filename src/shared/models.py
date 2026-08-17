@@ -57,5 +57,5 @@ class Log(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     level: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
     module: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
-    message: Mapped[str] = mapped_column(String(256), nullable=False)
+    message: Mapped[str] = mapped_column(String(4096), nullable=False)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_time_without_timezone)
