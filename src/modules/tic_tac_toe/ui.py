@@ -1,7 +1,7 @@
 import discord
+from typing_extensions import override
 
-import console
-from shared import models, ui
+from shared import logger, models, ui
 from shared.types import Position, User
 
 from .game import TicTacToeGame
@@ -20,9 +20,8 @@ class TicTacToeView(discord.ui.View):
             for y in range(game.grid_size):
                 self.add_item(TicTacToeButton(parent_view=self, position=Position(x, y)))
 
-        console.log_debug(
-            f"/tic-tac-toe: New TicTacToeView created for game {self._game.match_id} "
-            f"with {timeout}s timeout."
+        logger.debug(
+            f"New TicTacToeView created for game {self._game.match_id} with {timeout}s timeout."
         )
 
     @property
@@ -115,8 +114,9 @@ class TicTacToeView(discord.ui.View):
             if isinstance(child, TicTacToeButton):
                 child.disabled = True
 
-        console.log_debug(f"/tic-tac-toe: Buttons disabled for game {self._game.match_id}.")
+        logger.debug(f"Buttons disabled for game {self._game.match_id}.")
 
+    @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
             current_player: User = (
@@ -124,7 +124,7 @@ class TicTacToeView(discord.ui.View):
             )
 
             if interaction.user.id != current_player.id:
-                console.log_debug(
+                logger.debug(
                     f"Ineligible user {interaction.user.display_name} ({interaction.user.id}) "
                     f"tried to respond to game {self._game.match_id}."
                 )
@@ -135,12 +135,11 @@ class TicTacToeView(discord.ui.View):
                 return False  # Aborts processing and DOES NOT reset/extend the view timeout
 
             return True  # Authorized click; allow execution
-        except Exception:
-            await ui.handle_error(
-                command="/tic-tac-toe", interaction=interaction, use_followup=False
-            )
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
             return False
 
+    @override
     async def on_timeout(self) -> None:
         if self._game.status != models.EMatchStatus.PENDING or self.message is None:
             return
@@ -175,15 +174,15 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
         self._parent_view = parent_view
         self._position = position
 
-        console.log_debug(
-            f"/tic-tac-toe: New TicTacToeButton created "
-            f"for game {parent_view.game.match_id}: pos = {position}."
+        logger.debug(
+            f"New TicTacToeButton created for game {parent_view.game.match_id}: pos = {position}."
         )
 
     @property
     def position(self) -> Position:
         return self._position
 
+    @override
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
             game: TicTacToeGame = self._parent_view.game
@@ -225,7 +224,5 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
-        except Exception:
-            await ui.handle_error(
-                command="/tic-tac-toe", interaction=interaction, use_followup=False
-            )
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)

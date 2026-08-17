@@ -2,16 +2,17 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-import console
-from shared import StrachyBot, ui
+from shared import StrachyBot, logger, ui
 
 from .game import TicTacToeGame
 from .ui import TicTacToeView
 
 
 class TicCog(commands.Cog):
+    _bot: StrachyBot
+
     def __init__(self, bot: StrachyBot) -> None:
-        self.bot = bot
+        self._bot = bot
 
     @app_commands.command(
         name="tic-tac-toe", description="Challenge someone in a 1v1 Tic-Tac-Toe match"
@@ -30,15 +31,13 @@ class TicCog(commands.Cog):
         grid_size: app_commands.Choice[int],
     ) -> None:
         try:
-            console.log_debug(
-                f"/tic-tac-toe: Command used by user {interaction.user.display_name} "
+            logger.debug(
+                f"Command `/tic-tac-toe` used by user {interaction.user.display_name} "
                 f"({interaction.user.id})"
             )
 
             if opponent.id == interaction.user.id:
-                console.log_debug(
-                    "/tic-tac-toe: Player and opponent have the same id. Game start abandoned."
-                )
+                logger.debug("Player and opponent have the same id. Game start abandoned.")
 
                 embed, icon = ui.embed.build_warning(
                     message=(
@@ -60,19 +59,16 @@ class TicCog(commands.Cog):
                 opponent=ui.get_user(user=opponent, emoji=opponent_emoji),
                 grid_size=grid_size.value,
             )
-            await game.connect_database(bot=self.bot)
+            await game.create_db_record()
 
             view: TicTacToeView = TicTacToeView(game=game, timeout=60.0)
             embed, icon = view.build_embed()
 
-            console.log_info(
-                f"/tic-tac-toe: User {interaction.user.display_name} ({interaction.user.id}) "
-                f"started a new {game}."
+            logger.info(
+                f"New game started by user {interaction.user.display_name} ({interaction.user.id})."
             )
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
             await interaction.response.send_message(embed=embed, view=view, file=icon)
             view.message = await interaction.original_response()
-        except Exception:
-            await ui.handle_error(
-                command="/tic-tac-toe", interaction=interaction, use_followup=False
-            )
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)

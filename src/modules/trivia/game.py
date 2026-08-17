@@ -1,5 +1,4 @@
-import console
-from shared import StrachyBot, models, types
+from shared import db_manager, logger, models, types
 
 from .api import TriviaQuestion, api_manager
 from .models import ETriviaCategory, ETriviaDifficulty
@@ -7,8 +6,6 @@ from .repository import create_match, update_match
 
 
 class TriviaGame:
-    _bot: StrachyBot | None
-
     _match_id: int
     _status: models.EMatchStatus
     _player: types.User
@@ -25,7 +22,6 @@ class TriviaGame:
         category: ETriviaCategory = ETriviaCategory.ANY,
         difficulty: ETriviaDifficulty = ETriviaDifficulty.ANY,
     ) -> None:
-        self._bot = None
         self._match_id = -1
         self._status = models.EMatchStatus.PENDING
         self._player = player
@@ -83,10 +79,8 @@ class TriviaGame:
     def correct_answer(self) -> str:
         return self._correct_answer
 
-    async def connect_database(self, bot: StrachyBot) -> None:
-        self._bot = bot
-
-        match_id: int | None = await self._bot.execute_db_operation(
+    async def create_db_record(self) -> None:
+        match_id: int | None = await db_manager.execute(
             db_func=create_match,
             player_id=self._player.id,
             category=self._category,
@@ -97,43 +91,33 @@ class TriviaGame:
 
         if match_id:
             self._match_id = match_id
-            console.log_debug(f"/trivia: Created new database record with id {self._match_id}.")
+            logger.debug(f"Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
-        if not self._bot:
-            console.log_warning(f"/trivia: Database is not connected. Skipping update of {self}.")
-            return
+        await db_manager.execute(db_func=update_match, match_id=self._match_id, status=self._status)
 
-        await self._bot.execute_db_operation(
-            db_func=update_match, match_id=self._match_id, status=self._status
-        )
-
-        console.log_debug(f"/trivia: Updated database record for game {self._match_id}.")
+        logger.debug(f"Updated database record for game {self._match_id}.")
 
     async def handle_timeout(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        console.log_info(f"/trivia: Game {self._match_id} timed out.")
+        logger.info(f"Game {self._match_id} timed out.")
         self._status = models.EMatchStatus.TIMEOUT
         await self._update_database_record()
 
     async def select_answer(self, answer: str) -> bool:
-        console.log_debug(
-            f"/trivia: User {self._player.id} selected answer '{answer}' for game {self._match_id}"
-        )
+        logger.debug(f"Answer '{answer}' selected for game {self._match_id} by user {self._player}")
 
         if self._status != models.EMatchStatus.PENDING:
-            console.log_fail(
-                f"/trivia: Game {self._match_id} already finished. Cannot select an answer."
-            )
+            logger.error(f"Game {self._match_id} already finished. Cannot select an answer.")
             return False
 
         is_correct: bool = answer == self._correct_answer
 
-        console.log_info(
-            f"/trivia: {'Correct' if is_correct else 'Incorrect'} answer '{answer}' "
-            f"chosen for game {self._match_id} by user {self._player.id}."
+        logger.info(
+            f"{'Correct' if is_correct else 'Incorrect'} answer '{answer}' "
+            f"chosen for game {self._match_id} by user {self._player}."
         )
 
         self._status = models.EMatchStatus.WIN if is_correct else models.EMatchStatus.LOSS

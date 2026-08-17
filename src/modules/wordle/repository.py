@@ -3,7 +3,7 @@ from datetime import UTC, date, datetime, time
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import console
+from shared import logger
 from shared.models import EMatchStatus, Match
 
 from .models import WordleMatch
@@ -18,7 +18,7 @@ async def create_match(
     Returns id of the created match.
     """
 
-    console.log_debug(
+    logger.debug(
         f"wordle: Creating a new match (player_id = {player_id}, secret_word = {secret_word})..."
     )
     match_id: int = 0
@@ -38,7 +38,7 @@ async def create_match(
 
         match_id = parent_match.match_id
 
-    console.log_debug(f"wordle: New match ({match_id}) created.")
+    logger.debug(f"wordle: New match ({match_id}) created.")
     return match_id
 
 
@@ -54,7 +54,7 @@ async def update_match(
 
     Returns true on success.
     """
-    console.log_debug(
+    logger.debug(
         f"wordle: Updating match ({match_id}) "
         f"with status ({status}) and {guesses_count} guesses ({guesses})..."
     )
@@ -69,18 +69,18 @@ async def update_match(
         ).scalar_one_or_none()
 
         if not parent_match or not child_match:
-            console.log_error(f"wordle: Match ({match_id}) not found, update aborted.")
+            logger.error(f"wordle: Match ({match_id}) not found, update aborted.")
             return False
 
         if parent_match.status != EMatchStatus.PENDING:
-            console.log_error("wordle: Only 'pending' matches can be updated.")
+            logger.error("wordle: Only 'pending' matches can be updated.")
             return False
 
         parent_match.status = status
         child_match.guesses_count = guesses_count
         child_match.guesses = guesses
 
-    console.log_debug(f"wordle: Match ({match_id}) updated.")
+    logger.debug(f"wordle: Match ({match_id}) updated.")
 
     return True
 

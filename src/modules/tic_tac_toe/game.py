@@ -1,8 +1,7 @@
 import random
 from enum import Enum
 
-import console
-from shared import StrachyBot, models
+from shared import db_manager, logger, models
 from shared.types import EDirection, Position, User, Vector
 
 from .repository import create_match, update_match
@@ -46,8 +45,6 @@ class TicTacToeGrid:
 
 
 class TicTacToeGame:
-    _bot: StrachyBot | None
-
     _match_id: int
     _status: models.EMatchStatus
     _player: User
@@ -57,7 +54,6 @@ class TicTacToeGame:
     _grid: TicTacToeGrid
 
     def __init__(self, player: User, opponent: User, grid_size: int) -> None:
-        self._bot = None
         self._match_id = -1
         self._status = models.EMatchStatus.PENDING
         self._player = player
@@ -121,10 +117,8 @@ class TicTacToeGame:
     def is_players_turn(self) -> bool:
         return self._total_moves % 2 == 0
 
-    async def connect_database(self, bot: StrachyBot) -> None:
-        self._bot = bot
-
-        match_id: int | None = await self._bot.execute_db_operation(
+    async def create_db_record(self) -> None:
+        match_id: int | None = await db_manager.execute(
             db_func=create_match,
             player_id=self._player.id,
             opponent_id=self._opponent.id,
@@ -133,31 +127,23 @@ class TicTacToeGame:
 
         if match_id:
             self._match_id = match_id
-            console.log_debug(
-                f"/tic-tac-toe: Created new database record with id {self._match_id}."
-            )
+            logger.debug(f"Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
-        if not self._bot:
-            console.log_warning(
-                f"/tic-tac-toe: Database is not connected. Skipping update of {self}."
-            )
-            return
-
-        await self._bot.execute_db_operation(
+        await db_manager.execute(
             db_func=update_match,
             match_id=self._match_id,
             status=self._status,
             total_moves=self._total_moves,
         )
 
-        console.log_debug(f"/tic-tac-toe: Updated database record for game {self._match_id}.")
+        logger.debug(f"Updated database record for game {self._match_id}.")
 
     async def handle_timeout(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        console.log_info(f"/tic-tac-toe: Game {self._match_id} timed out.")
+        logger.info(f"Game {self._match_id} timed out.")
         self._status = models.EMatchStatus.TIMEOUT
         await self._update_database_record()
 
@@ -261,23 +247,20 @@ class TicTacToeGame:
         """
 
         if self._status != models.EMatchStatus.PENDING:
-            console.log_fail(
-                f"/tic-tac-toe: Invalid move for game {self._match_id} - the game already finished."
-            )
+            logger.error(f"Invalid move for game {self._match_id} - the game already finished.")
             return False
 
         old_value: ETicTacToeCell | None = self._grid.get_cell_value(pos=position)
 
         if not old_value:
-            console.log_fail(
-                f"/tic-tac-toe: Invalid move for game {self._match_id} "
-                f"- position {position} out of bounds."
+            logger.error(
+                f"Invalid move for game {self._match_id} - position {position} out of bounds."
             )
             return False
 
         if old_value != ETicTacToeCell.EMPTY:
-            console.log_fail(
-                f"/tic-tac-toe: Invalid move for game {self._match_id} "
+            logger.error(
+                f"Invalid move for game {self._match_id} "
                 f"- cell at position {position} is occupied ({old_value})."
             )
             return False

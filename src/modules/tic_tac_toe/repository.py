@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import console
+from shared import logger
 from shared.models import EMatchStatus, Match
 
 from .models import TicTacToeMatch
@@ -16,7 +16,7 @@ async def create_match(
     Returns id of the created match.
     """
 
-    console.log_debug(
+    logger.debug(
         f"tic: Creating a new match (player_id = {player_id}, opponent_id = {opponent_id}, "
         f"grid_size = {grid_size})..."
     )
@@ -37,7 +37,7 @@ async def create_match(
 
         match_id = parent_match.match_id
 
-    console.log_debug(f"tic: New match ({match_id}) created.")
+    logger.debug(f"tic: New match ({match_id}) created.")
     return match_id
 
 
@@ -49,7 +49,7 @@ async def update_match(
 
     Returns true on success.
     """
-    console.log_debug(
+    logger.debug(
         f"tic: Updating match ({match_id}) "
         f"with status ({status}) and total_moves ({total_moves})..."
     )
@@ -64,16 +64,16 @@ async def update_match(
         ).scalar_one_or_none()
 
         if not parent_match or not child_match:
-            console.log_warning(f"tic: Match ({match_id}) not found, update aborted.")
+            logger.warning(f"tic: Match ({match_id}) not found, update aborted.")
             return False
 
         if parent_match.status != EMatchStatus.PENDING:
-            console.log_error("tic: Only 'pending' matches can be updated.")
+            logger.error("tic: Only 'pending' matches can be updated.")
             return False
 
         parent_match.status = status
         child_match.total_moves = total_moves
 
-    console.log_debug(f"tic: Match ({match_id}) updated.")
+    logger.debug(f"tic: Match ({match_id}) updated.")
 
     return True

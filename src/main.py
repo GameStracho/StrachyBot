@@ -3,8 +3,7 @@ import os
 
 from dotenv import load_dotenv
 
-import console
-from shared import StrachyBot
+from shared import StrachyBot, logger
 
 
 async def main() -> None:
@@ -12,24 +11,23 @@ async def main() -> None:
 
     if profile == "development":
         load_dotenv()
-        console.log_debug("Environment variables loaded.")
+        logger.debug("Environmental variables loaded.")
 
     token: str | None = os.getenv("DISCORD_TOKEN")
 
     if token is None:
-        console.log_error("Could not load discord token.")
+        logger.critical("Could not load discord token.")
         return
 
     bot = StrachyBot()
-    bot.create_db_session_factory()
 
     try:
         await bot.start(token)
     except asyncio.CancelledError:
-        console.log_info("Shutdown requested. Closing bot...")
+        logger.info("Shutdown requested. Closing bot...")
     finally:
         if not bot.is_closed():
-            console.log_info("Closing bot HTTP session and active connections...")
+            logger.info("Closing bot HTTP session and active connections...")
             await bot.close()
 
 

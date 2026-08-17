@@ -1,9 +1,9 @@
 import random
 
 import discord
+from typing_extensions import override
 
-import console
-from shared import models, types, ui
+from shared import logger, models, types, ui
 
 from .game import TriviaGame
 
@@ -36,9 +36,8 @@ class TriviaView(discord.ui.View):
                 )
             )
 
-        console.log_debug(
-            f"/trivia: New TriviaView created for game {self._game.match_id} "
-            f"with {timeout}s timeout."
+        logger.debug(
+            f"New TriviaView created for game {self._game.match_id} with {timeout}s timeout."
         )
 
     @property
@@ -75,17 +74,18 @@ class TriviaView(discord.ui.View):
         ui.embed.remove_field(embed=embed, name="Timeout")
 
     def disable_buttons(self) -> None:
-        console.log_debug(f"/trivia: Revealing answers for game {self._game.match_id}...")
+        logger.debug(f"Revealing answers for game {self._game.match_id}...")
         for child in self.children:
             if isinstance(child, TriviaButton):
                 child.disable()
-        console.log_debug(f"/trivia: Answers revealed for game {self._game.match_id}.")
+        logger.debug(f"Answers revealed for game {self._game.match_id}.")
 
+    @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
             if interaction.user.id != self._game.player.id:
-                console.log_warning(
-                    f"/trivia: Ineligible user {interaction.user.display_name} "
+                logger.warning(
+                    f"Ineligible user {interaction.user.display_name} "
                     f"({interaction.user.id}) "
                     f"responded to game {self._game.match_id}"
                 )
@@ -96,10 +96,11 @@ class TriviaView(discord.ui.View):
                 return False  # Aborts processing and DOES NOT reset/extend the view timeout
 
             return True  # Authorized click; allow execution
-        except Exception:
-            await ui.handle_error(command="/trivia", interaction=interaction, use_followup=False)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
             return False
 
+    @override
     async def on_timeout(self) -> None:
         if self._game.status != models.EMatchStatus.PENDING or self.message is None:
             return
@@ -119,24 +120,30 @@ class TriviaButton(discord.ui.Button[TriviaView]):
     _parent_view: TriviaView
     _is_correct: bool
     _is_selected: bool
+    _full_answer: str
 
     def __init__(
         self, parent_view: TriviaView, label: str, is_correct: bool, row: int, emoji: str = ""
     ):
-        super().__init__(label=label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row)
+        display_label = label[:77] + "..." if len(label) > 80 else label
+        super().__init__(
+            label=display_label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row
+        )
 
         self._parent_view = parent_view
         self._is_correct = is_correct
         self._is_selected = False
+        self._full_answer = label
 
-        console.log_debug(
-            f"/trivia: New TriviaButton created for game {parent_view.game.match_id}: "
-            f"label = '{label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
+        logger.debug(
+            f"New TriviaButton created for game {parent_view.game.match_id}: "
+            f"label = '{display_label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
         )
 
+    @override
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
-            answer: str = self.label if self.label else ""
+            answer: str = self._full_answer
             await self._parent_view.game.select_answer(answer=answer)
 
             self._is_selected = True
@@ -145,8 +152,8 @@ class TriviaButton(discord.ui.Button[TriviaView]):
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
-        except Exception:
-            await ui.handle_error(command="/trivia", interaction=interaction, use_followup=False)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
 
     def disable(self) -> None:
         """Disable the button and reveal whether the answer was correct or wrong."""

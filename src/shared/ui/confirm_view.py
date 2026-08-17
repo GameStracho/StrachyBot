@@ -1,8 +1,9 @@
 from collections.abc import Awaitable, Callable
 
 import discord
+from typing_extensions import override
 
-import console
+from shared.logs import logger
 
 from .constants import EMOJIS
 from .helpers import get_timeout_timestamp, handle_error, load_attachment
@@ -56,10 +57,10 @@ class ConfirmView(discord.ui.View):
         if cancel_emoji:
             self.cancel_button.emoji = cancel_emoji
 
-        console.log_debug(f"New ConfirmView created ({self.id}).")
+        logger.debug(f"New ConfirmView created ({self.id}).")
 
     def build_embed(self, question: str) -> tuple[discord.Embed, discord.File]:
-        console.log_debug(f"Building embed for ConfirmView ({self.id}, question = '{question}')...")
+        logger.debug(f"Building embed for ConfirmView ({self.id}, question = '{question}')...")
         embed: discord.Embed = discord.Embed(
             color=discord.Color.blue(), title="Confirmation", description=question
         )
@@ -70,11 +71,12 @@ class ConfirmView(discord.ui.View):
         embed.set_thumbnail(url=icon_url)
         embed.add_field(name="Timeout", value=get_timeout_timestamp(self), inline=False)
 
-        console.log_debug(f"Embed build for ConfirmView ({self.id}).")
+        logger.debug(f"Embed build for ConfirmView ({self.id}).")
         return (embed, icon)
 
+    @override
     async def on_timeout(self) -> None:
-        console.log_debug(f"ConfirmView ({self.id}) timed out.")
+        logger.debug(f"ConfirmView ({self.id}) timed out.")
 
         for item in self.children:
             if isinstance(item, discord.ui.Button):
@@ -83,19 +85,20 @@ class ConfirmView(discord.ui.View):
         if self._interaction:
             await self._interaction.delete_original_response()
 
+    @override
     async def on_error(
         self,
         interaction: discord.Interaction,
         error: Exception,
         item: discord.ui.Item["ConfirmView"],
     ) -> None:
-        await handle_error("shared", interaction=interaction, use_followup=False)
+        await handle_error(error=error, interaction=interaction)
 
     @discord.ui.button()
     async def confirm_button(
         self, interaction: discord.Interaction, button: discord.ui.Button["ConfirmView"]
     ) -> None:
-        console.log_debug(f"ConfirmView ({self.id}) confirmed.")
+        logger.debug(f"ConfirmView ({self.id}) confirmed.")
 
         self.stop()
         await self._on_confirm(interaction)
@@ -110,7 +113,7 @@ class ConfirmView(discord.ui.View):
     async def cancel_button(
         self, interaction: discord.Interaction, button: discord.ui.Button["ConfirmView"]
     ) -> None:
-        console.log_debug(f"ConfirmView ({self.id}) cancelled.")
+        logger.debug(f"ConfirmView ({self.id}) cancelled.")
 
         self.stop()
         if self._on_cancel:

@@ -1,4 +1,4 @@
-## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-16
+## [2.0.0] Harder, Better, Faster, Stronger - 2026-08-17
 
 ### Added
 - To-do list ([TODO.md](TODO.md) )
@@ -7,7 +7,9 @@
 - Scripts `restore.sh` for restoring backups and `setup.sh` for setting up the environment
 - Updates of database records on each game update
 - Custom shared type `User`
-- Logging of used valid commands
+- Module identification to console logs
+- Logging of used valid commands and console logs into the database
+- Singletons that manage database executions and console logs
 
 ### Changed
 - Renamed custom AI agent
@@ -26,6 +28,7 @@
 - Files that are not used anymore
 - Unused `/announcement` command
 - Adminer auto-login
+- Command identification from console logs
 
 ### Fixed
 - Increased `Trivia` timeout to 60 seconds
@@ -35,6 +38,7 @@
 - Automated `Tic-Tac-Toe` auto-play moves
 - Hiding of secret words in `Wordle` daily challenge
 - Reduced API calls by caching `Trivia` questions
+- Truncated `Trivia` answers that exceed maximum character limit
 
 ---
 

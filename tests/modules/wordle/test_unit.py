@@ -8,8 +8,10 @@ import pytest
 
 import modules.wordle.game as game_mod
 from modules.wordle.game import WordleDictionary, WordleGame, WordleLetterCategory
+from modules.wordle.repository import update_match
 from modules.wordle.ui import WordleGuessModal, WordleView
-from shared import StrachyBot, models, ui
+from shared import models, ui
+from shared.database import DatabaseManager
 from tests import mocks
 
 
@@ -115,14 +117,13 @@ def test_wordle_game_initialization() -> None:
 @pytest.mark.asyncio
 async def test_wordle_game_connect_database(monkeypatch: pytest.MonkeyPatch) -> None:
     game = WordleGame(player=mocks.DummyUser(), is_daily=False)
-    bot_mock = mocks.DummyStrachyBot()
 
     async def mock_execute(*args: Any, **kwargs: Any) -> int:
         return 999
 
-    monkeypatch.setattr(StrachyBot, "execute_db_operation", mock_execute)
+    monkeypatch.setattr(DatabaseManager, "execute", mock_execute)
 
-    await game.connect_database(bot_mock)
+    await game.create_db_record()
     assert game.match_id == 999
 
 
@@ -130,45 +131,47 @@ async def test_wordle_game_connect_database(monkeypatch: pytest.MonkeyPatch) -> 
 async def test_wordle_game_add_guess_win(monkeypatch: pytest.MonkeyPatch) -> None:
     game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
-    bot_mock = mocks.DummyStrachyBot()
-    game._bot = bot_mock
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
+    monkeypatch.setattr(DatabaseManager, "execute", update_mock)
 
     await game.add_guess("apple")
 
     assert game.guesses_count == 1
     assert game.last_guess == "apple"
     assert game.status == models.EMatchStatus.WIN
-    update_mock.assert_called_once()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 1
 
 
 @pytest.mark.asyncio
 async def test_wordle_game_add_guess_loss(monkeypatch: pytest.MonkeyPatch) -> None:
     game = WordleGame(player=mocks.DummyUser(), is_daily=False)
     game._secret_word = "apple"
-    bot_mock = mocks.DummyStrachyBot()
-    game._bot = bot_mock
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
+    monkeypatch.setattr(DatabaseManager, "execute", update_mock)
 
     # 5 wrong guesses
     for _ in range(5):
         await game.add_guess("pears")
         assert game.status == models.EMatchStatus.PENDING
 
-    update_mock.assert_called()
+    assert any(c.kwargs.get("db_func") == update_match for c in update_mock.call_args_list)
 
     # 6th wrong guess triggers LOSS
     update_mock.reset_mock()
     await game.add_guess("pears")
     assert game.status == models.EMatchStatus.LOSS
     assert game.guesses_count == 6
-    update_mock.assert_called_once()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 1
 
 
 @pytest.mark.asyncio
@@ -209,41 +212,49 @@ async def test_wordle_game_guess_random_word(monkeypatch: pytest.MonkeyPatch) ->
 @pytest.mark.asyncio
 async def test_wordle_game_handle_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     game = WordleGame(player=mocks.DummyUser(), is_daily=False)
-    bot_mock = mocks.DummyStrachyBot()
-    game._bot = bot_mock
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
+    monkeypatch.setattr(DatabaseManager, "execute", update_mock)
 
     await game.handle_timeout()
     assert game.status == models.EMatchStatus.TIMEOUT
-    update_mock.assert_called_once()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 1
 
     # Call it again when not pending, it should do nothing
     update_mock.reset_mock()
     await game.handle_timeout()
-    update_mock.assert_not_called()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 0
 
 
 @pytest.mark.asyncio
 async def test_wordle_game_handle_surrender(monkeypatch: pytest.MonkeyPatch) -> None:
     game = WordleGame(player=mocks.DummyUser(), is_daily=False)
-    bot_mock = mocks.DummyStrachyBot()
-    game._bot = bot_mock
     game._match_id = 999
 
     update_mock = AsyncMock()
-    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
+    monkeypatch.setattr(DatabaseManager, "execute", update_mock)
 
     await game.handle_surrender()
     assert game.status == models.EMatchStatus.SURRENDER
-    update_mock.assert_called_once()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 1
 
     # Call it again when not pending, it should do nothing
     update_mock.reset_mock()
     await game.handle_surrender()
-    update_mock.assert_not_called()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 0
 
 
 def test_wordle_game_categorize_word() -> None:
@@ -478,7 +489,7 @@ async def test_wordle_view_on_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     view.message = message_mock
 
     update_mock = AsyncMock()
-    monkeypatch.setattr(StrachyBot, "execute_db_operation", update_mock)
+    monkeypatch.setattr(DatabaseManager, "execute", update_mock)
 
     await view.on_timeout()
 

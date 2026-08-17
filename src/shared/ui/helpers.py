@@ -4,7 +4,7 @@ import traceback
 
 import discord
 
-import console
+from shared.logs import logger
 from shared.types import User
 
 
@@ -18,26 +18,24 @@ def get_timeout_timestamp(view: discord.ui.View) -> str:
     return f"<t:{timestamp}:R> ⏱️"
 
 
-async def handle_error(
-    command: str, interaction: discord.Interaction, use_followup: bool = False
-) -> None:
+async def handle_error(error: Exception, interaction: discord.Interaction) -> None:
     """
     Print error message with details to console and send generic message to user.
-    IMPORTANT: only call from an except block!
     """
-    console.log_error(
-        f"{command}: An unexpected error occurred for {interaction.user.display_name}: "
+    logger.critical(
+        f"An unexpected error occurred for user '{interaction.user.display_name}' "
+        f"({interaction.user.id}): "
         f"\n{traceback.format_exc()}"
     )
 
     embed: discord.Embed = discord.Embed(color=discord.Color.red())
     embed.title = "Error"
-    embed.description = "An unexpected error occurred. Try again later."
+    embed.description = f"An unexpected error occurred: '{error}'. \nTry again later."
 
     icon: discord.File = discord.File("./src/shared/images/error.png", filename="error.png")
     embed.set_thumbnail(url="attachment://error.png")
 
-    if use_followup:
+    if interaction.response.is_done():
         await interaction.followup.send(embed=embed, file=icon, ephemeral=True)
     else:
         await interaction.response.send_message(embed=embed, file=icon, ephemeral=True)
@@ -55,7 +53,7 @@ def load_attachment(path: str, filename: str, sub_dir: str = "") -> tuple[discor
     )
     attachment: discord.File = discord.File(fp=attachment_path, filename=filename)
 
-    console.log_debug(f"Attachment '{attachment_path}' loaded.")
+    logger.debug(f"Attachment '{attachment_path}' loaded.")
 
     return (attachment, f"attachment://{filename}")
 

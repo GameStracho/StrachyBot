@@ -1,14 +1,3 @@
-## [2.0.0] Harder, Better, Faster, Stronger
-
-### Better Console Logs
-
-- logovat zprávy přímo do databáze
-- přidat možnosti pro vypnutí logování do databáze, vypnutí vypisování logů do konzole, nastavení log levelu (debug, info, success, atd.) - přidat ke každé zprávě parametr "module" (ten bude značit, ke kterému modulu zpráva patří)
-- přidat více info a debug logů ke stávajícím modulům
-- zlepšit error handling (pomocí override 'on_error' metod v custom button a view třídách)
-
----
-
 ## Uživatelské statistiky
 
 ---

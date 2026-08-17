@@ -4,22 +4,23 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-import console
-from shared import StrachyBot, ui
+from shared import StrachyBot, logger, ui
 
 from .helpers import parse_changelog
 
 
-class UtilsCog(commands.Cog):
+class InfoCog(commands.Cog):
+    _bot: StrachyBot
+
     def __init__(self, bot: StrachyBot) -> None:
-        self.bot = bot
+        self._bot = bot
 
     @app_commands.command(name="info", description="Show important information about the bot")
     async def info(self, interaction: discord.Interaction) -> None:
-        console.log_info(f"/info: User {interaction.user.display_name} used the command.")
-
         try:
-            uptime: datetime.timedelta = discord.utils.utcnow() - self.bot.start_time
+            logger.info(f"User {interaction.user.display_name} used the '/info' command.")
+
+            uptime: datetime.timedelta = discord.utils.utcnow() - self._bot.start_time
             description: str = (
                 "Discord bot with fun mini-games like *Trivia*, *Wordle* and *Tic-Tac-Toe*."
             )
@@ -44,5 +45,5 @@ class UtilsCog(commands.Cog):
             embed.set_thumbnail(url=icon_url)
 
             await interaction.response.send_message(embed=embed, file=icon)
-        except Exception:
-            await ui.handle_error("/info", interaction)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)

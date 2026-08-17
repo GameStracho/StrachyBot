@@ -5,8 +5,7 @@ import string
 from datetime import UTC, date, datetime
 from enum import Enum
 
-import console
-from shared import StrachyBot, models, types
+from shared import db_manager, logger, models, types
 
 from .repository import create_match, update_match
 
@@ -38,8 +37,8 @@ class WordleDictionary:
         with open(file=answers_path, mode="rb") as file:
             self._line_size = len(file.readline())
 
-        console.log_debug(
-            f"/wordle: Initialized dictionary from answers file "
+        logger.debug(
+            f"Initialized dictionary from answers file "
             f"'{self._secret_words_path}' ({self._secret_words_size} B) "
             f"and allowed guesses file "
             f"'{self._allowed_guesses_path}' ({self._allowed_guesses_size} B)"
@@ -54,9 +53,7 @@ class WordleDictionary:
             file.seek(random_line * self._line_size)
             result = file.read(5).decode("utf-8").lower()
 
-        console.log_debug(
-            f"/wordle: Found random word '{result}' on line {random_line} in file '{file_path}'."
-        )
+        logger.debug(f"Found random word '{result}' on line {random_line} in file '{file_path}'.")
         return result
 
     def get_random_secret_word(self) -> str:
@@ -89,9 +86,8 @@ class WordleDictionary:
             file.seek(line_index * self._line_size)
             result = file.read(5).decode("utf-8").lower()
 
-        console.log_debug(
-            f"/wordle: Daily challenge word '{result}' (line {line_index}) "
-            f"selected for date {date_seed}."
+        logger.debug(
+            f"Daily challenge word '{result}' (line {line_index}) selected for date {date_seed}."
         )
         return result
 
@@ -118,15 +114,11 @@ class WordleDictionary:
 
     def is_valid_word(self, word: str) -> bool:
         if len(word) != 5:
-            console.log_debug(
-                f"/wordle: Word '{word}' has invalid length {len(word)} (required 5)."
-            )
+            logger.debug(f"Word '{word}' has invalid length {len(word)} (required 5).")
             return False
 
         if not word.isalpha():
-            console.log_debug(
-                f"/wordle: Word '{word}' contains invalid characters. Only letters are allowed."
-            )
+            logger.debug(f"Word '{word}' contains invalid characters. Only letters are allowed.")
             return False
 
         if not (
@@ -139,16 +131,14 @@ class WordleDictionary:
                 file_size=self._allowed_guesses_size,
             )
         ):
-            console.log_debug(f"/wordle: Word '{word}' is invalid.")
+            logger.debug(f"Word '{word}' is invalid.")
             return False
 
-        console.log_debug(f"/wordle: Word '{word}' is valid.")
+        logger.debug(f"Word '{word}' is valid.")
         return True
 
 
 class WordleGame:
-    _bot: StrachyBot | None
-
     _match_id: int
     _status: models.EMatchStatus
     _player: types.User
@@ -160,7 +150,6 @@ class WordleGame:
     _dictionary: WordleDictionary
 
     def __init__(self, player: types.User, is_daily: bool) -> None:
-        self._bot = None
         self._match_id = -1
         self._player = player
         self._is_daily = is_daily
@@ -231,10 +220,8 @@ class WordleGame:
     def is_previous_guess(self, word: str) -> bool:
         return word in self._guesses
 
-    async def connect_database(self, bot: StrachyBot) -> None:
-        self._bot = bot
-
-        match_id: int | None = await self._bot.execute_db_operation(
+    async def create_db_record(self) -> None:
+        match_id: int | None = await db_manager.execute(
             db_func=create_match,
             player_id=self._player.id,
             secret_word=self._secret_word,
@@ -243,14 +230,10 @@ class WordleGame:
 
         if match_id:
             self._match_id = match_id
-            console.log_debug(f"/wordle: Created new database record with id {self._match_id}.")
+            logger.debug(f"Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
-        if not self._bot:
-            console.log_warning(f"/wordle: Database is not connected. Skipping update of {self}.")
-            return
-
-        await self._bot.execute_db_operation(
+        await db_manager.execute(
             db_func=update_match,
             match_id=self._match_id,
             status=self._status,
@@ -258,13 +241,13 @@ class WordleGame:
             guesses=self._guesses,
         )
 
-        console.log_debug(f"/wordle: Updated database record for game {self._match_id}.")
+        logger.debug(f"Updated database record for game {self._match_id}.")
 
     async def handle_timeout(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        console.log_info(f"/wordle: Game {self._match_id} timed out.")
+        logger.info(f"Game {self._match_id} timed out.")
         self._status = models.EMatchStatus.TIMEOUT
         await self._update_database_record()
 
@@ -273,18 +256,16 @@ class WordleGame:
             return
 
         self._guesses.append(word)
-        console.log_info(
-            f"/wordle: User {self._player} guessed word '{word}' in game {self._match_id}."
-        )
+        logger.info(f"User {self._player} guessed word '{word}' in game {self._match_id}.")
 
         if word == self._secret_word:
-            console.log_info(f"/wordle: User {self._player} won game {self._match_id}.")
+            logger.info(f"User {self._player} won game {self._match_id}.")
             self._status = models.EMatchStatus.WIN
             await self._update_database_record()
             return
 
         if len(self._guesses) == 6:
-            console.log_info(f"/wordle: User {self._player} lost game {self._match_id}.")
+            logger.info(f"User {self._player} lost game {self._match_id}.")
             self._status = models.EMatchStatus.LOSS
 
         await self._update_database_record()
@@ -295,9 +276,7 @@ class WordleGame:
         while self.is_previous_guess(random_guess):
             random_guess = self._dictionary.get_random_allowed_guess()
 
-        console.log_info(
-            f"/wordle: Generated random word '{random_guess}' for game {self._match_id}"
-        )
+        logger.info(f" Generated random word '{random_guess}' for game {self._match_id}")
 
         await self.add_guess(word=random_guess)
 
@@ -305,7 +284,7 @@ class WordleGame:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        console.log_info(f"/wordle: User {self._player} gave up game {self._match_id}.")
+        logger.info(f"User {self._player} gave up game {self._match_id}.")
         self._status = models.EMatchStatus.SURRENDER
         await self._update_database_record()
 
