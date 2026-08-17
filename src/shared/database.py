@@ -34,6 +34,10 @@ class DatabaseManager:
         """Check if code is running under a unit testing framework (pytest)."""
         return "pytest" in sys.modules
 
+    @property
+    def db_session_factory(self) -> async_sessionmaker[AsyncSession] | None:
+        return self._db_session_factory
+
     def initialize(self, db_engine: AsyncEngine | None = None) -> None:
         """Initialize the engine and session factory."""
         if self._db_engine:
@@ -53,10 +57,6 @@ class DatabaseManager:
         self._db_session_factory = async_sessionmaker(
             bind=self._db_engine, class_=AsyncSession, expire_on_commit=False
         )
-
-    @property
-    def db_session_factory(self) -> async_sessionmaker[AsyncSession] | None:
-        return self._db_session_factory
 
     async def execute(
         self,

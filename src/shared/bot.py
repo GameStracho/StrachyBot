@@ -1,16 +1,16 @@
 import asyncio
 import importlib
 import os
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, ParamSpec, TypeVar, override
 
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from .database import db_manager
 from .logs import highlight, logger
-from .repository import create_command_log
+from .repository import create_command_log, delete_expired_logs
 
 P = ParamSpec("P")  # parameter type
 R = TypeVar("R")  # result value type
@@ -41,6 +41,7 @@ class StrachyBot(commands.Bot):
         """Called before the bot logs in."""
         # Initialize database singleton connection
         db_manager.initialize()
+        await self.cleanup_old_logs_task()
 
         await self.__load_modules()
 
@@ -106,3 +107,15 @@ class StrachyBot(commands.Bot):
 
         if success:
             logger.info("All modules loaded.")
+
+    @tasks.loop(hours=24)
+    async def cleanup_old_logs_task(self) -> None:
+        """Deletes database logs older than 7 days once per day."""
+        cutoff_date = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=7)
+
+        deleted_rows: int | None = await db_manager.execute(
+            db_func=delete_expired_logs, cutoff=cutoff_date
+        )
+
+        if deleted_rows:
+            logger.info(f"Cleaned up {deleted_rows} logs older than 7 days.")

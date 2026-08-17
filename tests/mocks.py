@@ -84,8 +84,9 @@ class DummyContextManager:
 
 
 class DummyResult:
-    def __init__(self, value: Any) -> None:
+    def __init__(self, value: Any = None, rowcount: int = 0) -> None:
         self._value = value
+        self.rowcount = rowcount
 
     def scalar_one_or_none(self) -> Any:
         return self._value
@@ -109,6 +110,9 @@ class DummySession:
         for obj in self.added:
             if hasattr(obj, "match_id") and getattr(obj, "match_id", None) is None:
                 object.__setattr__(obj, "match_id", 1)
+
+    async def commit(self) -> None:
+        pass
 
     async def execute(self, *args: Any, **kwargs: Any) -> DummyResult:
         self.executed = True

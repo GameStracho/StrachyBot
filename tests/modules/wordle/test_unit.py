@@ -8,6 +8,7 @@ import pytest
 
 import modules.wordle.game as game_mod
 from modules.wordle.game import WordleDictionary, WordleGame, WordleLetterCategory
+from modules.wordle.repository import update_match
 from modules.wordle.ui import WordleGuessModal, WordleView
 from shared import models, ui
 from shared.database import DatabaseManager
@@ -140,7 +141,10 @@ async def test_wordle_game_add_guess_win(monkeypatch: pytest.MonkeyPatch) -> Non
     assert game.guesses_count == 1
     assert game.last_guess == "apple"
     assert game.status == models.EMatchStatus.WIN
-    update_mock.assert_called_once()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 1
 
 
 @pytest.mark.asyncio
@@ -157,14 +161,17 @@ async def test_wordle_game_add_guess_loss(monkeypatch: pytest.MonkeyPatch) -> No
         await game.add_guess("pears")
         assert game.status == models.EMatchStatus.PENDING
 
-    update_mock.assert_called()
+    assert any(c.kwargs.get("db_func") == update_match for c in update_mock.call_args_list)
 
     # 6th wrong guess triggers LOSS
     update_mock.reset_mock()
     await game.add_guess("pears")
     assert game.status == models.EMatchStatus.LOSS
     assert game.guesses_count == 6
-    update_mock.assert_called_once()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 1
 
 
 @pytest.mark.asyncio
@@ -212,12 +219,18 @@ async def test_wordle_game_handle_timeout(monkeypatch: pytest.MonkeyPatch) -> No
 
     await game.handle_timeout()
     assert game.status == models.EMatchStatus.TIMEOUT
-    update_mock.assert_called_once()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 1
 
     # Call it again when not pending, it should do nothing
     update_mock.reset_mock()
     await game.handle_timeout()
-    update_mock.assert_not_called()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 0
 
 
 @pytest.mark.asyncio
@@ -230,12 +243,18 @@ async def test_wordle_game_handle_surrender(monkeypatch: pytest.MonkeyPatch) -> 
 
     await game.handle_surrender()
     assert game.status == models.EMatchStatus.SURRENDER
-    update_mock.assert_called_once()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 1
 
     # Call it again when not pending, it should do nothing
     update_mock.reset_mock()
     await game.handle_surrender()
-    update_mock.assert_not_called()
+    update_calls = [
+        c for c in update_mock.call_args_list if c.kwargs.get("db_func") == update_match
+    ]
+    assert len(update_calls) == 0
 
 
 def test_wordle_game_categorize_word() -> None:

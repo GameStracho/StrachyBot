@@ -1,3 +1,7 @@
+from datetime import datetime
+from typing import Any, cast
+
+from sqlalchemy import CursorResult, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import CommandLog, Log
@@ -29,3 +33,11 @@ async def create_log(session: AsyncSession, level: str, module: str, message: st
         session.add(record)
 
     return record.id
+
+
+async def delete_expired_logs(session: AsyncSession, cutoff: datetime) -> int:
+    statement = delete(Log).where(Log.created_at < cutoff)
+    result: CursorResult[Any] = cast(CursorResult[Any], await session.execute(statement))
+    await session.commit()
+
+    return result.rowcount
