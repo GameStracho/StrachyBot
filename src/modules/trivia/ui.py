@@ -124,7 +124,9 @@ class TriviaButton(discord.ui.Button[TriviaView]):
         self, parent_view: TriviaView, label: str, is_correct: bool, row: int, emoji: str = ""
     ):
         display_label = label[:77] + "..." if len(label) > 80 else label
-        super().__init__(label=display_label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row)
+        super().__init__(
+            label=display_label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row
+        )
 
         self._parent_view = parent_view
         self._is_correct = is_correct

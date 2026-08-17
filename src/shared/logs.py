@@ -90,11 +90,8 @@ class ModuleLogger(logging.Logger):
 class AsyncDatabaseLogHandler(logging.Handler):
     """Logging handler that asynchronously writes log records to PostgreSQL."""
 
-    def __init__(
-        self, level: int = logging.INFO, formatter: logging.Formatter | None = None
-    ) -> None:
+    def __init__(self, level: int = logging.INFO) -> None:
         super().__init__(level=level)
-        self.setFormatter(formatter)
 
     def emit(self, record: logging.LogRecord) -> None:
         """Called automatically whenever a log record passes level checks."""
@@ -137,6 +134,7 @@ def setup_logger(level: int = logging.INFO) -> logging.Logger:
         console_handler.setLevel(level)
 
         logger.addHandler(console_handler)
+        logger.addHandler(AsyncDatabaseLogHandler(level=level))
 
     return logger
 
