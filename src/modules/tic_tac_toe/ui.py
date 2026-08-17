@@ -137,10 +137,8 @@ class TicTacToeView(discord.ui.View):
                 return False  # Aborts processing and DOES NOT reset/extend the view timeout
 
             return True  # Authorized click; allow execution
-        except Exception:
-            await ui.handle_error(
-                command="/tic-tac-toe", interaction=interaction, use_followup=False
-            )
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
             return False
 
     @override
@@ -229,7 +227,5 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
-        except Exception:
-            await ui.handle_error(
-                command="/tic-tac-toe", interaction=interaction, use_followup=False
-            )
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)

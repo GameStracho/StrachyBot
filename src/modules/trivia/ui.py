@@ -97,8 +97,8 @@ class TriviaView(discord.ui.View):
                 return False  # Aborts processing and DOES NOT reset/extend the view timeout
 
             return True  # Authorized click; allow execution
-        except Exception:
-            await ui.handle_error(command="/trivia", interaction=interaction, use_followup=False)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
             return False
 
     @override
@@ -153,8 +153,8 @@ class TriviaButton(discord.ui.Button[TriviaView]):
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
-        except Exception:
-            await ui.handle_error(command="/trivia", interaction=interaction, use_followup=False)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
 
     def disable(self) -> None:
         """Disable the button and reveal whether the answer was correct or wrong."""

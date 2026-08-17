@@ -73,7 +73,5 @@ class TicCog(commands.Cog):
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
             await interaction.response.send_message(embed=embed, view=view, file=icon)
             view.message = await interaction.original_response()
-        except Exception:
-            await ui.handle_error(
-                command="/tic-tac-toe", interaction=interaction, use_followup=False
-            )
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)

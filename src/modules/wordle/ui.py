@@ -185,8 +185,8 @@ class WordleView(discord.ui.View):
                 return False  # Aborts processing and DOES NOT reset/extend the view timeout
 
             return True  # Authorized click; allow execution
-        except Exception:
-            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
             return False
 
     @override
@@ -237,8 +237,8 @@ class WordleView(discord.ui.View):
                 f"/wordle: Modal for game {self._game.match_id} "
                 f"sent to User {interaction.user.display_name} ({interaction.user.id})."
             )
-        except Exception:
-            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
 
     @discord.ui.button(
         label="Random guess",
@@ -290,8 +290,8 @@ class WordleView(discord.ui.View):
             await interaction.response.send_message(
                 embed=confirm_embed, view=confirm_view, file=confirm_icon, ephemeral=True
             )
-        except Exception:
-            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
 
     @discord.ui.button(
         label="Give up", style=discord.ButtonStyle.secondary, emoji=ui.EMOJIS["game_surrender"]
@@ -341,8 +341,8 @@ class WordleView(discord.ui.View):
             await interaction.response.send_message(
                 embed=confirm_embed, view=confirm_view, file=confirm_icon, ephemeral=True
             )
-        except Exception:
-            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
 
 
 class WordleGuessModal(discord.ui.Modal):
@@ -421,5 +421,5 @@ class WordleGuessModal(discord.ui.Modal):
             self._parent_view.update_embed(embed=embed, default_status=updated_status)
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
             self._parent_view.message = await interaction.original_response()
-        except Exception:
-            await ui.handle_error(command="/wordle", interaction=interaction, use_followup=False)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)

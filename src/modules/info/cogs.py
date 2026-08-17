@@ -17,9 +17,9 @@ class InfoCog(commands.Cog):
 
     @app_commands.command(name="info", description="Show important information about the bot")
     async def info(self, interaction: discord.Interaction) -> None:
-        logger.info(f"/info: User {interaction.user.display_name} used the command.")
-
         try:
+            logger.info(f"User {interaction.user.display_name} used the '/info' command.")
+
             uptime: datetime.timedelta = discord.utils.utcnow() - self._bot.start_time
             description: str = (
                 "Discord bot with fun mini-games like *Trivia*, *Wordle* and *Tic-Tac-Toe*."
@@ -45,5 +45,5 @@ class InfoCog(commands.Cog):
             embed.set_thumbnail(url=icon_url)
 
             await interaction.response.send_message(embed=embed, file=icon)
-        except Exception:
-            await ui.handle_error("/info", interaction)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)

@@ -92,7 +92,7 @@ class ConfirmView(discord.ui.View):
         error: Exception,
         item: discord.ui.Item["ConfirmView"],
     ) -> None:
-        await handle_error("shared", interaction=interaction, use_followup=False)
+        await handle_error(error=error, interaction=interaction)
 
     @discord.ui.button()
     async def confirm_button(

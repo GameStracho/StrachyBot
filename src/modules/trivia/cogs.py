@@ -32,6 +32,7 @@ class TriviaCog(commands.Cog):
                 f"/trivia: Command used by user {interaction.user.display_name} "
                 f"({interaction.user.id})"
             )
+
             game: TriviaGame = TriviaGame(
                 player=ui.get_user(user=interaction.user), category=category, difficulty=difficulty
             )
@@ -49,5 +50,5 @@ class TriviaCog(commands.Cog):
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
             await interaction.followup.send(embed=embed, view=view, file=icon)
             view.message = await interaction.original_response()
-        except Exception:
-            await ui.handle_error(command="/trivia", interaction=interaction, use_followup=True)
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
