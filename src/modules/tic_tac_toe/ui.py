@@ -22,7 +22,7 @@ class TicTacToeView(discord.ui.View):
                 self.add_item(TicTacToeButton(parent_view=self, position=Position(x, y)))
 
         logger.debug(
-            f"/tic-tac-toe: New TicTacToeView created for game {self._game.match_id} "
+            f"New TicTacToeView created for game {self._game.match_id} "
             f"with {timeout}s timeout."
         )
 
@@ -116,7 +116,7 @@ class TicTacToeView(discord.ui.View):
             if isinstance(child, TicTacToeButton):
                 child.disabled = True
 
-        logger.debug(f"/tic-tac-toe: Buttons disabled for game {self._game.match_id}.")
+        logger.debug(f"Buttons disabled for game {self._game.match_id}.")
 
     @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -177,7 +177,7 @@ class TicTacToeButton(discord.ui.Button[TicTacToeView]):
         self._position = position
 
         logger.debug(
-            f"/tic-tac-toe: New TicTacToeButton created "
+            f"New TicTacToeButton created "
             f"for game {parent_view.game.match_id}: pos = {position}."
         )
 

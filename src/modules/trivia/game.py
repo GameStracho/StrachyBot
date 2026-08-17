@@ -91,37 +91,37 @@ class TriviaGame:
 
         if match_id:
             self._match_id = match_id
-            logger.debug(f"/trivia: Created new database record with id {self._match_id}.")
+            logger.debug(f"Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
         await db_manager.execute(db_func=update_match, match_id=self._match_id, status=self._status)
 
-        logger.debug(f"/trivia: Updated database record for game {self._match_id}.")
+        logger.debug(f"Updated database record for game {self._match_id}.")
 
     async def handle_timeout(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        logger.info(f"/trivia: Game {self._match_id} timed out.")
+        logger.info(f"Game {self._match_id} timed out.")
         self._status = models.EMatchStatus.TIMEOUT
         await self._update_database_record()
 
     async def select_answer(self, answer: str) -> bool:
         logger.debug(
-            f"/trivia: User {self._player.id} selected answer '{answer}' for game {self._match_id}"
+            f"Answer '{answer}' selected for game {self._match_id} by user {self._player}"
         )
 
         if self._status != models.EMatchStatus.PENDING:
             logger.error(
-                f"/trivia: Game {self._match_id} already finished. Cannot select an answer."
+                f"Game {self._match_id} already finished. Cannot select an answer."
             )
             return False
 
         is_correct: bool = answer == self._correct_answer
 
         logger.info(
-            f"/trivia: {'Correct' if is_correct else 'Incorrect'} answer '{answer}' "
-            f"chosen for game {self._match_id} by user {self._player.id}."
+            f"{'Correct' if is_correct else 'Incorrect'} answer '{answer}' "
+            f"chosen for game {self._match_id} by user {self._player}."
         )
 
         self._status = models.EMatchStatus.WIN if is_correct else models.EMatchStatus.LOSS

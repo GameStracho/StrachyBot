@@ -30,17 +30,3 @@ async def fetch_api(url: str, model_class: type[T]) -> T:
         model: T = model_class.model_validate(raw_json)
         logger.debug(f"Fetched '{url}' into \n\t{model}.")
         return model
-
-
-def extract_bot(
-    target: StrachyBot | discord.Interaction | discord.Message | discord.Client,
-) -> StrachyBot | None:
-    if isinstance(target, discord.Interaction):
-        if isinstance(target.client, StrachyBot):
-            return target.client
-    elif isinstance(target, discord.Message):
-        client = target._state._get_client()
-        if isinstance(client, StrachyBot):
-            return client
-
-    return None

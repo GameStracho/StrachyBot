@@ -127,7 +127,7 @@ class TicTacToeGame:
 
         if match_id:
             self._match_id = match_id
-            logger.debug(f"/tic-tac-toe: Created new database record with id {self._match_id}.")
+            logger.debug(f"Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
         await db_manager.execute(
@@ -137,13 +137,13 @@ class TicTacToeGame:
             total_moves=self._total_moves,
         )
 
-        logger.debug(f"/tic-tac-toe: Updated database record for game {self._match_id}.")
+        logger.debug(f"Updated database record for game {self._match_id}.")
 
     async def handle_timeout(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        logger.info(f"/tic-tac-toe: Game {self._match_id} timed out.")
+        logger.info(f"Game {self._match_id} timed out.")
         self._status = models.EMatchStatus.TIMEOUT
         await self._update_database_record()
 
@@ -248,7 +248,7 @@ class TicTacToeGame:
 
         if self._status != models.EMatchStatus.PENDING:
             logger.error(
-                f"/tic-tac-toe: Invalid move for game {self._match_id} - the game already finished."
+                f"Invalid move for game {self._match_id} - the game already finished."
             )
             return False
 
@@ -256,14 +256,14 @@ class TicTacToeGame:
 
         if not old_value:
             logger.error(
-                f"/tic-tac-toe: Invalid move for game {self._match_id} "
+                f"Invalid move for game {self._match_id} "
                 f"- position {position} out of bounds."
             )
             return False
 
         if old_value != ETicTacToeCell.EMPTY:
             logger.error(
-                f"/tic-tac-toe: Invalid move for game {self._match_id} "
+                f"Invalid move for game {self._match_id} "
                 f"- cell at position {position} is occupied ({old_value})."
             )
             return False

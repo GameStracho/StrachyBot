@@ -27,10 +27,10 @@ class TriviaCog(commands.Cog):
         try:
             # Tells Discord to display "Thinking..." and extends time limit to 15 mins
             await interaction.response.defer()
+            user = ui.get_user(user=interaction.user)
 
             logger.debug(
-                f"/trivia: Command used by user {interaction.user.display_name} "
-                f"({interaction.user.id})"
+                f"Command '/trivia' used by user {user}."
             )
 
             game: TriviaGame = TriviaGame(
@@ -43,8 +43,7 @@ class TriviaCog(commands.Cog):
             embed, icon = view.build_embed()
 
             logger.info(
-                f"/trivia: User {interaction.user.display_name} ({interaction.user.id}) "
-                f"started a new {game}."
+                f"New {game} started by user {user}."
             )
 
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!

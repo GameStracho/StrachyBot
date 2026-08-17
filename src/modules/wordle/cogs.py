@@ -18,17 +18,17 @@ class WordleCog(commands.Cog):
     @app_commands.command(name="wordle", description="Try to guess a 5-letter word in 6 tries.")
     async def wordle(self, interaction: discord.Interaction, daily_challenge: bool = False) -> None:
         try:
+            user = ui.get_user(user=interaction.user)
+
             logger.debug(
-                f"/wordle: Command used by user {interaction.user.display_name} "
-                f"({interaction.user.id})"
+                f"Command '/wordle' used by user {user}."
             )
 
             if daily_challenge and await db_manager.execute(
                 db_func=has_played_daily_challenge, player_id=interaction.user.id
             ):
                 logger.info(
-                    f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
-                    f"already played the daily challenge."
+                    f"User {user} already played today's daily challenge."
                 )
 
                 embed, icon = ui.embed.build_warning(
@@ -46,8 +46,7 @@ class WordleCog(commands.Cog):
             embed, icon = view.build_embed()
 
             logger.info(
-                f"/wordle: User {interaction.user.display_name} ({interaction.user.id}) "
-                f"started a new {game}."
+                f"New {game} started by user {user}"
             )
 
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!

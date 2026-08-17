@@ -38,7 +38,7 @@ class WordleDictionary:
             self._line_size = len(file.readline())
 
         logger.debug(
-            f"/wordle: Initialized dictionary from answers file "
+            f"Initialized dictionary from answers file "
             f"'{self._secret_words_path}' ({self._secret_words_size} B) "
             f"and allowed guesses file "
             f"'{self._allowed_guesses_path}' ({self._allowed_guesses_size} B)"
@@ -54,7 +54,7 @@ class WordleDictionary:
             result = file.read(5).decode("utf-8").lower()
 
         logger.debug(
-            f"/wordle: Found random word '{result}' on line {random_line} in file '{file_path}'."
+            f"Found random word '{result}' on line {random_line} in file '{file_path}'."
         )
         return result
 
@@ -89,7 +89,7 @@ class WordleDictionary:
             result = file.read(5).decode("utf-8").lower()
 
         logger.debug(
-            f"/wordle: Daily challenge word '{result}' (line {line_index}) "
+            f"Daily challenge word '{result}' (line {line_index}) "
             f"selected for date {date_seed}."
         )
         return result
@@ -117,12 +117,12 @@ class WordleDictionary:
 
     def is_valid_word(self, word: str) -> bool:
         if len(word) != 5:
-            logger.debug(f"/wordle: Word '{word}' has invalid length {len(word)} (required 5).")
+            logger.debug(f"Word '{word}' has invalid length {len(word)} (required 5).")
             return False
 
         if not word.isalpha():
             logger.debug(
-                f"/wordle: Word '{word}' contains invalid characters. Only letters are allowed."
+                f"Word '{word}' contains invalid characters. Only letters are allowed."
             )
             return False
 
@@ -136,10 +136,10 @@ class WordleDictionary:
                 file_size=self._allowed_guesses_size,
             )
         ):
-            logger.debug(f"/wordle: Word '{word}' is invalid.")
+            logger.debug(f"Word '{word}' is invalid.")
             return False
 
-        logger.debug(f"/wordle: Word '{word}' is valid.")
+        logger.debug(f"Word '{word}' is valid.")
         return True
 
 
@@ -235,7 +235,7 @@ class WordleGame:
 
         if match_id:
             self._match_id = match_id
-            logger.debug(f"/wordle: Created new database record with id {self._match_id}.")
+            logger.debug(f"Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
         await db_manager.execute(
@@ -246,13 +246,13 @@ class WordleGame:
             guesses=self._guesses,
         )
 
-        logger.debug(f"/wordle: Updated database record for game {self._match_id}.")
+        logger.debug(f"Updated database record for game {self._match_id}.")
 
     async def handle_timeout(self) -> None:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        logger.info(f"/wordle: Game {self._match_id} timed out.")
+        logger.info(f"Game {self._match_id} timed out.")
         self._status = models.EMatchStatus.TIMEOUT
         await self._update_database_record()
 
@@ -261,16 +261,16 @@ class WordleGame:
             return
 
         self._guesses.append(word)
-        logger.info(f"/wordle: User {self._player} guessed word '{word}' in game {self._match_id}.")
+        logger.info(f"User {self._player} guessed word '{word}' in game {self._match_id}.")
 
         if word == self._secret_word:
-            logger.info(f"/wordle: User {self._player} won game {self._match_id}.")
+            logger.info(f"User {self._player} won game {self._match_id}.")
             self._status = models.EMatchStatus.WIN
             await self._update_database_record()
             return
 
         if len(self._guesses) == 6:
-            logger.info(f"/wordle: User {self._player} lost game {self._match_id}.")
+            logger.info(f"User {self._player} lost game {self._match_id}.")
             self._status = models.EMatchStatus.LOSS
 
         await self._update_database_record()
@@ -281,7 +281,7 @@ class WordleGame:
         while self.is_previous_guess(random_guess):
             random_guess = self._dictionary.get_random_allowed_guess()
 
-        logger.info(f"/wordle: Generated random word '{random_guess}' for game {self._match_id}")
+        logger.info(f" Generated random word '{random_guess}' for game {self._match_id}")
 
         await self.add_guess(word=random_guess)
 
@@ -289,7 +289,7 @@ class WordleGame:
         if self._status != models.EMatchStatus.PENDING:
             return
 
-        logger.info(f"/wordle: User {self._player} gave up game {self._match_id}.")
+        logger.info(f"User {self._player} gave up game {self._match_id}.")
         self._status = models.EMatchStatus.SURRENDER
         await self._update_database_record()
 

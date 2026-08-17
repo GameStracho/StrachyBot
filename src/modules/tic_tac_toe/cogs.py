@@ -32,13 +32,13 @@ class TicCog(commands.Cog):
     ) -> None:
         try:
             logger.debug(
-                f"/tic-tac-toe: Command used by user {interaction.user.display_name} "
+                f"Command `/tic-tac-toe` used by user {interaction.user.display_name} "
                 f"({interaction.user.id})"
             )
 
             if opponent.id == interaction.user.id:
                 logger.debug(
-                    "/tic-tac-toe: Player and opponent have the same id. Game start abandoned."
+                    "Player and opponent have the same id. Game start abandoned."
                 )
 
                 embed, icon = ui.embed.build_warning(
@@ -67,8 +67,7 @@ class TicCog(commands.Cog):
             embed, icon = view.build_embed()
 
             logger.info(
-                f"/tic-tac-toe: User {interaction.user.display_name} ({interaction.user.id}) "
-                f"started a new {game}."
+                f"New game started by user {interaction.user.display_name} ({interaction.user.id})."
             )
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
             await interaction.response.send_message(embed=embed, view=view, file=icon)

@@ -110,7 +110,7 @@ class TriviaAPIManager:
             url = f"{url}&difficulty={str(difficulty).lower()}"
 
         logger.debug(
-            f"/trivia: Fetching {self._batch_size} question(s) "
+            f"Fetching {self._batch_size} question(s) "
             f"for category {category} in difficulty {difficulty} from '{url}'..."
         )
 
@@ -118,7 +118,7 @@ class TriviaAPIManager:
 
         if not response.results:
             logger.critical(
-                f"/trivia: Failed to fetch API. (category = {category}, difficulty = {difficulty})"
+                f"Failed to fetch API. (category = {category}, difficulty = {difficulty})"
             )
             raise types.NoAPIResponseError()
 
@@ -126,7 +126,7 @@ class TriviaAPIManager:
         self._cache[key].extend(response.results)
 
         logger.debug(
-            f"/trivia: Fetched questions loaded into cache. "
+            f"Fetched questions loaded into cache. "
             f"(category = {category}, difficulty = {difficulty})"
         )
 
