@@ -121,9 +121,9 @@ class AsyncDatabaseLogHandler(logging.Handler):
             self.handleError(record)
 
 
-def setup_logger(level: int = logging.INFO) -> logging.Logger:
+def setup_logger() -> logging.Logger:
     logger: logging.Logger = logging.getLogger(name="StrachyBot")
-    logger.setLevel(level=level)
+    logger.setLevel(level=logging.DEBUG)
 
     # Prevent logs from leaking to the root logger (blocks duplicate/3rd-party root formatting)
     logger.propagate = False
@@ -131,10 +131,10 @@ def setup_logger(level: int = logging.INFO) -> logging.Logger:
     if not logger.handlers:
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(ColoredFormatter())
-        console_handler.setLevel(level)
+        console_handler.setLevel(logging.INFO)
 
         logger.addHandler(console_handler)
-        logger.addHandler(AsyncDatabaseLogHandler(level=level))
+        logger.addHandler(AsyncDatabaseLogHandler(level=logging.DEBUG))
 
     return logger
 
@@ -143,4 +143,4 @@ def setup_logger(level: int = logging.INFO) -> logging.Logger:
 logging.setLoggerClass(ModuleLogger)
 
 # Export global instance
-logger: logging.Logger = setup_logger(level=logging.DEBUG)
+logger: logging.Logger = setup_logger()
