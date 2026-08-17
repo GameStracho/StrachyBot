@@ -3,14 +3,12 @@ import inspect
 import logging
 from collections.abc import Mapping
 from types import FrameType
-from typing import TYPE_CHECKING, Any, override
+from typing import Any, override
 
 from colorama import Fore, Style, init
 
+from .database import db_manager
 from .repository import create_log
-
-if TYPE_CHECKING:
-    from shared.bot import StrachyBot
 
 # Initialize colorama for cross-platform support
 init(autoreset=True)
@@ -91,12 +89,12 @@ class ModuleLogger(logging.Logger):
 
 class AsyncDatabaseLogHandler(logging.Handler):
     """Logging handler that asynchronously writes log records to PostgreSQL."""
-    _bot: "StrachyBot"
 
-    def __init__(self, bot: "StrachyBot", level: int = logging.INFO, formatter: logging.Formatter | None = None) -> None:
+    def __init__(
+        self, level: int = logging.INFO, formatter: logging.Formatter | None = None
+    ) -> None:
         super().__init__(level=level)
         self.setFormatter(formatter)
-        self._bot = bot
 
     def emit(self, record: logging.LogRecord) -> None:
         """Called automatically whenever a log record passes level checks."""
@@ -112,7 +110,7 @@ class AsyncDatabaseLogHandler(logging.Handler):
             loop = asyncio.get_running_loop()
             if loop.is_running():
                 loop.create_task(
-                    self._bot.execute_db_operation(
+                    db_manager.execute(
                         db_func=create_log,
                         level=level_name,
                         module=module,
@@ -146,5 +144,5 @@ def setup_logger(level: int = logging.INFO) -> logging.Logger:
 # Register custom logger class with Python's logging system
 logging.setLoggerClass(ModuleLogger)
 
-# Create singleton
+# Export global instance
 logger: logging.Logger = setup_logger(level=logging.DEBUG)

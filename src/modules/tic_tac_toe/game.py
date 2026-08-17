@@ -1,7 +1,7 @@
 import random
 from enum import Enum
 
-from shared import StrachyBot, logger, models
+from shared import db_manager, logger, models
 from shared.types import EDirection, Position, User, Vector
 
 from .repository import create_match, update_match
@@ -45,8 +45,6 @@ class TicTacToeGrid:
 
 
 class TicTacToeGame:
-    _bot: StrachyBot | None
-
     _match_id: int
     _status: models.EMatchStatus
     _player: User
@@ -56,7 +54,6 @@ class TicTacToeGame:
     _grid: TicTacToeGrid
 
     def __init__(self, player: User, opponent: User, grid_size: int) -> None:
-        self._bot = None
         self._match_id = -1
         self._status = models.EMatchStatus.PENDING
         self._player = player
@@ -120,10 +117,8 @@ class TicTacToeGame:
     def is_players_turn(self) -> bool:
         return self._total_moves % 2 == 0
 
-    async def connect_database(self, bot: StrachyBot) -> None:
-        self._bot = bot
-
-        match_id: int | None = await self._bot.execute_db_operation(
+    async def create_db_record(self) -> None:
+        match_id: int | None = await db_manager.execute(
             db_func=create_match,
             player_id=self._player.id,
             opponent_id=self._opponent.id,
@@ -135,11 +130,7 @@ class TicTacToeGame:
             logger.debug(f"/tic-tac-toe: Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
-        if not self._bot:
-            logger.warning(f"/tic-tac-toe: Database is not connected. Skipping update of {self}.")
-            return
-
-        await self._bot.execute_db_operation(
+        await db_manager.execute(
             db_func=update_match,
             match_id=self._match_id,
             status=self._status,

@@ -10,7 +10,8 @@ from modules.tic_tac_toe.ui import (
     TicTacToeButton,
     TicTacToeView,
 )
-from shared import StrachyBot, ui
+from shared import ui
+from shared.database import DatabaseManager
 from shared.models import EMatchStatus
 from shared.types import Position
 from tests import mocks
@@ -401,7 +402,6 @@ async def test_button_callback_game_ended_win(monkeypatch: pytest.MonkeyPatch) -
     opponent = mocks.DummyUser(user_id=200, username="Bob")
     game = TicTacToeGame(player=player, opponent=opponent, grid_size=3)
     game._match_id = 77
-    game._bot = mocks.DummyStrachyBot()
 
     # Setup game state 1 move away from player win: (0,0) and (1,0) filled by player
     await game.play(Position(0, 0))  # Player (turn 0)
@@ -427,7 +427,7 @@ async def test_button_callback_game_ended_win(monkeypatch: pytest.MonkeyPatch) -
 
     update_match_mock = AsyncMock(return_value=True)
     monkeypatch.setattr("modules.tic_tac_toe.game.update_match", update_match_mock)
-    monkeypatch.setattr(StrachyBot, "execute_db_operation", mocks.dummy_execute_db_operation)
+    monkeypatch.setattr(DatabaseManager, "execute", mocks.dummy_execute_db_operation)
 
     await win_button.callback(interaction)
     player_color, _ = ui.get_player_colors()

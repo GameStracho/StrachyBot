@@ -10,8 +10,10 @@ from .ui import TriviaView
 
 
 class TriviaCog(commands.Cog):
+    _bot: StrachyBot
+
     def __init__(self, bot: StrachyBot) -> None:
-        self.bot = bot
+        self._bot = bot
 
     @app_commands.command(
         name="trivia", description="Try to answer a quiz question by selecting 1 of 4 answers."
@@ -34,7 +36,7 @@ class TriviaCog(commands.Cog):
                 player=ui.get_user(user=interaction.user), category=category, difficulty=difficulty
             )
             await game.fetch_api()
-            await game.connect_database(self.bot)
+            await game.create_db_record()
 
             view: TriviaView = TriviaView(game=game, timeout=60.0)
             embed, icon = view.build_embed()

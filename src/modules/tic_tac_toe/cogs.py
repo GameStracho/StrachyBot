@@ -9,8 +9,10 @@ from .ui import TicTacToeView
 
 
 class TicCog(commands.Cog):
+    _bot: StrachyBot
+
     def __init__(self, bot: StrachyBot) -> None:
-        self.bot = bot
+        self._bot = bot
 
     @app_commands.command(
         name="tic-tac-toe", description="Challenge someone in a 1v1 Tic-Tac-Toe match"
@@ -59,7 +61,7 @@ class TicCog(commands.Cog):
                 opponent=ui.get_user(user=opponent, emoji=opponent_emoji),
                 grid_size=grid_size.value,
             )
-            await game.connect_database(bot=self.bot)
+            await game.create_db_record()
 
             view: TicTacToeView = TicTacToeView(game=game, timeout=60.0)
             embed, icon = view.build_embed()

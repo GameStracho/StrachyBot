@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from shared import StrachyBot, models
+from shared import StrachyBot, db_manager, models
 from tests import mocks
 
 
@@ -23,7 +23,7 @@ async def test_all_modules_load_and_sync_correctly(monkeypatch: pytest.MonkeyPat
         "EngineStub", (), {"begin": lambda self: mocks.DummyTransaction(), "dispose": AsyncMock()}
     )()
     bot = StrachyBot()
-    bot.create_db_session_factory(mock_engine)
+    db_manager.initialize(db_engine=mock_engine)
     monkeypatch.setattr(bot.tree, "sync", AsyncMock(return_value=[]))
     await bot.setup_hook()
 

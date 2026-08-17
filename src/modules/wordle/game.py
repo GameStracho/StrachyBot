@@ -5,7 +5,7 @@ import string
 from datetime import UTC, date, datetime
 from enum import Enum
 
-from shared import StrachyBot, logger, models, types
+from shared import db_manager, logger, models, types
 
 from .repository import create_match, update_match
 
@@ -144,8 +144,6 @@ class WordleDictionary:
 
 
 class WordleGame:
-    _bot: StrachyBot | None
-
     _match_id: int
     _status: models.EMatchStatus
     _player: types.User
@@ -157,7 +155,6 @@ class WordleGame:
     _dictionary: WordleDictionary
 
     def __init__(self, player: types.User, is_daily: bool) -> None:
-        self._bot = None
         self._match_id = -1
         self._player = player
         self._is_daily = is_daily
@@ -228,10 +225,8 @@ class WordleGame:
     def is_previous_guess(self, word: str) -> bool:
         return word in self._guesses
 
-    async def connect_database(self, bot: StrachyBot) -> None:
-        self._bot = bot
-
-        match_id: int | None = await self._bot.execute_db_operation(
+    async def create_db_record(self) -> None:
+        match_id: int | None = await db_manager.execute(
             db_func=create_match,
             player_id=self._player.id,
             secret_word=self._secret_word,
@@ -243,11 +238,7 @@ class WordleGame:
             logger.debug(f"/wordle: Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
-        if not self._bot:
-            logger.warning(f"/wordle: Database is not connected. Skipping update of {self}.")
-            return
-
-        await self._bot.execute_db_operation(
+        await db_manager.execute(
             db_func=update_match,
             match_id=self._match_id,
             status=self._status,

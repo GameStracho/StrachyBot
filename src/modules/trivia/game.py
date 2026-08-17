@@ -1,4 +1,4 @@
-from shared import StrachyBot, logger, models, types
+from shared import db_manager, logger, models, types
 
 from .api import TriviaQuestion, api_manager
 from .models import ETriviaCategory, ETriviaDifficulty
@@ -6,8 +6,6 @@ from .repository import create_match, update_match
 
 
 class TriviaGame:
-    _bot: StrachyBot | None
-
     _match_id: int
     _status: models.EMatchStatus
     _player: types.User
@@ -24,7 +22,6 @@ class TriviaGame:
         category: ETriviaCategory = ETriviaCategory.ANY,
         difficulty: ETriviaDifficulty = ETriviaDifficulty.ANY,
     ) -> None:
-        self._bot = None
         self._match_id = -1
         self._status = models.EMatchStatus.PENDING
         self._player = player
@@ -82,10 +79,8 @@ class TriviaGame:
     def correct_answer(self) -> str:
         return self._correct_answer
 
-    async def connect_database(self, bot: StrachyBot) -> None:
-        self._bot = bot
-
-        match_id: int | None = await self._bot.execute_db_operation(
+    async def create_db_record(self) -> None:
+        match_id: int | None = await db_manager.execute(
             db_func=create_match,
             player_id=self._player.id,
             category=self._category,
@@ -99,13 +94,7 @@ class TriviaGame:
             logger.debug(f"/trivia: Created new database record with id {self._match_id}.")
 
     async def _update_database_record(self) -> None:
-        if not self._bot:
-            logger.warning(f"/trivia: Database is not connected. Skipping update of {self}.")
-            return
-
-        await self._bot.execute_db_operation(
-            db_func=update_match, match_id=self._match_id, status=self._status
-        )
+        await db_manager.execute(db_func=update_match, match_id=self._match_id, status=self._status)
 
         logger.debug(f"/trivia: Updated database record for game {self._match_id}.")
 

@@ -9,16 +9,18 @@ from shared import StrachyBot, logger, ui
 from .helpers import parse_changelog
 
 
-class UtilsCog(commands.Cog):
+class InfoCog(commands.Cog):
+    _bot: StrachyBot
+
     def __init__(self, bot: StrachyBot) -> None:
-        self.bot = bot
+        self._bot = bot
 
     @app_commands.command(name="info", description="Show important information about the bot")
     async def info(self, interaction: discord.Interaction) -> None:
         logger.info(f"/info: User {interaction.user.display_name} used the command.")
 
         try:
-            uptime: datetime.timedelta = discord.utils.utcnow() - self.bot.start_time
+            uptime: datetime.timedelta = discord.utils.utcnow() - self._bot.start_time
             description: str = (
                 "Discord bot with fun mini-games like *Trivia*, *Wordle* and *Tic-Tac-Toe*."
             )

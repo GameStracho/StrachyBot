@@ -20,7 +20,6 @@ async def main() -> None:
         return
 
     bot = StrachyBot()
-    bot.create_db_session_factory()
 
     try:
         await bot.start(token)
