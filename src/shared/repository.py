@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .console import logger
+from .logs import logger
 from .models import CommandLog
 
 

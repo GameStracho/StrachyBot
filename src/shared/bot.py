@@ -13,8 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 import console
 
-from .console import logger
 from .database import create_db_engine, create_session_factory
+from .logs import logger
 from .repository import create_command_log
 
 P = ParamSpec("P")  # parameter type

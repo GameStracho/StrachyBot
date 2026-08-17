@@ -5,7 +5,7 @@ import discord
 from pydantic import BaseModel
 
 from .bot import StrachyBot
-from .console import logger
+from .logs import logger
 
 # Define a TypeVar bound to Pydantic's BaseModel
 T = TypeVar("T", bound=BaseModel)
