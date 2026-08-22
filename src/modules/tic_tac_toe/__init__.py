@@ -6,4 +6,4 @@ from .cogs import TicCog
 
 
 async def setup(bot: StrachyBot) -> None:
-    await bot.add_cog(TicCog(bot))
+    await bot.add_cog(TicCog())

@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from shared import StrachyBot, logger, ui
+from shared import logger, ui
 
 from .game import TriviaGame
 from .models import ETriviaCategory, ETriviaDifficulty
@@ -10,11 +10,6 @@ from .ui import TriviaView
 
 
 class TriviaCog(commands.Cog):
-    _bot: StrachyBot
-
-    def __init__(self, bot: StrachyBot) -> None:
-        self._bot = bot
-
     @app_commands.command(
         name="trivia", description="Try to answer a quiz question by selecting 1 of 4 answers."
     )

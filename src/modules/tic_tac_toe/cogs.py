@@ -2,18 +2,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from shared import StrachyBot, logger, ui
+from shared import logger, ui
 
 from .game import TicTacToeGame
 from .ui import TicTacToeView
 
 
 class TicCog(commands.Cog):
-    _bot: StrachyBot
-
-    def __init__(self, bot: StrachyBot) -> None:
-        self._bot = bot
-
     @app_commands.command(
         name="tic-tac-toe", description="Challenge someone in a 1v1 Tic-Tac-Toe match"
     )
