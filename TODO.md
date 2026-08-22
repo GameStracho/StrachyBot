@@ -1,3 +1,11 @@
+## Songless
+
+- přejmenovat atribut `match_id` v tabulce `match` na `id`
+- automaticky aktualizovat všechny `PENDING` hry na `TIMEOUT` při vypínání bota
+- Zachytit error s nedostupnou databází při startu bota, vypsat jednoduchou chybovou hlášku a bota ukončit
+
+---
+
 ## Uživatelské statistiky
 
 ---
