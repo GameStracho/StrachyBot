@@ -1,12 +1,11 @@
 from typing import override
 
-import discord
-from discord import app_commands
 from discord.ext import commands, tasks
 
-from shared import StrachyBot, ui, logger
+from shared import StrachyBot
 
 PLAYLISTS: list[str] = []
+
 
 class SonglessCog(commands.Cog):
     _bot: StrachyBot
