@@ -13,5 +13,6 @@ asyncpg == 0.31.0
 alembic == 1.18.5
 alembic-postgresql-enum == 1.10.0
 
-# google
-google_auth_oauthlib
+# Songless
+pydub == 0.25.1
+static-ffmpeg == 3.0

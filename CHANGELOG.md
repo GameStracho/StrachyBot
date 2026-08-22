@@ -38,7 +38,7 @@
 - Automated `Tic-Tac-Toe` auto-play moves
 - Hiding of secret words in `Wordle` daily challenge
 - Reduced API calls by caching `Trivia` questions
-- Truncated `Trivia` answers that exceed maximum character limit
+- Truncated `Trivia` answers that exceed the maximum character limit
 
 ---
 
