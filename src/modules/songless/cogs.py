@@ -1,6 +1,5 @@
-from typing import override
-
 from discord.ext import commands, tasks
+from typing_extensions import override
 
 from shared import StrachyBot
 
