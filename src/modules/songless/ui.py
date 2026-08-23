@@ -5,44 +5,41 @@ from typing_extensions import override
 
 from shared import logger, models, types, ui
 
-from .game import WordleGame, WordleLetterCategory
+from .game import EGuessCategory, Game
+from .models import SonglessSong
 
 
-class WordleView(discord.ui.View):
-    _game: WordleGame
+class View(discord.ui.View):
+    _game: Game
     message: discord.Message | None
 
-    def __init__(self, game: WordleGame, timeout: float = 180):
+    def __init__(self, game: Game, timeout: float = 180):
         super().__init__(timeout=timeout)
 
         self._game = game
         logger.debug(
-            f"New WordleView created for game {self._game.match_id} with {timeout}s timeout."
+            f"New SonglessView created for game {self._game.match_id} with {timeout}s timeout."
         )
 
     @property
-    def game(self) -> WordleGame:
+    def game(self) -> Game:
         return self._game
 
     def build_embed(self) -> tuple[discord.Embed, discord.File]:
-        title: str = "Wordle"
+        title: str = "Songless"
         user: types.User = self._game.player
 
         if self._game.is_daily:
             title += f" {datetime.now(tz=UTC).date().strftime('%Y-%m-%d')}"
 
-        embed: discord.Embed = discord.Embed(title=title, color=discord.Color.blue())
+        embed: discord.Embed = discord.Embed(title=title, color=discord.Color.gold())
         embed.set_author(name=user.display_name, icon_url=user.display_avatar)
 
-        empty_word: str = ui.EMOJIS["wordle_unused_letter"]
-
-        for i in range(4):
-            empty_word += " " + ui.EMOJIS["wordle_unused_letter"]
-
         for i in range(6):
-            embed.add_field(name="Guess #" + str(i + 1), value=empty_word, inline=False)
+            embed.add_field(
+                name="Guess #" + str(i + 1), value=ui.EMOJIS["songless_empty_guess"], inline=False
+            )
 
-        embed.add_field(name="Used letters", value=self._color_available_letters(), inline=False)
         embed.add_field(name="Status", value="Game started. You can start guessing.", inline=True)
         embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(self), inline=True)
 
@@ -52,15 +49,14 @@ class WordleView(discord.ui.View):
         return (embed, icon)
 
     def update_embed(self, embed: discord.Embed, default_status: str) -> None:
+        """
         last_guess: str = self._game.last_guess
         ui.embed.update_field(
             embed=embed,
             name=f"Guess #{self._game.guesses_count}",
             value=self._uncover_word(word=last_guess),
         )
-        ui.embed.update_field(
-            embed=embed, name="Used letters", value=self._color_available_letters()
-        )
+        """
 
         match self._game.status:
             case models.EMatchStatus.PENDING:
@@ -81,7 +77,7 @@ class WordleView(discord.ui.View):
                     name="Status",
                     value=(
                         f"You lost! {ui.EMOJIS['game_loss']}\n"
-                        f"The secret word was '{self.spoil(self._game.secret_word)}'."
+                        f"The secret song was '{self.spoil(self._game.song_str)}'."
                     ),
                 )
             case models.EMatchStatus.SURRENDER:
@@ -91,7 +87,7 @@ class WordleView(discord.ui.View):
                     name="Status",
                     value=(
                         f"You gave up! {ui.EMOJIS['game_surrender']}\n"
-                        f"The secret word was '{self.spoil(self._game.secret_word)}'."
+                        f"The secret word was '{self.spoil(self._game.song_str)}'."
                     ),
                 )
             case _:
@@ -111,61 +107,42 @@ class WordleView(discord.ui.View):
         spoiler = "||" if self._game.is_daily else ""
         return f"{spoiler}{string}{spoiler}"
 
-    def _get_letter_category_emoji(self, category: WordleLetterCategory) -> str:
+    def _get_guess_category_emoji(self, category: EGuessCategory) -> str:
         match category:
-            case WordleLetterCategory.CORRECT:
-                return ui.EMOJIS["wordle_correct_letter"]
-            case WordleLetterCategory.MISPLACED:
-                return ui.EMOJIS["wordle_misplaced_letter"]
-            case WordleLetterCategory.INCORRECT:
-                return ui.EMOJIS["wordle_incorrect_letter"]
-            case WordleLetterCategory.UNUSED:
-                return ui.EMOJIS["wordle_unused_letter"]
+            case EGuessCategory.EMPTY:
+                return ui.EMOJIS["songless_empty_guess"]
+            case EGuessCategory.INCORRECT:
+                return ui.EMOJIS["songless_incorrect_guess"]
+            case EGuessCategory.AUTHOR:
+                return ui.EMOJIS["songless_author_guess"]
+            case EGuessCategory.CORRECT:
+                return ui.EMOJIS["songless_correct_guess"]
             case _:
                 raise ValueError(category)
 
-    def _uncover_word(self, word: str) -> str:
+    def _uncover_guess(self, song: SonglessSong) -> str:
         """
-        Turns every letter of a given word into emojis and adds color coded line under the word
-        signalling whether the guessed letter is in a correct spot, misplaced or completely missing
-        based on the game's secret word.
+        Adds an emoji in front of the song title and author based on
+        the category of the guess.
 
         Returns the color coded word.
         """
-        categorized_word: list[tuple[str, WordleLetterCategory]] = self._game.categorize_word(
-            word=word
-        )
-        uncovered_letters: str = ""
-        uncovered_colors: str = ""
+        category: EGuessCategory = EGuessCategory.EMPTY
+        emoji: str = ""
 
-        for letter, category in categorized_word:
-            uncovered_letters += ui.EMOJIS[letter] + " "
-            uncovered_colors += self._get_letter_category_emoji(category=category) + " "
+        match category:
+            case EGuessCategory.EMPTY:
+                emoji = ui.EMOJIS["songless_empty_guess"]
+            case EGuessCategory.INCORRECT:
+                emoji = ui.EMOJIS["songless_incorrect_guess"]
+            case EGuessCategory.AUTHOR:
+                emoji = ui.EMOJIS["songless_author_guess"]
+            case EGuessCategory.CORRECT:
+                emoji = ui.EMOJIS["songless_correct_guess"]
+            case _:
+                raise ValueError(category)
 
-        return f"{self.spoil(uncovered_letters.rstrip())}\n{uncovered_colors.rstrip()}"
-
-    def _color_available_letters(self) -> str:
-        """
-        Turns every letter from available letters into emojis and adds color coded line under them
-        signalling their category.
-
-        Returns the color coded available letters.
-        """
-        available_letters: dict[str, WordleLetterCategory] = self._game.available_letters
-        uncovered_letters: str = ""
-        uncovered_colors: str = ""
-        result: str = ""
-
-        for letter, category in available_letters.items():
-            uncovered_letters += ui.EMOJIS[letter] + " "
-            uncovered_colors += self._get_letter_category_emoji(category=category) + " "
-
-            if len(uncovered_letters) == len(available_letters):
-                result += f"\n\n{uncovered_letters.rstrip()}\n{self.spoil(uncovered_colors)}"
-                uncovered_letters = ""
-                uncovered_colors = ""
-
-        return result
+        return f"{emoji}{self.spoil(f'{song.artist} - {song.title}')}"
 
     @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -202,7 +179,7 @@ class WordleView(discord.ui.View):
             name="Status",
             value=(
                 f"Game timed out! {ui.EMOJIS['game_timeout']} "
-                f"The secret word was '{self.spoil(self._game.secret_word)}'."
+                f"The secret song was '{self.spoil(self._game.song_str)}'."
             ),
         )
 
@@ -210,41 +187,12 @@ class WordleView(discord.ui.View):
         await self.message.edit(embed=embed, view=self)
 
     @discord.ui.button(
-        label="Enter guess",
-        style=discord.ButtonStyle.primary,
-        emoji=ui.EMOJIS["wordle_enter_guess_button"],
-    )
-    async def enter_guess_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button["WordleView"]
-    ) -> None:
-        try:
-            logger.debug(
-                f"User {interaction.user.display_name} ({interaction.user.id}) "
-                f"pressed the 'Enter guess' button for game {self._game.match_id}."
-            )
-
-            assert self.message is not None
-            embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
-            ui.embed.update_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
-            await self.message.edit(embed=embed, view=self)
-
-            modal: WordleGuessModal = WordleGuessModal(parent_view=self)
-            await interaction.response.send_modal(modal)
-
-            logger.debug(
-                f"Modal for game {self._game.match_id} "
-                f"sent to User {interaction.user.display_name} ({interaction.user.id})."
-            )
-        except Exception as error:
-            await ui.handle_error(error=error, interaction=interaction)
-
-    @discord.ui.button(
         label="Random guess",
         style=discord.ButtonStyle.secondary,
         emoji=ui.EMOJIS["wordle_random_guess_button"],
     )
     async def random_guess_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button["WordleView"]
+        self, interaction: discord.Interaction, button: discord.ui.Button["View"]
     ) -> None:
         try:
 
@@ -260,7 +208,7 @@ class WordleView(discord.ui.View):
                     target=self.message, index=0, hide_icon=True
                 )
 
-                await self._game.guess_random_word()
+                # await self._game.guess_random_word()
                 self.update_embed(embed=embed, default_status="Used random guess.")
                 await self.message.edit(embed=embed, view=self)
 
@@ -295,7 +243,7 @@ class WordleView(discord.ui.View):
         label="Give up", style=discord.ButtonStyle.secondary, emoji=ui.EMOJIS["game_surrender"]
     )
     async def give_up_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button["WordleView"]
+        self, interaction: discord.Interaction, button: discord.ui.Button["View"]
     ) -> None:
         try:
 
@@ -312,7 +260,7 @@ class WordleView(discord.ui.View):
                 )
 
                 await self._game.handle_surrender()
-                self.update_embed(embed=embed, default_status="Used random guess.")
+                self.update_embed(embed=embed, default_status="You gave up!")
                 await self.message.edit(embed=embed, view=self)
 
             assert self.message is not None
@@ -339,83 +287,5 @@ class WordleView(discord.ui.View):
             await interaction.response.send_message(
                 embed=confirm_embed, view=confirm_view, file=confirm_icon, ephemeral=True
             )
-        except Exception as error:
-            await ui.handle_error(error=error, interaction=interaction)
-
-
-class WordleGuessModal(discord.ui.Modal):
-    _parent_view: WordleView
-
-    def __init__(self, parent_view: WordleView):
-        super().__init__(title="Wordle Guess")
-
-        self._parent_view = parent_view
-        logger.debug(f"New WordleGuessModal created for game {self._parent_view.game.match_id}.")
-
-    guess_input: discord.ui.TextInput["WordleGuessModal"] = discord.ui.TextInput(
-        label="Guess",
-        style=discord.TextStyle.short,
-        placeholder="Enter a 5-letter word",
-        min_length=5,
-        max_length=5,
-        required=True,
-    )
-
-    def _get_uncovered_guess(self) -> str:
-        secret_word: str = self._parent_view.game.secret_word
-        guess: str = self.guess_input.value.lower()
-        uncovered_letters: str = ""
-        uncovered_colors: str = ""
-
-        for i, letter in enumerate(guess):
-            uncovered_letters += ui.EMOJIS[letter] + " "
-            sw_count: int = secret_word.count(letter)
-
-            if letter == secret_word[i]:
-                uncovered_colors += ui.EMOJIS["wordle_correct_letter"] + " "
-            elif (
-                letter in secret_word
-                and guess[:i].count(letter) < sw_count
-                and guess[i:].count(letter) <= sw_count
-            ):
-                uncovered_colors += ui.EMOJIS["wordle_misplaced_letter"] + " "
-            else:
-                uncovered_colors += ui.EMOJIS["wordle_incorrect_letter"] + " "
-
-        return uncovered_letters.rstrip() + "\n" + uncovered_colors.rstrip()
-
-    @override
-    async def on_submit(self, interaction: discord.Interaction) -> None:
-        try:
-            game: WordleGame = self._parent_view.game
-            guess: str = self.guess_input.value.lower()
-            updated_status: str = ""
-
-            embed: discord.Embed = ui.embed.extract(target=interaction, index=0, hide_icon=True)
-
-            if not game.is_valid_word(guess):
-                logger.info(
-                    f"User {interaction.user.display_name} ({interaction.user.id}) "
-                    f"entered an invalid word '{guess}'."
-                )
-                updated_status = f"Entered invalid word '{self._parent_view.spoil(guess)}'."
-            elif game.is_previous_guess(word=guess):
-                logger.info(
-                    f"User {interaction.user.display_name} ({interaction.user.id}) "
-                    f"entered an already guesses word '{guess}'."
-                )
-                updated_status = f"You already guessed the word '{self._parent_view.spoil(guess)}'."
-            else:
-                await game.add_guess(word=guess)
-                logger.info(
-                    f"User {interaction.user.display_name} ({interaction.user.id}) "
-                    f"guessed '{self.guess_input.value}' "
-                    f"in game {self._parent_view.game.match_id}."
-                )
-                updated_status = "Valid guess."
-
-            self._parent_view.update_embed(embed=embed, default_status=updated_status)
-            await interaction.response.edit_message(embed=embed, view=self._parent_view)
-            self._parent_view.message = await interaction.original_response()
         except Exception as error:
             await ui.handle_error(error=error, interaction=interaction)

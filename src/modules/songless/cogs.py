@@ -11,6 +11,7 @@ from .api import APIResponse, APISong
 from .game import Game
 from .models import ESonglessCategory, Playlist
 from .repository import create_song
+from .ui import View
 
 PLAYLISTS: list[Playlist] = [
     Playlist(id=1677006641, title="Hip Hop Hits", category=ESonglessCategory.HIP_HOP),
@@ -129,8 +130,13 @@ class SonglessCog(commands.Cog):
             game: Game = Game(player=user, category=category, is_daily=daily_challenge)
             await game.start()
 
-            logger.info(f"New {game} started by user {user}")
+            view: View = View(game=game, timeout=300.0)
+            embed, icon = view.build_embed()
 
-            await interaction.response.send_message("Songless game started.")
+            logger.info(f"New {game} started by user {user}")
+            await interaction.response.send_message(embed=embed, view=view, file=icon)
+
+            # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
+            view.message = await interaction.original_response()
         except Exception as error:
             await ui.handle_error(error=error, interaction=interaction)

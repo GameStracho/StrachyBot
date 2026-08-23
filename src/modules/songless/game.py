@@ -6,9 +6,9 @@ from .models import ESonglessCategory, SonglessSong
 
 
 class EGuessCategory(Enum):
-    NOT_GUESSED = 0
+    EMPTY = 0
     INCORRECT = 1
-    AUTHOR_GUESSED = 2
+    AUTHOR = 2
     CORRECT = 3
 
     def __int__(self) -> int:
@@ -57,6 +57,10 @@ class Game:
         return self._song
 
     @property
+    def song_str(self) -> str:
+        return f"{self._song.artist} - {self._song.title}"
+
+    @property
     def is_daily(self) -> bool:
         return self._is_daily
 
@@ -71,7 +75,10 @@ class Game:
         pass
 
     async def handle_timeout(self) -> None:
-        pass
+        self._status = models.EMatchStatus.TIMEOUT
+
+    async def handle_surrender(self) -> None:
+        self._status = models.EMatchStatus.SURRENDER
 
     async def add_guess(self, song: SonglessSong) -> None:
         pass
@@ -80,4 +87,4 @@ class Game:
         pass
 
     async def categorize_guess(self, song: SonglessSong) -> EGuessCategory:
-        return EGuessCategory.NOT_GUESSED
+        return EGuessCategory.EMPTY
