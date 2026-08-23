@@ -44,6 +44,9 @@ importlib.import_module("shared.models")
 modules_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "modules"))
 if os.path.exists(modules_dir):
     for folder in os.listdir(modules_dir):
+        if folder.startswith("_"):
+            continue
+
         folder_path = os.path.join(modules_dir, folder)
         if os.path.isdir(folder_path) and "models.py" in os.listdir(folder_path):
             importlib.import_module(f"modules.{folder}.models")
