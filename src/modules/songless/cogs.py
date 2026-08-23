@@ -48,8 +48,7 @@ class SonglessCog(commands.Cog):
 
             except Exception as error:
                 logger.error(
-                    f"Failed to fetch url {url} with error '{error}'."
-                    f"\n\n{traceback.format_exc()}."
+                    f"Failed to fetch url {url} with error '{error}'.\n\n{traceback.format_exc()}."
                 )
                 break
 

@@ -1,11 +1,10 @@
 import os
 import sys
+import traceback
 from collections.abc import Awaitable, Callable
 from typing import Concatenate, ParamSpec, TypeVar
-import traceback
 
 from colorama import Fore, Style
-
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
