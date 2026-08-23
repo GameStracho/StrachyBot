@@ -15,9 +15,11 @@ async def create_song(
     title: str,
     artist: str,
     category: ESonglessCategory,
-) -> None:
+) -> bool:
     """
     Creates a new songless song record in the database.
+
+    Returns True if the record was created, False otherwise.
     """
 
     logger.debug(
@@ -35,12 +37,13 @@ async def create_song(
                 f"songless: Song '{title}' ({song_id}) already exists. "
                 f"Skipping addition to database."
             )
-            return
+            return False
 
         song: SonglessSong = SonglessSong(id=song_id, title=title, artist=artist, category=category)
         session.add(song)
 
     logger.debug(f"songless: New song '{title}' ({song_id}) created.")
+    return True
 
 
 async def create_match(

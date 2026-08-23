@@ -31,10 +31,10 @@ class APIAlbum(BaseModel):
     title: str
     upc: str
     cover: str
-    cover_small: str
-    cover_medium: str
-    cover_big: str
-    cover_xl: str
+    cover_small: str | None = None
+    cover_medium: str | None = None
+    cover_big: str | None = None
+    cover_xl: str | None = None
     md5_image: str
     tracklist: str
     type: str
@@ -55,7 +55,7 @@ class APISong(BaseModel):
     readable: bool
     title: str
     title_short: str
-    title_version: str
+    title_version: str | None = None
     isrc: str
     link: str
     duration: int
