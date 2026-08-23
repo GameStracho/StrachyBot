@@ -14,7 +14,8 @@ async def test_all_modules_load_and_sync_correctly(monkeypatch: pytest.MonkeyPat
     expected_modules = [
         folder
         for folder in os.listdir(modules_dir)
-        if os.path.isdir(os.path.join(modules_dir, folder))
+        if not folder.startswith("_")
+        and os.path.isdir(os.path.join(modules_dir, folder))
         and "__init__.py" in os.listdir(os.path.join(modules_dir, folder))
     ]
 
