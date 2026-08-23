@@ -1,11 +1,14 @@
 import traceback
 
+import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 from typing_extensions import override
 
-from shared import StrachyBot, db_manager, fetch_api, logger
+from shared import StrachyBot, db_manager, fetch_api, logger, ui
 
 from .api import APIResponse, APISong
+from .game import Game
 from .models import ESonglessCategory, Playlist
 from .repository import create_song
 
@@ -111,3 +114,23 @@ class SonglessCog(commands.Cog):
     async def before_update_songs(self) -> None:
         """Wait until the bot is fully logged in before running the loop."""
         await self._bot.wait_until_ready()
+
+    @app_commands.command(name="songless", description="Try to guess a song in 6 tries.")
+    async def songless(
+        self,
+        interaction: discord.Interaction,
+        category: ESonglessCategory = ESonglessCategory.ALL,
+        daily_challenge: bool = False,
+    ) -> None:
+        try:
+            user = ui.get_user(user=interaction.user)
+            logger.debug(f"Command '/songless' used by user {user}.")
+
+            game: Game = Game(player=user, category=category, is_daily=daily_challenge)
+            await game.start()
+
+            logger.info(f"New {game} started by user {user}")
+
+            await interaction.response.send_message("Songless game started.")
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
