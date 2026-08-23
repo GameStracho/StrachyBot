@@ -31,15 +31,15 @@ async def create_song(
         ).scalar_one_or_none()
 
         if existing_song:
-            logger.debug(f"songless: Song {song_id} already exists. Skipping addition to database.")
+            logger.debug(f"songless: Song '{title}' ({song_id}) already exists. Skipping addition to database.")
             return
 
         song: SonglessSong = SonglessSong(
-            song_id=song_id, title=title, artist=artist, category=category
+            id=song_id, title=title, artist=artist, category=category
         )
         session.add(song)
 
-    logger.debug(f"songless: New song ({song_id}) created.")
+    logger.debug(f"songless: New song '{title}' ({song_id}) created.")
 
 
 async def create_match(

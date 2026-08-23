@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from enum import Enum as PyEnum
+from dataclasses import dataclass
 
 from sqlalchemy import ARRAY, BigInteger, CheckConstraint, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -15,6 +16,15 @@ class ESonglessCategory(PyEnum):
 
     def __str__(self) -> str:
         return self.value
+
+    def __repr__(self):
+        return self.__str__()
+
+@dataclass
+class Playlist:
+    id: int
+    title: str
+    category: ESonglessCategory
 
 
 class SonglessMatch(Base):

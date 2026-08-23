@@ -4,7 +4,7 @@ import traceback
 
 import discord
 
-from shared.logs import logger
+from shared.logs import logger, highlight
 from shared.types import User
 
 
@@ -25,7 +25,7 @@ async def handle_error(error: Exception, interaction: discord.Interaction) -> No
     logger.critical(
         f"An unexpected error occurred for user '{interaction.user.display_name}' "
         f"({interaction.user.id}): "
-        f"\n{traceback.format_exc()}"
+        f"{highlight(str(error))}.\n\n{traceback.format_exc()}"
     )
 
     embed: discord.Embed = discord.Embed(color=discord.Color.red())
