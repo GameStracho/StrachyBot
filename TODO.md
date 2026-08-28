@@ -13,6 +13,15 @@
 
 ## Web API
 
+- mazat staré logy v api/main.py místo bot/bot.py
+- upravit strukturu bot modulů
+- měli by bot/images být součástí api?
+- přidat API reference
+- aktualizovat PROJECT_CONTEXT.md
+- odstranit TYPE_CHECKING sekci z shared/__init__.py
+- odstranit backwards compatibility věci (např. shared/logs.py)
+- přidat unit a integrační testy
+
 https://share.gemini.google/prmBNFuzUWzR
 https://share.gemini.google/WblCzbkuTEP8
 
