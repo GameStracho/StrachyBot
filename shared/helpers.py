@@ -3,7 +3,7 @@ from typing import TypeVar
 import aiohttp
 from pydantic import BaseModel
 
-from .logs import logger
+from .logger import logger
 
 # Define a TypeVar bound to Pydantic's BaseModel
 T = TypeVar("T", bound=BaseModel)

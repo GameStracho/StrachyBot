@@ -10,6 +10,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 from shared.models import Base
@@ -40,13 +41,16 @@ if config.config_file_name is not None:
 # 1. Import shared models first so foreign key targets are registered
 importlib.import_module("shared.models")
 
-# 2. Dynamically import all your modules so SQLAlchemy maps them into memory
-modules_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "modules"))
-if os.path.exists(modules_dir):
-    for folder in os.listdir(modules_dir):
-        folder_path = os.path.join(modules_dir, folder)
-        if os.path.isdir(folder_path) and "models.py" in os.listdir(folder_path):
-            importlib.import_module(f"modules.{folder}.models")
+# 2. Dynamically import all domain modules from api/modules and legacy src/modules
+for base_dir, module_prefix in [
+    (os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "api", "modules")), "api.modules"),
+    (os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "modules")), "modules"),
+]:
+    if os.path.exists(base_dir):
+        for folder in os.listdir(base_dir):
+            folder_path = os.path.join(base_dir, folder)
+            if os.path.isdir(folder_path) and "models.py" in os.listdir(folder_path):
+                importlib.import_module(f"{module_prefix}.{folder}.models")
 
 # 3. Import your central Base and assign its metadata
 target_metadata = Base.metadata

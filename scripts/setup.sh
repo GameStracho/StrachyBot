@@ -81,7 +81,7 @@ echo "✅ CONNECTION_STRING updated with active database credentials."
 
 # 5. Optional Port Configurations
 echo ""
-read -rp "Do you want to configure custom ports for Adminer / Postgres? [y/N]: " CONFIGURE_PORTS
+read -rp "Do you want to configure custom ports for Adminer / Postgres / API? [y/N]: " CONFIGURE_PORTS
 
 if [[ "$CONFIGURE_PORTS" =~ ^[Yy]$ ]]; then
     CURR_ADMINER_PORT=$(get_env_val "ADMINER_PORT")
@@ -94,30 +94,43 @@ if [[ "$CONFIGURE_PORTS" =~ ^[Yy]$ ]]; then
     NEW_POSTGRES_PORT="${INPUT_POSTGRES_PORT:-${CURR_POSTGRES_PORT:-5432}}"
     update_env_val "POSTGRES_PORT" "$NEW_POSTGRES_PORT"
 
+    CURR_API_PORT=$(get_env_val "API_PORT")
+    read -rp "Enter API_PORT [Current: ${CURR_API_PORT:-8000}]: " INPUT_API_PORT
+    NEW_API_PORT="${INPUT_API_PORT:-${CURR_API_PORT:-8000}}"
+    update_env_val "API_PORT" "$NEW_API_PORT"
+
     # Re-sync connection string with custom postgres port
     NEW_CONN_STR="postgresql+asyncpg://postgres:${EXISTING_DB_PASS}@localhost:${NEW_POSTGRES_PORT}/StrachyBot"
     update_env_val "CONNECTION_STRING" "$NEW_CONN_STR"
     echo "✅ Custom ports saved and connection string updated."
 fi
 
-# 6. Mode Selection (Development vs Production)
+# 6. Mode Selection (Development vs Bot vs API vs Production)
 CURRENT_PROFILE=$(get_env_val "COMPOSE_PROFILES")
 
 echo ""
 echo "Select environment mode:"
-echo "  1) Development (Runs DB + Adminer in Docker, Bot locally via Python)"
-echo "  2) Production  (Runs Bot + DB + Adminer inside Docker)"
+echo "  1) Development (Runs Postgres, Socat, Adminer in Docker; API/Bot run locally)"
+echo "  2) Bot         (Runs Postgres, Adminer, API [internal], Bot in Docker)"
+echo "  3) API         (Runs Postgres, Adminer, API [port exposed] in Docker)"
+echo "  4) Production  (Runs Postgres, Adminer, API [port exposed], Bot in Docker)"
 if [ -n "$CURRENT_PROFILE" ]; then
     echo "  (Current profile set to: $CURRENT_PROFILE)"
 fi
 
-read -rp "Enter choice [1 or 2]: " MODE_CHOICE
+read -rp "Enter choice [1-4]: " MODE_CHOICE
 
 case "$MODE_CHOICE" in
     1)
         SELECTED_PROFILE="development"
         ;;
     2)
+        SELECTED_PROFILE="bot"
+        ;;
+    3)
+        SELECTED_PROFILE="api"
+        ;;
+    4)
         SELECTED_PROFILE="production"
         ;;
     *)
@@ -160,12 +173,19 @@ echo "🎉 Setup complete! Next steps:"
 echo "=========================================="
 
 if [ "$SELECTED_PROFILE" = "development" ]; then
-    echo "1. Start database:  docker compose up -d"
-    echo "2. Run migrations:  alembic upgrade head"
-    echo "3. Activate venv:   source .venv/bin/activate"
-    echo "4. Launch bot:      python src/main.py"
+    echo "1. Start database:   docker compose up -d"
+    echo "2. Run migrations:   alembic upgrade head"
+    echo "3. Activate venv:    source .venv/bin/activate"
+    echo "4. Launch API:       uvicorn api.main:app --reload --port 8000"
+    echo "5. Launch Bot:       python bot/main.py"
+elif [ "$SELECTED_PROFILE" = "bot" ]; then
+    echo "1. Build and run Bot stack (Postgres, Adminer, internal API, Bot):"
+    echo "   docker compose up --build -d"
+elif [ "$SELECTED_PROFILE" = "api" ]; then
+    echo "1. Build and run API stack (Postgres, Adminer, API):"
+    echo "   docker compose up --build -d"
 else
-    echo "1. Build and run all services in Docker:"
+    echo "1. Build and run full Production stack (Postgres, Adminer, API, Bot):"
     echo "   docker compose up --build -d"
 fi
 echo "=========================================="
