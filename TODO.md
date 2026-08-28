@@ -14,8 +14,6 @@
 ## Web API
 
 - mazat staré logy v api/main.py místo bot/bot.py
-- upravit strukturu bot modulů
-- měli by bot/images být součástí api?
 - přidat API reference
 - aktualizovat PROJECT_CONTEXT.md
 - odstranit TYPE_CHECKING sekci z shared/__init__.py

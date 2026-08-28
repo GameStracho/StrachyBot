@@ -28,8 +28,7 @@ StrachyBot/
 │       ├── __init__.py
 │       ├── wordle/
 │       │   ├── game.py           # Pure Python Wordle rules
-│       │   ├── icon.aseprite     # Raw icon for Wordle mini-game
-│       │   ├── icon.png          # Exported icon for Wordle mini-game
+mini-game
 │       │   ├── models.py         # DB models for Wordle stats
 │       │   └── router.py         # REST endpoints (e.g. POST /api/games/wordle/guess)
 │       └── tictactoe/
@@ -41,8 +40,20 @@ StrachyBot/
 │
 └── bot/                          # DISCORD.PY CLIENT
     ├── bot.py                    # Bot entry point & event loops
-    └── cogs/                     # Command modules (Wordle, Tic-Tac-Toe)
-        └── games.py              # Calls backend_api via HTTP (httpx/aiohttp)
+    └── modules/                     # Command modules (Wordle, Tic-Tac-Toe) that call backend_api via HTTP (httpx/aiohttp)
+    ├── __init__.py
+    ├── wordle/
+    |   ├── __init__.py
+    |   ├── icon.aseprite     # Raw icon
+    │   ├── icon.png          # Exported icon
+    │   ├── ui.py             # Views, Buttons, Modals
+    |   └── cog.py            # Commands
+    └── tictactoe/
+        ├── __init__.py
+        ├── icon.aseprite     # Raw icon
+        ├── icon.png          # Exported icon
+        ├── ui.py             # Views, Buttons, Modals
+        └── cog.py            # Commands
 ```
 
 ## 3. Tasks Handled by the API

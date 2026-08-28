@@ -66,8 +66,8 @@ class StrachyBot(commands.Bot):
         except Exception as e:
             logger.debug(f"Note on shared models import: {e}")
 
-        # Load cogs from bot/cogs and legacy src/modules
-        await self.__load_cogs()
+        # Load modules from bot/modules and legacy src/modules
+        await self.__load_modules()
 
         # Sync commands with Discord
         synced: list[app_commands.AppCommand] = await self.tree.sync()
@@ -93,22 +93,31 @@ class StrachyBot(commands.Bot):
                 )
             )
 
-    async def __load_cogs(self) -> None:
+    async def __load_modules(self) -> None:
         """
-        Loads cogs from bot/cogs directory and src/modules directory
-        for backwards compatibility.
+        Loads discord bot modules from bot/modules directory
+        and legacy modules from src/modules for backwards compatibility.
+        Modules are loaded strictly from __init__.py using the setup() function.
         """
-        # 1. Load cogs from bot/cogs/
-        bot_cogs_dir: str = os.path.normpath(os.path.join(os.path.dirname(__file__), "cogs"))
-        if os.path.exists(bot_cogs_dir):
-            for file_name in os.listdir(bot_cogs_dir):
-                if file_name.endswith(".py") and not file_name.startswith("_"):
-                    cog_name = file_name[:-3]
-                    try:
-                        await self.load_extension(f"bot.cogs.{cog_name}")
-                        logger.info(f"Loaded bot cog '{cog_name}'.")
-                    except Exception as e:
-                        logger.critical(f"Failed to load bot cog '{cog_name}': {e}")
+        # 1. Load domain modules from bot/modules/
+        bot_modules_dir: str = os.path.normpath(
+            os.path.join(os.path.dirname(__file__), "modules")
+        )
+        if os.path.exists(bot_modules_dir):
+            for module_name in os.listdir(bot_modules_dir):
+                module_path = os.path.join(bot_modules_dir, module_name)
+                if (
+                    not os.path.isdir(module_path)
+                    or module_name.startswith("_")
+                    or not os.path.exists(os.path.join(module_path, "__init__.py"))
+                ):
+                    continue
+
+                try:
+                    await self.load_extension(f"bot.modules.{module_name}")
+                    logger.info(f"Loaded bot module '{module_name}'.")
+                except Exception as e:
+                    logger.critical(f"Failed to load bot module '{module_name}': {e}")
 
         # 2. Load legacy cogs from src/modules/
         src_modules_dir: str = os.path.normpath(
