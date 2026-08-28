@@ -1,16 +1,42 @@
+import asyncio
 import importlib
 import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from shared import db_manager, logger
+from shared.repository import delete_expired_logs
 
 
-def load_module_routers(app: FastAPI) -> None:
+async def _cleanup_old_logs() -> None:
+    """Deletes database logs older than 7 days."""
+    cutoff_date = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=7)
+    deleted_rows: int | None = await db_manager.execute(
+        db_func=delete_expired_logs, cutoff=cutoff_date
+    )
+    if deleted_rows:
+        logger.info(f"Cleaned up {deleted_rows} logs older than 7 days.")
+
+
+async def _cleanup_logs_periodic_task() -> None:
+    """Runs database log cleanup once every 24 hours."""
+    while True:
+        try:
+            await _cleanup_old_logs()
+            await asyncio.sleep(24 * 3600)
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.error(f"Error during periodic log cleanup: {e}")
+            await asyncio.sleep(3600)
+
+
+def _load_module_routers(app: FastAPI) -> None:
     """Dynamically loads and registers routers from the api/modules directory."""
     modules_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "modules"))
     if not os.path.exists(modules_dir):
@@ -43,9 +69,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception as e:
         logger.critical(f"Failed to initialize database in API: {e}")
 
+    cleanup_task = asyncio.create_task(_cleanup_logs_periodic_task())
+
     yield
 
     logger.info("Shutting down API application...")
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        pass
+
     await db_manager.close()
     logger.info("API database connections disposed.")
 
@@ -80,4 +114,4 @@ async def root() -> dict[str, str]:
 
 
 # Mount all available domain module routers
-load_module_routers(app)
+_load_module_routers(app)

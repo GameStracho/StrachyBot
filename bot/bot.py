@@ -1,18 +1,18 @@
 import asyncio
 import importlib
 import os
-from datetime import UTC, datetime, timedelta
+from datetime import datetime
 from typing import Any
 
 import discord
 import httpx
 from discord import app_commands
-from discord.ext import commands, tasks
+from discord.ext import commands
 from typing_extensions import override
 
 from shared import db_manager, logger
 from shared.logger import highlight
-from shared.repository import create_command_log, delete_expired_logs
+from shared.repository import create_command_log
 
 
 class StrachyBot(commands.Bot):
@@ -57,7 +57,6 @@ class StrachyBot(commands.Bot):
         # Initialize database singleton connection (if connection string configured)
         if os.getenv("CONNECTION_STRING"):
             db_manager.initialize()
-            await self.cleanup_old_logs_task()
 
         # Load shared database models
         try:
@@ -100,9 +99,7 @@ class StrachyBot(commands.Bot):
         Modules are loaded strictly from __init__.py using the setup() function.
         """
         # 1. Load domain modules from bot/modules/
-        bot_modules_dir: str = os.path.normpath(
-            os.path.join(os.path.dirname(__file__), "modules")
-        )
+        bot_modules_dir: str = os.path.normpath(os.path.join(os.path.dirname(__file__), "modules"))
         if os.path.exists(bot_modules_dir):
             for module_name in os.listdir(bot_modules_dir):
                 module_path = os.path.join(bot_modules_dir, module_name)
@@ -141,15 +138,3 @@ class StrachyBot(commands.Bot):
                     logger.info(f"Legacy module '{module_name}' successfully loaded.")
                 except Exception as e:
                     logger.critical(f"Failed to load legacy module '{module_name}': {e}.")
-
-    @tasks.loop(hours=24)
-    async def cleanup_old_logs_task(self) -> None:
-        """Deletes database logs older than 7 days once per day."""
-        cutoff_date = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=7)
-
-        deleted_rows: int | None = await db_manager.execute(
-            db_func=delete_expired_logs, cutoff=cutoff_date
-        )
-
-        if deleted_rows:
-            logger.info(f"Cleaned up {deleted_rows} logs older than 7 days.")

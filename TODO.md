@@ -13,8 +13,6 @@
 
 ## Web API
 
-- mazat staré logy v api/main.py místo bot/bot.py
-- přidat API reference
 - aktualizovat PROJECT_CONTEXT.md
 - odstranit TYPE_CHECKING sekci z shared/__init__.py
 - odstranit backwards compatibility věci (např. shared/logs.py)
