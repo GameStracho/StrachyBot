@@ -199,13 +199,14 @@ class SonglessCog(commands.Cog):
             embed: discord.Embed = ui.embed.extract(target=view.message, index=0, hide_icon=True)
             view.update_embed(embed=embed, default_status="Guess submitted.", last_guess=guess)
 
-            if view.game.status != models.EMatchStatus.PENDING:
-                await view.message.edit(embed=embed, view=view)
-            else:
-                snippet: discord.File = discord.File(fp=view.game.snippet, filename="snippet.mp3")
-                await view.message.edit(embed=embed, view=view, attachments=[snippet])
+            files: list[discord.File] = []
 
-            await interaction.response.send_message("Guess submitted.", ephemeral=True)
-            await interaction.delete_original_response()
+            if view.game.status == models.EMatchStatus.PENDING:
+                files.append(discord.File(fp=view.game.snippet, filename="snippet.mp3"))
+
+            await view.message.edit(embed=embed, view=view, attachments=files)
+            await interaction.response.send_message(
+                "Guess submitted.", ephemeral=True, delete_after=0.0
+            )
         except Exception as error:
             await ui.handle_error(error=error, interaction=interaction)
