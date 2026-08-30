@@ -1,3 +1,4 @@
+import hashlib
 from datetime import UTC, date, datetime, time
 
 from sqlalchemy import func, or_, select
@@ -192,6 +193,32 @@ async def search_songs_by_query(
 
     result = await session.execute(query)
     return list(result.scalars().all())
+
+
+async def get_daily_song(
+    session: AsyncSession,
+    target_date: date | None = None,
+    category: ESonglessCategory | None = None,
+) -> SonglessSong | None:
+    """
+    Returns a deterministic 'random' song based on a specific date.
+    Everyone calling this function on the same day with the same category
+    will receive the exact same song.
+    """
+    if target_date is None:
+        target_date = datetime.now(tz=UTC).date()
+
+    # Create a unique seed string for this date + category combination
+    seed_str = f"{target_date.isoformat()}:{category.value if category else 'ALL'}"
+
+    # Convert the string hash into a float between -1.0 and 1.0 for PostgreSQL setseed()
+    hash_val = int(hashlib.md5(seed_str.encode()).hexdigest(), 16)
+    seed_float = (hash_val / (2**128 - 1)) * 2 - 1
+
+    # Set PostgreSQL random seed for the current session transaction
+    await session.execute(select(func.setseed(seed_float)))
+
+    return await get_random_song(session=session, category=category)
 
 
 async def get_random_song(

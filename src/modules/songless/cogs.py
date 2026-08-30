@@ -170,10 +170,10 @@ class SonglessCog(commands.Cog):
         name="songless-guess", description="Submit a song guess for your most recent active game."
     )
     @app_commands.autocomplete(song_id=song_autocomplete)
-    async def guess(self, interaction: discord.Interaction, song_id: int) -> None:
+    async def guess(self, interaction: discord.Interaction, song: int) -> None:
         try:
             user = ui.get_user(user=interaction.user)
-            logger.debug(f"Command '/songless-guess' used by user {user} with song_id {song_id}.")
+            logger.debug(f"Command '/songless-guess' used by user {user} with song_id {song}.")
 
             game: tuple[models.Match, SonglessMatch] | None = await db_manager.execute(
                 db_func=get_recent_pending_match, player_id=user.id
@@ -189,10 +189,10 @@ class SonglessCog(commands.Cog):
                 return
 
             view: View = active_game_views[game[0].match_id]
-            guess = await view.game.submit_guess(song_id=song_id)
+            guess = await view.game.submit_guess(song_id=song)
             logger.info(
                 f"User {user} submitted {guess[1]} guess "
-                f"'{guess[0].title} - {guess[0].artist}' ({song_id})."
+                f"'{guess[0].title} - {guess[0].artist}' ({song})."
             )
 
             assert view.message

@@ -1,5 +1,6 @@
 ## Songless
 - Nepřidávat do databáze písničky se stejným názvem od stejného autora s rozdílným id
+- přidat více kategorií
 - přejmenovat atribut `match_id` v tabulce `match` na `id`
 
 ---

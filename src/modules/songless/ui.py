@@ -218,7 +218,7 @@ class View(discord.ui.View):
                     target=self.message, index=0, hide_icon=True
                 )
 
-                # await self._game.guess_random_word()
+                await self._game.submit_random_guess()
                 self.update_embed(embed=embed, default_status="Used random guess.")
                 await self.message.edit(embed=embed, view=self)
 
