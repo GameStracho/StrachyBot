@@ -1,6 +1,9 @@
+import io
 from enum import Enum
 
-from shared import db_manager, logger, models, types
+from pydub import AudioSegment
+
+from shared import api, db_manager, logger, models, types
 
 from .models import ESonglessCategory, SonglessSong
 from .repository import create_match, get_daily_song, get_random_song, get_song_by_id, update_match
@@ -25,6 +28,8 @@ class Game:
     _is_daily: bool
     _guesses: list[int]
 
+    _preview: AudioSegment
+
     def __init__(self, player: types.User, category: ESonglessCategory, is_daily: bool) -> None:
         self._match_id = -1
         self._status = models.EMatchStatus.PENDING
@@ -33,6 +38,7 @@ class Game:
         self._song = SonglessSong()
         self._is_daily = is_daily
         self._guesses = []
+        self._preview = AudioSegment.empty()
 
     def __str__(self) -> str:
         return (
@@ -69,6 +75,34 @@ class Game:
     def guesses(self) -> list[int]:
         return self._guesses
 
+    @property
+    def snippet(self) -> io.BytesIO:
+        duration_ms: int = 0
+
+        match len(self._guesses):
+            case 0:
+                duration_ms = 100
+            case 1:
+                duration_ms = 500
+            case 2:
+                duration_ms = 2000
+            case 3:
+                duration_ms = 4000
+            case 4:
+                duration_ms = 8000
+            case 5:
+                duration_ms = 15000
+            case _:
+                raise ValueError("Exceeded maximum number of guesses.")
+
+        preview_cut: AudioSegment = self._preview[:duration_ms]
+
+        buffer: io.BytesIO = io.BytesIO()
+        preview_cut.export(buffer, format="mp3")
+        buffer.seek(0)  # Reset stream position to the beginning for reading
+
+        return buffer
+
     async def start(self) -> None:
         song: SonglessSong | None = None
 
@@ -79,6 +113,10 @@ class Game:
 
         if not song:
             raise RuntimeError("Could not find any songs in the database.")
+
+        fetched_song = await api.fetch_json(url=f"https://api.deezer.com/track/{song.id}/")
+        raw_preview = await api.fetch_raw(url=f"{fetched_song['preview']}")
+        self._preview = AudioSegment.from_file(io.BytesIO(raw_preview), format="mp3")
 
         match_id: int | None = await db_manager.execute(
             db_func=create_match,

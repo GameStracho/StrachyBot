@@ -5,7 +5,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from typing_extensions import override
 
-from shared import StrachyBot, db_manager, fetch_api, logger, models, ui
+from shared import StrachyBot, api, db_manager, logger, models, ui
 
 from .api import APIResponse, APISong
 from .game import Game
@@ -67,7 +67,7 @@ class SonglessCog(commands.Cog):
 
         while url:
             try:
-                response: APIResponse = await fetch_api(url=url, model_class=APIResponse)
+                response: APIResponse = await api.fetch_model(url=url, model_class=APIResponse)
 
                 songs.extend(response.data)
                 url = response.next
@@ -131,10 +131,10 @@ class SonglessCog(commands.Cog):
             await game.start()
 
             view: View = View(game=game, timeout=300.0)
-            embed, icon = view.build_embed()
+            embed, files = view.build_embed()
 
             logger.info(f"New {game} started by user {user}")
-            await interaction.response.send_message(embed=embed, view=view, file=icon)
+            await interaction.response.send_message(embed=embed, view=view, files=files)
 
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
             view.message = await interaction.original_response()
@@ -169,7 +169,7 @@ class SonglessCog(commands.Cog):
     @app_commands.command(
         name="songless-guess", description="Submit a song guess for your most recent active game."
     )
-    @app_commands.autocomplete(song_id=song_autocomplete)
+    @app_commands.autocomplete(song=song_autocomplete)
     async def guess(self, interaction: discord.Interaction, song: int) -> None:
         try:
             user = ui.get_user(user=interaction.user)
@@ -198,7 +198,12 @@ class SonglessCog(commands.Cog):
             assert view.message
             embed: discord.Embed = ui.embed.extract(target=view.message, index=0, hide_icon=True)
             view.update_embed(embed=embed, default_status="Guess submitted.", last_guess=guess)
-            await view.message.edit(embed=embed, view=view)
+
+            if view.game.status != models.EMatchStatus.PENDING:
+                await view.message.edit(embed=embed, view=view)
+            else:
+                snippet: discord.File = discord.File(fp=view.game.snippet, filename="snippet.mp3")
+                await view.message.edit(embed=embed, view=view, attachments=[snippet])
 
             await interaction.response.send_message("Guess submitted.", ephemeral=True)
             await interaction.delete_original_response()

@@ -1,12 +1,11 @@
-from . import models, types, ui
+from . import api, models, types, ui
 from .bot import StrachyBot
 from .database import db_manager
-from .helpers import fetch_api
 from .logs import logger
 
 __all__ = [
+    "api",
     "db_manager",
-    "fetch_api",
     "logger",
     "models",
     "StrachyBot",

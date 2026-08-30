@@ -31,7 +31,7 @@ class View(discord.ui.View):
     def game(self) -> Game:
         return self._game
 
-    def build_embed(self) -> tuple[discord.Embed, discord.File]:
+    def build_embed(self) -> tuple[discord.Embed, list[discord.File]]:
         title: str = "Songless"
         user: types.User = self._game.player
 
@@ -52,7 +52,9 @@ class View(discord.ui.View):
         icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
         embed.set_thumbnail(url=icon_url)
 
-        return (embed, icon)
+        snippet: discord.File = discord.File(fp=self._game.snippet, filename="snippet.mp3")
+
+        return (embed, [icon, snippet])
 
     def update_embed(
         self,

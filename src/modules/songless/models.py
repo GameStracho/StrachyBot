@@ -35,7 +35,8 @@ class SonglessMatch(Base):
         BigInteger, ForeignKey("match.match_id", ondelete="CASCADE"), primary_key=True
     )
     song_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("songless_song.id", ondelete="RESTRICT"), nullable=False)
+        BigInteger, ForeignKey("songless_song.id", ondelete="RESTRICT"), nullable=False
+    )
     guesses_count: Mapped[int] = mapped_column(nullable=False, default=0)
     is_daily: Mapped[bool] = mapped_column(nullable=False, default=False)
 
