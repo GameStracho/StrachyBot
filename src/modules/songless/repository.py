@@ -73,7 +73,7 @@ async def create_match(
         # without closing or committing the transaction yet.
         await session.flush()
 
-        child_match: SonglessSong = SonglessSong(
+        child_match: SonglessMatch = SonglessMatch(
             match_id=parent_match.match_id, song_id=song_id, category=category, is_daily=is_daily
         )
         session.add(child_match)
@@ -89,7 +89,7 @@ async def update_match(
     match_id: int,
     status: EMatchStatus,
     guesses_count: int,
-    guesses: list[str],
+    guesses: list[int],
 ) -> bool:
     """
     Updates an pending songless match record in the database.

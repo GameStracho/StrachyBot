@@ -5,13 +5,13 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from typing_extensions import override
 
-from shared import StrachyBot, db_manager, fetch_api, logger, ui
+from shared import StrachyBot, db_manager, fetch_api, logger, models, ui
 
 from .api import APIResponse, APISong
 from .game import Game
-from .models import ESonglessCategory, Playlist
-from .repository import create_song
-from .ui import View
+from .models import ESonglessCategory, Playlist, SonglessMatch
+from .repository import create_song, get_recent_pending_match, search_songs_by_query
+from .ui import View, active_game_views
 
 PLAYLISTS: list[Playlist] = [
     Playlist(id=1677006641, title="Hip Hop Hits", category=ESonglessCategory.HIP_HOP),
@@ -49,7 +49,7 @@ class SonglessCog(commands.Cog):
     @override
     async def cog_load(self) -> None:
         """Called automatically when the cog is loaded."""
-        self.update_songs.start()
+        # self.update_songs.start()
 
     @override
     async def cog_unload(self) -> None:
@@ -138,5 +138,69 @@ class SonglessCog(commands.Cog):
 
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
             view.message = await interaction.original_response()
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
+
+    async def song_autocomplete(
+        self, interaction: discord.Interaction, query: str
+    ) -> list[app_commands.Choice[int]]:
+        """Provides up to 25 title/artist suggestions for the guess command."""
+
+        songs = await db_manager.execute(db_func=search_songs_by_query, query_str=query, limit=25)
+
+        if not songs:
+            return []
+
+        def truncate_name(title: str, artist: str, max_length: int = 100) -> str:
+            full_name = f"{title} - {artist}"
+            if len(full_name) <= max_length:
+                return full_name
+            return f"{full_name[: max_length - 3]}..."
+
+        return [
+            app_commands.Choice(
+                # Discord limit is 100 characters
+                name=truncate_name(title=song.title, artist=song.artist, max_length=100),
+                value=song.id,
+            )
+            for song in songs
+        ]
+
+    @app_commands.command(
+        name="songless-guess", description="Submit a song guess for your most recent active game."
+    )
+    @app_commands.autocomplete(song_id=song_autocomplete)
+    async def guess(self, interaction: discord.Interaction, song_id: int) -> None:
+        try:
+            user = ui.get_user(user=interaction.user)
+            logger.debug(f"Command '/songless-guess' used by user {user} with song_id {song_id}.")
+
+            game: tuple[models.Match, SonglessMatch] | None = await db_manager.execute(
+                db_func=get_recent_pending_match, player_id=user.id
+            )
+
+            if not game:
+                warning_embed, warning_icon = ui.embed.build_warning(
+                    "No active game found. Use command `/songless` to start a new game."
+                )
+                await interaction.response.send_message(embed=warning_embed, file=warning_icon)
+
+                logger.debug(f"No active game found for user {user}.")
+                return
+
+            view: View = active_game_views[game[0].match_id]
+            guess = await view.game.submit_guess(song_id=song_id)
+            logger.info(
+                f"User {user} submitted {guess[1]} guess "
+                f"'{guess[0].title} - {guess[0].artist}' ({song_id})."
+            )
+
+            assert view.message
+            embed: discord.Embed = ui.embed.extract(target=view.message, index=0, hide_icon=True)
+            view.update_embed(embed=embed, default_status="Guess submitted.", last_guess=guess)
+            await view.message.edit(embed=embed, view=view)
+
+            await interaction.response.send_message("Guess submitted.", ephemeral=True)
+            await interaction.delete_original_response()
         except Exception as error:
             await ui.handle_error(error=error, interaction=interaction)

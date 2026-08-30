@@ -66,6 +66,6 @@ EMOJIS: dict[str, str] = {
     "songless_random_guess_button": "🎲",
     "songless_empty_guess": "⬜",
     "songless_correct_guess": "🟩",
-    "songless_author_guess": "🟨",
+    "songless_artist_guess": "🟨",
     "songless_incorrect_guess": "⬛",
 }

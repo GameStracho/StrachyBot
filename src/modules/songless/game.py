@@ -1,14 +1,15 @@
 from enum import Enum
 
-from shared import models, types
+from shared import db_manager, models, types
 
 from .models import ESonglessCategory, SonglessSong
+from .repository import create_match, get_song_by_id
 
 
 class EGuessCategory(Enum):
     EMPTY = 0
     INCORRECT = 1
-    AUTHOR = 2
+    ARTIST = 2
     CORRECT = 3
 
     def __int__(self) -> int:
@@ -69,7 +70,16 @@ class Game:
         return self._guesses
 
     async def start(self) -> None:
-        pass
+        match_id: int | None = await db_manager.execute(
+            db_func=create_match,
+            player_id=self._player.id,
+            category=self._category,
+            song_id=self._song.id,
+            is_daily=self._is_daily,
+        )
+
+        if match_id:
+            self._match_id = match_id
 
     async def _update_db_record(self) -> None:
         pass
@@ -80,11 +90,22 @@ class Game:
     async def handle_surrender(self) -> None:
         self._status = models.EMatchStatus.SURRENDER
 
-    async def add_guess(self, song: SonglessSong) -> None:
-        pass
+    async def submit_guess(self, song_id: int) -> tuple[SonglessSong, EGuessCategory]:
+        song: SonglessSong | None = await db_manager.execute(
+            db_func=get_song_by_id, song_id=song_id
+        )
+
+        if not song:
+            raise RuntimeError(f"Song '{song_id}' not found.")
+
+        self._guesses.append(song_id)
+
+        if song.id == self._song.id:
+            return (song, EGuessCategory.CORRECT)
+        elif song.artist == self._song.artist:
+            return (song, EGuessCategory.ARTIST)
+        else:
+            return (song, EGuessCategory.INCORRECT)
 
     async def random_guess(self) -> None:
         pass
-
-    async def categorize_guess(self, song: SonglessSong) -> EGuessCategory:
-        return EGuessCategory.EMPTY

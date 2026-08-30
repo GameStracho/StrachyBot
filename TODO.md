@@ -1,4 +1,6 @@
 ## Songless
+- Nepřidávat do databáze písničky se stejným názvem od stejného autora s rozdílným id
+- přejmenovat atribut `match_id` v tabulce `match` na `id`
 
 ---
 
@@ -7,10 +9,6 @@
 - přidat modulární uživatelské statistiky, kde každá stránka bude zobrazovat statistiky specifické pro danou hru
 - přidat globální statistiky
 
-- přejmenovat atribut `match_id` v tabulce `match` na `id`
-- automaticky aktualizovat všechny `PENDING` hry na `TIMEOUT` při vypínání bota
-- Zachytit error s nedostupnou databází při startu bota, vypsat jednoduchou chybovou hlášku a bota ukončit
-- odstranit název modulu z vlastních tříd uvnitř modulů (např. `WordleView` -> `View`, `TriviaButton` -> `Button`, `WordleGuessModal` -> `GuessModal`, `WordleGame` -> `Game`, atd.)
 ---
 
 ## Česká lokalizace
@@ -23,6 +21,10 @@
 ---
 
 ## Web API
+
+- automaticky aktualizovat všechny `PENDING` hry na `TIMEOUT` při vypínání bota
+- Zachytit error s nedostupnou databází při startu bota, vypsat jednoduchou chybovou hlášku a bota ukončit
+- odstranit název modulu z vlastních tříd uvnitř modulů (např. `WordleView` -> `View`, `TriviaButton` -> `Button`, `WordleGuessModal` -> `GuessModal`, `WordleGame` -> `Game`, atd.)
 
 https://share.gemini.google/prmBNFuzUWzR
 https://share.gemini.google/WblCzbkuTEP8

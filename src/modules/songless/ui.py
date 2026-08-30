@@ -8,6 +8,8 @@ from shared import logger, models, types, ui
 from .game import EGuessCategory, Game
 from .models import SonglessSong
 
+active_game_views: dict[int, "View"] = {}
+
 
 class View(discord.ui.View):
     _game: Game
@@ -20,6 +22,10 @@ class View(discord.ui.View):
         logger.debug(
             f"New SonglessView created for game {self._game.match_id} with {timeout}s timeout."
         )
+
+        if active_game_views.get(game.match_id):
+            raise RuntimeError(f"Active game with id '{game.match_id}' already exists.")
+        active_game_views[game.match_id] = self
 
     @property
     def game(self) -> Game:
@@ -48,15 +54,18 @@ class View(discord.ui.View):
 
         return (embed, icon)
 
-    def update_embed(self, embed: discord.Embed, default_status: str) -> None:
-        """
-        last_guess: str = self._game.last_guess
-        ui.embed.update_field(
-            embed=embed,
-            name=f"Guess #{self._game.guesses_count}",
-            value=self._uncover_word(word=last_guess),
-        )
-        """
+    def update_embed(
+        self,
+        embed: discord.Embed,
+        default_status: str,
+        last_guess: tuple[SonglessSong, EGuessCategory] | None = None,
+    ) -> None:
+        if last_guess:
+            ui.embed.update_field(
+                embed=embed,
+                name=f"Guess #{len(self._game.guesses)}",
+                value=self._uncover_guess(song=last_guess[0], category=last_guess[1]),
+            )
 
         match self._game.status:
             case models.EMatchStatus.PENDING:
@@ -90,6 +99,15 @@ class View(discord.ui.View):
                         f"The secret word was '{self.spoil(self._game.song_str)}'."
                     ),
                 )
+            case models.EMatchStatus.TIMEOUT:
+                ui.embed.update_field(
+                    embed=embed,
+                    name="Status",
+                    value=(
+                        f"Game timed out! {ui.EMOJIS['game_timeout']} "
+                        f"The secret song was '{self.spoil(self._game.song_str)}'."
+                    ),
+                )
             case _:
                 raise ValueError(self._game.status)
 
@@ -103,6 +121,8 @@ class View(discord.ui.View):
                 child.disabled = True
         logger.debug(f"Buttons disabled for game {self._game.match_id}.")
 
+        active_game_views.pop(self._game.match_id)
+
     def spoil(self, string: str) -> str:
         spoiler = "||" if self._game.is_daily else ""
         return f"{spoiler}{string}{spoiler}"
@@ -113,21 +133,20 @@ class View(discord.ui.View):
                 return ui.EMOJIS["songless_empty_guess"]
             case EGuessCategory.INCORRECT:
                 return ui.EMOJIS["songless_incorrect_guess"]
-            case EGuessCategory.AUTHOR:
-                return ui.EMOJIS["songless_author_guess"]
+            case EGuessCategory.ARTIST:
+                return ui.EMOJIS["songless_artist_guess"]
             case EGuessCategory.CORRECT:
                 return ui.EMOJIS["songless_correct_guess"]
             case _:
                 raise ValueError(category)
 
-    def _uncover_guess(self, song: SonglessSong) -> str:
+    def _uncover_guess(self, song: SonglessSong, category: EGuessCategory) -> str:
         """
         Adds an emoji in front of the song title and author based on
         the category of the guess.
 
         Returns the color coded word.
         """
-        category: EGuessCategory = EGuessCategory.EMPTY
         emoji: str = ""
 
         match category:
@@ -135,14 +154,14 @@ class View(discord.ui.View):
                 emoji = ui.EMOJIS["songless_empty_guess"]
             case EGuessCategory.INCORRECT:
                 emoji = ui.EMOJIS["songless_incorrect_guess"]
-            case EGuessCategory.AUTHOR:
+            case EGuessCategory.ARTIST:
                 emoji = ui.EMOJIS["songless_author_guess"]
             case EGuessCategory.CORRECT:
                 emoji = ui.EMOJIS["songless_correct_guess"]
             case _:
                 raise ValueError(category)
 
-        return f"{emoji}{self.spoil(f'{song.artist} - {song.title}')}"
+        return f"{emoji} {self.spoil(f'{song.title} - {song.artist}')}"
 
     @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -170,18 +189,9 @@ class View(discord.ui.View):
             return
 
         await self._game.handle_timeout()
-        self.disable_buttons()
 
         embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
-        ui.embed.remove_field(embed=embed, name="Timeout")
-        ui.embed.update_field(
-            embed=embed,
-            name="Status",
-            value=(
-                f"Game timed out! {ui.EMOJIS['game_timeout']} "
-                f"The secret song was '{self.spoil(self._game.song_str)}'."
-            ),
-        )
+        self.update_embed(embed=embed, default_status="Timeout")
 
         # Edit the original message to show disabled buttons
         await self.message.edit(embed=embed, view=self)
