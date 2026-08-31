@@ -13,7 +13,7 @@ active_game_views: dict[int, "View"] = {}
 
 class View(discord.ui.View):
     _game: Game
-    message: discord.Message | None
+    message: discord.Message
 
     def __init__(self, game: Game, timeout: float = 180):
         super().__init__(timeout=timeout)
@@ -190,7 +190,7 @@ class View(discord.ui.View):
 
     @override
     async def on_timeout(self) -> None:
-        if self._game.status != models.EMatchStatus.PENDING or self.message is None:
+        if self._game.status != models.EMatchStatus.PENDING:
             return
 
         await self._game.handle_timeout()
@@ -214,14 +214,13 @@ class View(discord.ui.View):
     ) -> None:
         try:
 
-            async def handle_random_guess(confirm_interaction: discord.Interaction) -> None:
+            async def handle_skip(confirm_interaction: discord.Interaction) -> None:
                 logger.debug(
                     f"User {confirm_interaction.user.display_name} "
                     f"({confirm_interaction.user.id}) "
                     f"pressed the 'Skip' button for game {self._game.match_id}."
                 )
 
-                assert self.message is not None
                 embed: discord.Embed = ui.embed.extract(
                     target=self.message, index=0, hide_icon=True
                 )
@@ -242,7 +241,6 @@ class View(discord.ui.View):
 
                 await self.message.edit(embed=embed, view=self, attachments=files)
 
-            assert self.message is not None
             songless_embed: discord.Embed = ui.embed.extract(
                 target=self.message, index=0, hide_icon=True
             )
@@ -255,7 +253,7 @@ class View(discord.ui.View):
             timeout: float = min(self.timeout, 30.0) if self.timeout else 30.0
             confirm_view: ui.ConfirmView = ui.ConfirmView(
                 interaction=interaction,
-                on_confirm=handle_random_guess,
+                on_confirm=handle_skip,
                 confirm_label="Yes",
                 cancel_label="No",
                 timeout=timeout,
@@ -285,7 +283,6 @@ class View(discord.ui.View):
                     f"pressed the 'Give up' button for game {self._game.match_id}."
                 )
 
-                assert self.message is not None
                 embed: discord.Embed = ui.embed.extract(
                     target=self.message, index=0, hide_icon=True
                 )
@@ -294,7 +291,6 @@ class View(discord.ui.View):
                 self.update_embed(embed=embed, default_status="You gave up!")
                 await self.message.edit(embed=embed, view=self)
 
-            assert self.message is not None
             wordle_embed: discord.Embed = ui.embed.extract(
                 target=self.message, index=0, hide_icon=True
             )

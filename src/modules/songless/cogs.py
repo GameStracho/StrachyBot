@@ -149,7 +149,9 @@ class SonglessCog(commands.Cog):
     ) -> list[app_commands.Choice[int]]:
         """Provides up to 25 title/artist suggestions for the guess command."""
 
-        songs = await db_manager.execute(db_func=search_songs_by_query, query_str=query.strip(), limit=25)
+        songs = await db_manager.execute(
+            db_func=search_songs_by_query, query_str=query.strip(), limit=25
+        )
 
         if not songs:
             return []
@@ -186,7 +188,9 @@ class SonglessCog(commands.Cog):
                 warning_embed, warning_icon = ui.embed.build_warning(
                     "No active game found. Use command `/songless` to start a new game."
                 )
-                await interaction.response.send_message(embed=warning_embed, file=warning_icon, ephemeral=True)
+                await interaction.response.send_message(
+                    embed=warning_embed, file=warning_icon, ephemeral=True
+                )
 
                 logger.debug(f"No active game found for user {user}.")
                 return
