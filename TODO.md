@@ -1,5 +1,4 @@
 ## Songless
-- pořádně otestovat a opravit neaktualizování UI při použití random guess
 - Nepřidávat do databáze písničky se stejným názvem od stejného autora s rozdílným id
 - přidat více kategorií
 

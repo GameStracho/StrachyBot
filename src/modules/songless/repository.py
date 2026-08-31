@@ -151,7 +151,7 @@ async def has_played_daily_challenge(
         .where(
             Match.player_id == player_id,
             SonglessMatch.is_daily.is_(True),
-            SonglessMatch.category.is_(category),
+            SonglessMatch.category == category,
             Match.start_time >= start_of_day,
             Match.start_time <= end_of_day,
         )

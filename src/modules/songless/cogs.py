@@ -10,7 +10,7 @@ from shared import StrachyBot, api, db_manager, logger, models, ui
 from .api import APIResponse, APISong
 from .game import Game
 from .models import ESonglessCategory, Playlist, SonglessMatch
-from .repository import create_song, get_recent_pending_match, search_songs_by_query
+from .repository import create_song, get_recent_pending_match, search_songs_by_query, has_played_daily_challenge
 from .ui import View, active_game_views
 
 PLAYLISTS: list[Playlist] = [
@@ -124,11 +124,23 @@ class SonglessCog(commands.Cog):
         daily_challenge: bool = False,
     ) -> None:
         try:
-            # Tells Discord to display "Thinking..." and extends time limit to 15 mins
-            await interaction.response.defer()
-
             user = ui.get_user(user=interaction.user)
             logger.debug(f"Command '/songless' used by user {user}.")
+
+            if daily_challenge and await db_manager.execute(
+                db_func=has_played_daily_challenge, player_id=interaction.user.id, category=category
+            ):
+                logger.info(f"User {user} already played today's daily challenge in category {category}.")
+
+                embed, icon = ui.embed.build_warning(
+                    message=f"You already played today's daily challenge in category {category}."
+                )
+
+                await interaction.response.send_message(embed=embed, file=icon, ephemeral=True)
+                return
+
+            # Tells Discord to display "Thinking..." and extends time limit to 15 mins
+            await interaction.response.defer()
 
             game: Game = Game(player=user, category=category, is_daily=daily_challenge)
             await game.start()
