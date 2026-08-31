@@ -289,7 +289,11 @@ class View(discord.ui.View):
 
                 await self._game.handle_surrender()
                 self.update_embed(embed=embed, default_status="You gave up!")
-                await self.message.edit(embed=embed, view=self)
+                icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
+                embed.set_thumbnail(url=icon_url)
+        
+                # Edit the original message to show disabled buttons
+                await self.message.edit(embed=embed, view=self, attachments=[icon])
 
             wordle_embed: discord.Embed = ui.embed.extract(
                 target=self.message, index=0, hide_icon=True
