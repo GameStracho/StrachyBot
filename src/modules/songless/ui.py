@@ -38,7 +38,7 @@ class View(discord.ui.View):
         if self._game.is_daily:
             title += f" {datetime.now(tz=UTC).date().strftime('%Y-%m-%d')}"
 
-        embed: discord.Embed = discord.Embed(title=title, color=discord.Color.gold())
+        embed: discord.Embed = discord.Embed(title=title + f" - {self._game.category}", color=discord.Color.gold())
         embed.set_author(name=user.display_name, icon_url=user.display_avatar)
 
         for i in range(6):

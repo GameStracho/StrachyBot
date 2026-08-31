@@ -68,6 +68,10 @@ class Game:
         return f"{self._song.artist} - {self._song.title}"
 
     @property
+    def category(self) -> ESonglessCategory:
+        return self._category
+
+    @property
     def is_daily(self) -> bool:
         return self._is_daily
 
