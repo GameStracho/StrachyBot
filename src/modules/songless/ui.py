@@ -38,12 +38,14 @@ class View(discord.ui.View):
         if self._game.is_daily:
             title += f" {datetime.now(tz=UTC).date().strftime('%Y-%m-%d')}"
 
-        embed: discord.Embed = discord.Embed(title=title + f" - {self._game.category}", color=discord.Color.gold())
+        embed: discord.Embed = discord.Embed(
+            title=title + f" - {self._game.category}", color=discord.Color.gold()
+        )
         embed.set_author(name=user.display_name, icon_url=user.display_avatar)
 
         for i in range(6):
             embed.add_field(
-                name="Guess #" + str(i + 1), value=ui.EMOJIS["songless_empty_guess"], inline=False
+                name="Turn #" + str(i + 1), value=ui.EMOJIS["songless_empty_guess"], inline=False
             )
 
         embed.add_field(name="Status", value="Game started. You can start guessing.", inline=True)
@@ -60,18 +62,18 @@ class View(discord.ui.View):
         self,
         embed: discord.Embed,
         default_status: str,
-        last_guess: tuple[SonglessSong, EGuessCategory] | None = None,
+        last_guess: tuple[SonglessSong | None, EGuessCategory] | None = None,
     ) -> None:
         if last_guess:
             ui.embed.update_field(
                 embed=embed,
-                name=f"Guess #{len(self._game.guesses)}",
+                name=f"Turn #{len(self._game.guesses)}",
                 value=self._uncover_guess(song=last_guess[0], category=last_guess[1]),
             )
 
         match self._game.status:
             case models.EMatchStatus.PENDING:
-                ui.embed.update_field(embed=embed, name="Status", value=default_status)
+                ui.embed.update_field(embed=embed, name="Status", value=self.spoil(default_status))
                 ui.embed.update_field(
                     embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self)
                 )
@@ -142,13 +144,14 @@ class View(discord.ui.View):
             case _:
                 raise ValueError(category)
 
-    def _uncover_guess(self, song: SonglessSong, category: EGuessCategory) -> str:
+    def _uncover_guess(self, song: SonglessSong | None, category: EGuessCategory) -> str:
         """
         Adds an emoji in front of the song title and author based on
         the category of the guess.
 
         Returns the color coded word.
         """
+        song_str = f"{song.title} - {song.artist}" if song else "Skipped"
         emoji: str = ""
 
         match category:
@@ -157,13 +160,13 @@ class View(discord.ui.View):
             case EGuessCategory.INCORRECT:
                 emoji = ui.EMOJIS["songless_incorrect_guess"]
             case EGuessCategory.ARTIST:
-                emoji = ui.EMOJIS["songless_author_guess"]
+                emoji = ui.EMOJIS["songless_artist_guess"]
             case EGuessCategory.CORRECT:
                 emoji = ui.EMOJIS["songless_correct_guess"]
             case _:
                 raise ValueError(category)
 
-        return f"{emoji} {self.spoil(f'{song.title} - {song.artist}')}"
+        return f"{emoji} {self.spoil(song_str)}"
 
     @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -199,11 +202,11 @@ class View(discord.ui.View):
         await self.message.edit(embed=embed, view=self)
 
     @discord.ui.button(
-        label="Random guess",
+        label="Skip",
         style=discord.ButtonStyle.secondary,
-        emoji=ui.EMOJIS["wordle_random_guess_button"],
+        emoji=ui.EMOJIS["songless_skip_button"],
     )
-    async def random_guess_button(
+    async def skip_button(
         self, interaction: discord.Interaction, button: discord.ui.Button["View"]
     ) -> None:
         try:
@@ -212,7 +215,7 @@ class View(discord.ui.View):
                 logger.debug(
                     f"User {confirm_interaction.user.display_name} "
                     f"({confirm_interaction.user.id}) "
-                    f"pressed the 'Random guess' button for game {self._game.match_id}."
+                    f"pressed the 'Skip' button for game {self._game.match_id}."
                 )
 
                 assert self.message is not None
@@ -220,18 +223,29 @@ class View(discord.ui.View):
                     target=self.message, index=0, hide_icon=True
                 )
 
-                await self._game.submit_random_guess()
-                self.update_embed(embed=embed, default_status="Used random guess.")
-                await self.message.edit(embed=embed, view=self)
+                await self._game.handle_skip()
+                self.update_embed(
+                    embed=embed,
+                    default_status=f"Skipped turn #{len(self._game.guesses)}.",
+                    last_guess=(None, EGuessCategory.INCORRECT),
+                )
+
+                files: list[discord.File] = []
+
+                if self.game.status == models.EMatchStatus.PENDING:
+                    files.append(discord.File(fp=self.game.snippet, filename="snippet.mp3"))
+
+                await self.message.edit(embed=embed, view=self, attachments=files)
 
             assert self.message is not None
-            wordle_embed: discord.Embed = ui.embed.extract(
+            songless_embed: discord.Embed = ui.embed.extract(
                 target=self.message, index=0, hide_icon=True
             )
             ui.embed.update_field(
-                embed=wordle_embed, name="Timeout", value=ui.get_timeout_timestamp(self)
+                embed=songless_embed, name="Timeout", value=ui.get_timeout_timestamp(self)
             )
-            await self.message.edit(embed=wordle_embed, view=self)
+
+            await self.message.edit(embed=songless_embed, view=self)
 
             timeout: float = min(self.timeout, 30.0) if self.timeout else 30.0
             confirm_view: ui.ConfirmView = ui.ConfirmView(
@@ -242,7 +256,7 @@ class View(discord.ui.View):
                 timeout=timeout,
             )
             confirm_embed, confirm_icon = confirm_view.build_embed(
-                question="Are you sure you want to use a random guess?"
+                question="Are you sure you want to skip this turn?"
             )
 
             await interaction.response.send_message(

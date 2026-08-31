@@ -63,7 +63,7 @@ EMOJIS: dict[str, str] = {
     "wordle_incorrect_letter": "⬛",
     "confirm_button": "✔️",
     "cancel_button": "✖️",
-    "songless_random_guess_button": "🎲",
+    "songless_skip_button": "⏩",
     "songless_empty_guess": "⬜",
     "songless_correct_guess": "🟩",
     "songless_artist_guess": "🟨",

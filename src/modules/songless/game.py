@@ -26,7 +26,7 @@ class Game:
     _category: ESonglessCategory
     _song: SonglessSong
     _is_daily: bool
-    _guesses: list[int]
+    _guesses: list[int | None]
 
     _preview: AudioSegment
 
@@ -65,7 +65,7 @@ class Game:
 
     @property
     def song_str(self) -> str:
-        return f"{self._song.artist} - {self._song.title}"
+        return f"{self._song.title()} - {self._song.artist}"
 
     @property
     def category(self) -> ESonglessCategory:
@@ -76,7 +76,7 @@ class Game:
         return self._is_daily
 
     @property
-    def guesses(self) -> list[int]:
+    def guesses(self) -> list[int | None]:
         return self._guesses
 
     @property
@@ -165,7 +165,14 @@ class Game:
         self._status = models.EMatchStatus.SURRENDER
         await self._update_db_record()
 
-    async def _handle_guess_submission(self, song: SonglessSong) -> EGuessCategory:
+    async def submit_guess(self, song_id: int) -> tuple[SonglessSong, EGuessCategory]:
+        song: SonglessSong | None = await db_manager.execute(
+            db_func=get_song_by_id, song_id=song_id
+        )
+
+        if not song:
+            raise RuntimeError(f"Song '{song_id}' not found.")
+
         self._guesses.append(song.id)
         logger.info(f"User {self._player} guessed song '{song.id}' in game {self._match_id}.")
         guess_category: EGuessCategory = EGuessCategory.INCORRECT
@@ -181,26 +188,17 @@ class Game:
             self._status = models.EMatchStatus.LOSS
 
         await self._update_db_record()
-        return guess_category
+        return (song, guess_category)
 
-    async def submit_guess(self, song_id: int) -> tuple[SonglessSong, EGuessCategory]:
-        song: SonglessSong | None = await db_manager.execute(
-            db_func=get_song_by_id, song_id=song_id
+    async def handle_skip(self) -> None:
+        self._guesses.append(None)
+
+        logger.info(
+            f"User {self._player} skipped turn {len(self._guesses)} of game {self._match_id}."
         )
 
-        if not song:
-            raise RuntimeError(f"Song '{song_id}' not found.")
+        if len(self._guesses) == 6:
+            logger.info(f"User {self._player} lost game {self._match_id}.")
+            self._status = models.EMatchStatus.LOSS
 
-        return (song, await self._handle_guess_submission(song=song))
-
-    async def submit_random_guess(self) -> tuple[SonglessSong, EGuessCategory]:
-        song: SonglessSong | None = await db_manager.execute(
-            db_func=get_random_song, category=self._category
-        )
-
-        if not song:
-            raise RuntimeError("Could not find any songs in the database.")
-
-        logger.info(f" Generated random song '{song.id}' for game {self._match_id}")
-
-        return (song, await self._handle_guess_submission(song=song))
+        await self._update_db_record()

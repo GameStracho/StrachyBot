@@ -45,7 +45,9 @@ class SonglessMatch(Base):
         Enum(ESonglessCategory, native_enum=True), nullable=False, default=ESonglessCategory.ALL
     )
 
-    guesses: Mapped[list[int]] = mapped_column(ARRAY(BigInteger()), nullable=False, default=list)
+    guesses: Mapped[list[int | None]] = mapped_column(
+        ARRAY(BigInteger()), nullable=False, default=list
+    )
 
 
 class SonglessSong(Base):

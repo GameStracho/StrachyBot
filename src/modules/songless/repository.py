@@ -90,7 +90,7 @@ async def update_match(
     match_id: int,
     status: EMatchStatus,
     guesses_count: int,
-    guesses: list[int],
+    guesses: list[int | None],
 ) -> bool:
     """
     Updates an pending songless match record in the database.
