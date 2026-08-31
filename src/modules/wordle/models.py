@@ -6,7 +6,7 @@ from shared.models import Base
 
 class WordleMatch(Base):
     __tablename__ = "wordle_match"
-    __table_args__ = (CheckConstraint("guesses BETWEEN 0 AND 6", name="valid_guesses"),)
+    __table_args__ = (CheckConstraint("guesses_count BETWEEN 0 AND 6", name="valid_guesses"),)
 
     match_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("match.match_id", ondelete="CASCADE"), primary_key=True

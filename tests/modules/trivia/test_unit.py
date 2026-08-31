@@ -9,7 +9,7 @@ from modules.trivia.api import TriviaAPIResponse
 from modules.trivia.game import TriviaGame
 from modules.trivia.models import ETriviaCategory, ETriviaDifficulty
 from modules.trivia.ui import TriviaButton, TriviaView
-from shared import helpers, models
+from shared import api, models
 from tests import mocks
 
 
@@ -87,7 +87,7 @@ async def test_fetch_api_builds_expected_url_and_populates_game(
             }
         )
 
-    monkeypatch.setattr(target=helpers, name="fetch_api", value=fake_fetch_api)
+    monkeypatch.setattr(target=api, name="fetch_model", value=fake_fetch_api)
 
     player = mocks.DummyUser(user_id=7)
 
@@ -106,10 +106,10 @@ async def test_fetch_api_builds_expected_url_and_populates_game(
 async def test_fetch_api_raises_when_api_returns_no_results(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def fake_fetch_api(_url: str, _model_class: TriviaAPIResponse) -> TriviaAPIResponse:
+    async def fake_fetch_api(url: str, model_class: TriviaAPIResponse) -> TriviaAPIResponse:
         return TriviaAPIResponse(results=[])
 
-    monkeypatch.setattr(target=helpers, name="fetch_api", value=fake_fetch_api)
+    monkeypatch.setattr(target=api, name="fetch_model", value=fake_fetch_api)
 
     game = TriviaGame(player=mocks.DummyUser())
     with pytest.raises(Exception, match="No API response received"):

@@ -6,7 +6,7 @@ from typing import NamedTuple
 
 from pydantic import BaseModel, field_validator
 
-from shared import helpers, logger, types
+from shared import api, logger, types
 
 from .models import ETriviaCategory, ETriviaDifficulty
 
@@ -114,7 +114,7 @@ class TriviaAPIManager:
             f"for category {category} in difficulty {difficulty} from '{url}'..."
         )
 
-        response: TriviaAPIResponse = await helpers.fetch_api(url, TriviaAPIResponse)
+        response: TriviaAPIResponse = await api.fetch_model(url=url, model_class=TriviaAPIResponse)
 
         if not response.results:
             logger.critical(
