@@ -65,3 +65,10 @@ class SonglessSong(Base):
     added_at: Mapped[datetime] = mapped_column(
         nullable=False, default=datetime.now(UTC).replace(tzinfo=None)
     )
+
+    def __str__(self) -> str:
+        return (
+            f"SonglessSong (id = {self.id}, title = {self.title}, "
+            f"artist = {self.artist}, category = {self.category}, "
+            f"added_at = {self.added_at})"
+        )
