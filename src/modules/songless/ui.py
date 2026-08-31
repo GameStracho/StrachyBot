@@ -291,7 +291,7 @@ class View(discord.ui.View):
                 self.update_embed(embed=embed, default_status="You gave up!")
                 icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
                 embed.set_thumbnail(url=icon_url)
-        
+
                 # Edit the original message to show disabled buttons
                 await self.message.edit(embed=embed, view=self, attachments=[icon])
 
