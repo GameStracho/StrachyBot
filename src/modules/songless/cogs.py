@@ -146,7 +146,7 @@ class SonglessCog(commands.Cog):
     ) -> list[app_commands.Choice[int]]:
         """Provides up to 25 title/artist suggestions for the guess command."""
 
-        songs = await db_manager.execute(db_func=search_songs_by_query, query_str=query, limit=25)
+        songs = await db_manager.execute(db_func=search_songs_by_query, query_str=query.strip(), limit=25)
 
         if not songs:
             return []
@@ -179,11 +179,11 @@ class SonglessCog(commands.Cog):
                 db_func=get_recent_pending_match, player_id=user.id
             )
 
-            if not game:
+            if not game or not active_game_views.get(game[0].match_id):
                 warning_embed, warning_icon = ui.embed.build_warning(
                     "No active game found. Use command `/songless` to start a new game."
                 )
-                await interaction.response.send_message(embed=warning_embed, file=warning_icon)
+                await interaction.response.send_message(embed=warning_embed, file=warning_icon, ephemeral=True)
 
                 logger.debug(f"No active game found for user {user}.")
                 return
@@ -209,7 +209,9 @@ class SonglessCog(commands.Cog):
             if not guess:
                 await view.message.edit(embed=embed, view=view)
             else:
-                files: list[discord.File] = []
+                icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
+                embed.set_thumbnail(url=icon_url)
+                files: list[discord.File] = [icon]
 
                 if view.game.status == models.EMatchStatus.PENDING:
                     files.append(discord.File(fp=view.game.snippet, filename="snippet.mp3"))

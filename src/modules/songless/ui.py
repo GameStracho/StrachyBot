@@ -73,7 +73,7 @@ class View(discord.ui.View):
 
         match self._game.status:
             case models.EMatchStatus.PENDING:
-                ui.embed.update_field(embed=embed, name="Status", value=self.spoil(default_status))
+                ui.embed.update_field(embed=embed, name="Status", value=default_status)
                 ui.embed.update_field(
                     embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self)
                 )
@@ -89,8 +89,8 @@ class View(discord.ui.View):
                     embed=embed,
                     name="Status",
                     value=(
-                        f"You lost! {ui.EMOJIS['game_loss']}\n"
-                        f"The secret song was '{self.spoil(self._game.song_str)}'."
+                        f"You lost! {ui.EMOJIS['game_loss']}"
+                        f"\nThe secret song was '{self.spoil(self._game.song_str)}'."
                     ),
                 )
             case models.EMatchStatus.SURRENDER:
@@ -99,8 +99,8 @@ class View(discord.ui.View):
                     embed=embed,
                     name="Status",
                     value=(
-                        f"You gave up! {ui.EMOJIS['game_surrender']}\n"
-                        f"The secret word was '{self.spoil(self._game.song_str)}'."
+                        f"You gave up! {ui.EMOJIS['game_surrender']}"
+                        f"\nThe secret song was '{self.spoil(self._game.song_str)}'."
                     ),
                 )
             case models.EMatchStatus.TIMEOUT:
@@ -109,7 +109,7 @@ class View(discord.ui.View):
                     name="Status",
                     value=(
                         f"Game timed out! {ui.EMOJIS['game_timeout']} "
-                        f"The secret song was '{self.spoil(self._game.song_str)}'."
+                        f"\nThe secret song was '{self.spoil(self._game.song_str)}'."
                     ),
                 )
             case _:
@@ -151,7 +151,7 @@ class View(discord.ui.View):
 
         Returns the color coded word.
         """
-        song_str = f"{song.title} - {song.artist}" if song else "Skipped"
+        song_str = self.spoil(f"{song.title} - {song.artist}") if song else "Skipped"
         emoji: str = ""
 
         match category:
@@ -166,7 +166,7 @@ class View(discord.ui.View):
             case _:
                 raise ValueError(category)
 
-        return f"{emoji} {self.spoil(song_str)}"
+        return f"{emoji} {song_str}"
 
     @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -198,8 +198,11 @@ class View(discord.ui.View):
         embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
         self.update_embed(embed=embed, default_status="Timeout")
 
+        icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
+        embed.set_thumbnail(url=icon_url)
+
         # Edit the original message to show disabled buttons
-        await self.message.edit(embed=embed, view=self)
+        await self.message.edit(embed=embed, view=self, attachments=[icon])
 
     @discord.ui.button(
         label="Skip",
@@ -230,7 +233,9 @@ class View(discord.ui.View):
                     last_guess=(None, EGuessCategory.INCORRECT),
                 )
 
-                files: list[discord.File] = []
+                icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
+                embed.set_thumbnail(url=icon_url)
+                files: list[discord.File] = [icon]
 
                 if self.game.status == models.EMatchStatus.PENDING:
                     files.append(discord.File(fp=self.game.snippet, filename="snippet.mp3"))
