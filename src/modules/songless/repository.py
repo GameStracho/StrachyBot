@@ -187,12 +187,22 @@ async def search_songs_by_query(
     Fetches up to 25 songs matching a search string in their title and/or artist name.
     Case-insensitive search via icontains/ilike.
     """
+    query_str = query_str.replace(" - ", " ")
+    query_str = query_str.replace("- ", " ")
+    query_str = query_str.replace(" -", " ")
+
+    # Create concatenated column expressions
+    title_artist = func.concat(SonglessSong.title, " ", SonglessSong.artist)
+    artist_title = func.concat(SonglessSong.artist, " ", SonglessSong.title)
+
     query = (
         select(SonglessSong)
         .where(
             or_(
                 SonglessSong.title.icontains(query_str),
                 SonglessSong.artist.icontains(query_str),
+                title_artist.icontains(query_str),
+                artist_title.icontains(query_str),
             )
         )
         .limit(limit)
