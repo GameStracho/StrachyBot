@@ -49,7 +49,7 @@ class SonglessCog(commands.Cog):
     @override
     async def cog_load(self) -> None:
         """Called automatically when the cog is loaded."""
-        # self.update_songs.start()
+        self.update_songs.start()
 
     @override
     async def cog_unload(self) -> None:
@@ -85,7 +85,7 @@ class SonglessCog(commands.Cog):
     @tasks.loop(hours=168)
     async def update_songs(self) -> None:
         """Fetch PLAYLISTS and save new songs into the database."""
-        logger.info(f"Fetching new songs from playlists {PLAYLISTS}...")
+        logger.info(f"Fetching new songs from {len(PLAYLISTS)} playlists...")
         added: int = 0
 
         try:

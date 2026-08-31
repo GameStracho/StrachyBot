@@ -1,5 +1,4 @@
 ## Songless
-- Nepřidávat do databáze písničky se stejným názvem od stejného autora s rozdílným id
 - přidat více kategorií
 
 
