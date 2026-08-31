@@ -12,6 +12,8 @@ class ESonglessCategory(PyEnum):
     ALL = "All"
     HIP_HOP = "Hip-Hop"
     ROCK = "Rock"
+    CZECH_HITS = "Czech hits"
+    GAMING = "Gaming"
 
     def __str__(self) -> str:
         return self.value

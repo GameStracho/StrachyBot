@@ -10,16 +10,28 @@ from shared import StrachyBot, api, db_manager, logger, models, ui
 from .api import APIResponse, APISong
 from .game import Game
 from .models import ESonglessCategory, Playlist, SonglessMatch
-from .repository import create_song, get_recent_pending_match, search_songs_by_query, has_played_daily_challenge
+from .repository import (
+    create_song,
+    get_recent_pending_match,
+    has_played_daily_challenge,
+    search_songs_by_query,
+)
 from .ui import View, active_game_views
 
 PLAYLISTS: list[Playlist] = [
+    Playlist(id=15396811663, title="České hity od 2000", category=ESonglessCategory.CZECH_HITS),
+    Playlist(
+        id=550136883,
+        title="League Of Legends + Arcane Soundtrack",
+        category=ESonglessCategory.GAMING,
+    ),
     Playlist(id=1677006641, title="Hip Hop Hits", category=ESonglessCategory.HIP_HOP),
     Playlist(id=12547421383, title="2020s Rap", category=ESonglessCategory.HIP_HOP),
     Playlist(id=7662551722, title="'10s Rap", category=ESonglessCategory.HIP_HOP),
     Playlist(id=4676818664, title="2000s Rap", category=ESonglessCategory.HIP_HOP),
     Playlist(id=1724212365, title="'90s Rap", category=ESonglessCategory.HIP_HOP),
     Playlist(id=5172233424, title="80's Rap", category=ESonglessCategory.HIP_HOP),
+    Playlist(id=9875866282, title="essential Kanye West", category=ESonglessCategory.HIP_HOP),
     Playlist(id=752286631, title="Rock Hits", category=ESonglessCategory.ROCK),
     Playlist(id=13693489781, title="2020s Rock", category=ESonglessCategory.ROCK),
     Playlist(id=1057779131, title="2010s Rock", category=ESonglessCategory.ROCK),
@@ -37,6 +49,13 @@ PLAYLISTS: list[Playlist] = [
     Playlist(id=8512471762, title="80s Pop", category=ESonglessCategory.ALL),
     Playlist(id=756018311, title="70s Pop", category=ESonglessCategory.ALL),
     Playlist(id=8962730322, title="60s Pop", category=ESonglessCategory.ALL),
+    Playlist(id=706093725, title="Global Dance Hits", category=ESonglessCategory.ALL),
+    Playlist(id=13651021241, title="20s Dance", category=ESonglessCategory.ALL),
+    Playlist(id=2159765062, title="10s Dance", category=ESonglessCategory.ALL),
+    Playlist(id=4135818362, title="00s Dance", category=ESonglessCategory.ALL),
+    Playlist(id=4135981802, title="90s Dance", category=ESonglessCategory.ALL),
+    Playlist(id=8970644442, title="90s Club Hits", category=ESonglessCategory.ALL),
+    Playlist(id=8974688542, title="80s Club Hits", category=ESonglessCategory.ALL),
 ]
 
 
@@ -130,7 +149,9 @@ class SonglessCog(commands.Cog):
             if daily_challenge and await db_manager.execute(
                 db_func=has_played_daily_challenge, player_id=interaction.user.id, category=category
             ):
-                logger.info(f"User {user} already played today's daily challenge in category {category}.")
+                logger.info(
+                    f"User {user} already played today's daily challenge in category {category}."
+                )
 
                 embed, icon = ui.embed.build_warning(
                     message=f"You already played today's daily challenge in category {category}."

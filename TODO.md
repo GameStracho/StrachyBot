@@ -1,9 +1,3 @@
-## Songless
-- přidat více kategorií
-
-
----
-
 ## Uživatelské statistiky
 
 - přidat modulární uživatelské statistiky, kde každá stránka bude zobrazovat statistiky specifické pro danou hru

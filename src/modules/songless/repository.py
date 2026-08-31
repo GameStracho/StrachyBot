@@ -1,7 +1,7 @@
 import hashlib
 from datetime import UTC, date, datetime, time
 
-from sqlalchemy import func, or_, and_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared import logger
@@ -31,14 +31,10 @@ async def create_song(
     async with session.begin():
         existing_song: SonglessSong | None = (
             await session.execute(
-                select(SonglessSong)
-                .where(
+                select(SonglessSong).where(
                     or_(
                         SonglessSong.id == song_id,
-                        and_(
-                            SonglessSong.title == title,
-                            SonglessSong.artist == artist
-                        )
+                        and_(SonglessSong.title == title, SonglessSong.artist == artist),
                     )
                 )
             )
