@@ -124,6 +124,9 @@ class SonglessCog(commands.Cog):
         daily_challenge: bool = False,
     ) -> None:
         try:
+            # Tells Discord to display "Thinking..." and extends time limit to 15 mins
+            await interaction.response.defer()
+
             user = ui.get_user(user=interaction.user)
             logger.debug(f"Command '/songless' used by user {user}.")
 
@@ -134,9 +137,9 @@ class SonglessCog(commands.Cog):
             embed, files = view.build_embed()
 
             logger.info(f"New {game} started by user {user}")
-            await interaction.response.send_message(embed=embed, view=view, files=files)
 
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
+            await interaction.followup.send(embed=embed, view=view, files=files)
             view.message = await interaction.original_response()
         except Exception as error:
             await ui.handle_error(error=error, interaction=interaction)
