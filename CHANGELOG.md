@@ -3,7 +3,7 @@
 ### Added
 - A brand new `Songless` mini-game - guessing a song in 6 tries from 1 of 5 categories (`All`, `Hip-Hop`, `Rock`, `Gaming`, `Czech hits`)
 - `/songless` command for starting a new `Songless` game
-- `/songless-guess` command for submitting selected guesses from autocomplete suggestion to the most recent active game
+- `/songless-guess` command for submitting a selected guess from autocomplete suggestions to the most recent active game
 - Automatic fetching of new songs from 33 playlists once a week.
 
 ---
