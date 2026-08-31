@@ -65,7 +65,7 @@ class Game:
 
     @property
     def song_str(self) -> str:
-        return f"{self._song.title()} - {self._song.artist}"
+        return f"{self._song.title} - {self._song.artist}"
 
     @property
     def category(self) -> ESonglessCategory:

@@ -189,22 +189,33 @@ class SonglessCog(commands.Cog):
                 return
 
             view: View = active_game_views[game[0].match_id]
-            guess = await view.game.submit_guess(song_id=song)
-            logger.info(
-                f"User {user} submitted {guess[1]} guess "
-                f"'{guess[0].title} - {guess[0].artist}' ({song})."
-            )
+            default_status: str = "Guess submitted."
+            guess = None
+
+            if song in view.game.guesses:
+                logger.debug(f"User {user} already guessed song {song}.")
+                default_status = "You already guessed that song."
+            else:
+                guess = await view.game.submit_guess(song_id=song)
+                logger.info(
+                    f"User {user} submitted {guess[1]} guess "
+                    f"'{guess[0].title} - {guess[0].artist}' ({song})."
+                )
 
             assert view.message
             embed: discord.Embed = ui.embed.extract(target=view.message, index=0, hide_icon=True)
-            view.update_embed(embed=embed, default_status="Guess submitted.", last_guess=guess)
+            view.update_embed(embed=embed, default_status=default_status, last_guess=guess)
 
-            files: list[discord.File] = []
+            if not guess:
+                await view.message.edit(embed=embed, view=view)
+            else:
+                files: list[discord.File] = []
 
-            if view.game.status == models.EMatchStatus.PENDING:
-                files.append(discord.File(fp=view.game.snippet, filename="snippet.mp3"))
+                if view.game.status == models.EMatchStatus.PENDING:
+                    files.append(discord.File(fp=view.game.snippet, filename="snippet.mp3"))
 
-            await view.message.edit(embed=embed, view=view, attachments=files)
+                await view.message.edit(embed=embed, view=view, attachments=files)
+
             await interaction.response.send_message(
                 "Guess submitted.", ephemeral=True, delete_after=0.0
             )
