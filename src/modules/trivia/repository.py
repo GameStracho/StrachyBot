@@ -38,7 +38,7 @@ async def create_match(
         await session.flush()
 
         child_match: TriviaMatch = TriviaMatch(
-            match_id=parent_match.match_id,
+            match_id=parent_match.id,
             category=category,
             difficulty=difficulty,
             question=question,
@@ -46,7 +46,7 @@ async def create_match(
         )
         session.add(child_match)
 
-        match_id = parent_match.match_id
+        match_id = parent_match.id
 
     logger.debug(f"trivia: New match ({match_id}) created.")
     return match_id
@@ -62,7 +62,7 @@ async def update_match(session: AsyncSession, match_id: int, status: EMatchStatu
 
     async with session.begin():
         match: Match | None = (
-            await session.execute(select(Match).where(Match.match_id == match_id))
+            await session.execute(select(Match).where(Match.id == match_id))
         ).scalar_one_or_none()
 
         if not match:

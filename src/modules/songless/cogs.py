@@ -224,7 +224,7 @@ class SonglessCog(commands.Cog):
                 db_func=get_recent_pending_match, player_id=user.id
             )
 
-            if not game or not active_game_views.get(game[0].match_id):
+            if not game or not active_game_views.get(game[0].id):
                 warning_embed, warning_icon = ui.embed.build_warning(
                     "No active game found. Use command `/songless` to start a new game."
                 )
@@ -235,7 +235,7 @@ class SonglessCog(commands.Cog):
                 logger.debug(f"No active game found for user {user}.")
                 return
 
-            view: View = active_game_views[game[0].match_id]
+            view: View = active_game_views[game[0].id]
             default_status: str = "Guess submitted."
             guess = None
 

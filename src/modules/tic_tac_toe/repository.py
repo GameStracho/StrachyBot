@@ -31,11 +31,11 @@ async def create_match(
         await session.flush()
 
         child_match: TicTacToeMatch = TicTacToeMatch(
-            match_id=parent_match.match_id, opponent_id=opponent_id, grid_size=grid_size
+            match_id=parent_match.id, opponent_id=opponent_id, grid_size=grid_size
         )
         session.add(child_match)
 
-        match_id = parent_match.match_id
+        match_id = parent_match.id
 
     logger.debug(f"tic: New match ({match_id}) created.")
     return match_id
@@ -56,7 +56,7 @@ async def update_match(
 
     async with session.begin():
         parent_match: Match | None = (
-            await session.execute(select(Match).where(Match.match_id == match_id))
+            await session.execute(select(Match).where(Match.id == match_id))
         ).scalar_one_or_none()
 
         child_match: TicTacToeMatch | None = (

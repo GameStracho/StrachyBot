@@ -89,9 +89,9 @@ StrachyBot/
 ## 🗄️ Database & Schema
 
 ### Base Model (`Match`)
-Defined in `src/shared/models.py`:
+Defined in `shared/models.py`:
 - **`match` table**:
-  - `match_id` (BigInteger, Primary Key)
+  - `id` (BigInteger, Primary Key)
   - `player_id` (BigInteger, Discord User ID)
   - `start_time` (DateTime UTC)
   - `end_time` (DateTime UTC, optional)

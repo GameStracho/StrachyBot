@@ -19,7 +19,6 @@
 - automaticky aktualizovat všechny `PENDING` hry na `TIMEOUT` při vypínání bota
 - Zachytit error s nedostupnou databází při startu bota, vypsat jednoduchou chybovou hlášku a bota ukončit
 - odstranit název modulu z vlastních tříd uvnitř modulů (např. `WordleView` -> `View`, `TriviaButton` -> `Button`, `WordleGuessModal` -> `GuessModal`, `WordleGame` -> `Game`, atd.)
-- - přejmenovat atribut `match_id` v tabulce `match` na `id`
 
 https://share.gemini.google/prmBNFuzUWzR
 https://share.gemini.google/WblCzbkuTEP8
@@ -36,7 +35,6 @@ https://share.gemini.google/WblCzbkuTEP8
 ---
 
 ## Další mini-hry
-- Songless
 - Spoj 4 (Connect 4)
 - Kámen-nůžky-papír(-spock-lizard)
 - 2048

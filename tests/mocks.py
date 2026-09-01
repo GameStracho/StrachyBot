@@ -110,6 +110,8 @@ class DummySession:
         for obj in self.added:
             if hasattr(obj, "match_id") and getattr(obj, "match_id", None) is None:
                 object.__setattr__(obj, "match_id", 1)
+            if hasattr(obj, "id") and getattr(obj, "id", None) is None:
+                object.__setattr__(obj, "id", 1)
 
     async def commit(self) -> None:
         pass
