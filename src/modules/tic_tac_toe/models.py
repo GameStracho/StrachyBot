@@ -14,7 +14,7 @@ class TicTacToeMatch(Base):
     )
 
     match_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("match.match_id", ondelete="CASCADE"), primary_key=True
+        BigInteger, ForeignKey("match.id", ondelete="CASCADE"), primary_key=True
     )
     opponent_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     total_moves: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

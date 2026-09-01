@@ -32,11 +32,11 @@ async def create_match(
         await session.flush()
 
         child_match: WordleMatch = WordleMatch(
-            match_id=parent_match.match_id, secret_word=secret_word, is_daily=is_daily
+            match_id=parent_match.id, secret_word=secret_word, is_daily=is_daily
         )
         session.add(child_match)
 
-        match_id = parent_match.match_id
+        match_id = parent_match.id
 
     logger.debug(f"wordle: New match ({match_id}) created.")
     return match_id
@@ -61,7 +61,7 @@ async def update_match(
 
     async with session.begin():
         parent_match: Match | None = (
-            await session.execute(select(Match).where(Match.match_id == match_id))
+            await session.execute(select(Match).where(Match.id == match_id))
         ).scalar_one_or_none()
 
         child_match: WordleMatch | None = (
@@ -100,7 +100,7 @@ async def has_played_daily_challenge(
     wordle_matches = (
         select(func.count())
         .select_from(WordleMatch)
-        .join(Match, WordleMatch.match_id == Match.match_id)
+        .join(Match, WordleMatch.match_id == Match.id)
         .where(
             Match.player_id == player_id,
             WordleMatch.is_daily.is_(True),

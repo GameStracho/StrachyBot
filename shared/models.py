@@ -29,7 +29,7 @@ class EMatchStatus(PyEnum):
 class Match(Base):
     __tablename__ = "match"
 
-    match_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     player_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     start_time: Mapped[datetime] = mapped_column(nullable=False, default=_time_without_timezone)
     end_time: Mapped[datetime | None] = mapped_column(

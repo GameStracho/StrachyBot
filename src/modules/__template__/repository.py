@@ -25,10 +25,10 @@ async def create_match(session: AsyncSession, player_id: int, word: str) -> int:
         # without closing or committing the transaction yet.
         await session.flush()
 
-        child_match: GameMatch = GameMatch(match_id=parent_match.match_id, word=word)
+        child_match: GameMatch = GameMatch(match_id=parent_match.id, word=word)
         session.add(child_match)
 
-        match_id = parent_match.match_id
+        match_id = parent_match.id
 
     logger.debug(f"GAME: New match ({match_id}) created.")
     return match_id
@@ -51,7 +51,7 @@ async def update_match(
 
     async with session.begin():
         parent_match: Match | None = (
-            await session.execute(select(Match).where(Match.match_id == match_id))
+            await session.execute(select(Match).where(Match.id == match_id))
         ).scalar_one_or_none()
 
         child_match: GameMatch | None = (

@@ -106,7 +106,7 @@ class TriviaMatch(Base):
     __tablename__ = "trivia_match"
 
     match_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("match.match_id", ondelete="CASCADE"), primary_key=True
+        BigInteger, ForeignKey("match.id", ondelete="CASCADE"), primary_key=True
     )
     question: Mapped[str] = mapped_column(String, nullable=False)
     correct_answer: Mapped[str] = mapped_column(String, nullable=False)

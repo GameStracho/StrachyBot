@@ -82,11 +82,11 @@ async def create_match(
         await session.flush()
 
         child_match: SonglessMatch = SonglessMatch(
-            match_id=parent_match.match_id, song_id=song_id, category=category, is_daily=is_daily
+            match_id=parent_match.id, song_id=song_id, category=category, is_daily=is_daily
         )
         session.add(child_match)
 
-        match_id = parent_match.match_id
+        match_id = parent_match.id
 
     logger.debug(f"songless: New match ({match_id}) created.")
     return match_id
@@ -111,7 +111,7 @@ async def update_match(
 
     async with session.begin():
         parent_match: Match | None = (
-            await session.execute(select(Match).where(Match.match_id == match_id))
+            await session.execute(select(Match).where(Match.id == match_id))
         ).scalar_one_or_none()
 
         child_match: SonglessMatch | None = (
@@ -154,7 +154,7 @@ async def has_played_daily_challenge(
     wordle_matches = (
         select(func.count())
         .select_from(SonglessMatch)
-        .join(Match, SonglessMatch.match_id == Match.match_id)
+        .join(Match, SonglessMatch.match_id == Match.id)
         .where(
             Match.player_id == player_id,
             SonglessMatch.is_daily.is_(True),
@@ -262,7 +262,7 @@ async def get_recent_pending_match(
     """
     query = (
         select(Match, SonglessMatch)
-        .join(SonglessMatch, Match.match_id == SonglessMatch.match_id)
+        .join(SonglessMatch, Match.id == SonglessMatch.match_id)
         .where(
             Match.player_id == player_id,
             Match.status == EMatchStatus.PENDING,

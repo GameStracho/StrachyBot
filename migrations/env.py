@@ -48,6 +48,9 @@ for base_dir, module_prefix in [
 ]:
     if os.path.exists(base_dir):
         for folder in os.listdir(base_dir):
+            if folder.startswith("_"):
+                continue
+
             folder_path = os.path.join(base_dir, folder)
             if os.path.isdir(folder_path) and "models.py" in os.listdir(folder_path):
                 importlib.import_module(f"{module_prefix}.{folder}.models")
