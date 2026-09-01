@@ -1,4 +1,4 @@
-## [2.1.0] Web API - 2026-08-28
+## [2.2.0] Web API - 2026-08-28
 
 ### Added
 - Rest API server that handles module logic and database records
@@ -11,6 +11,16 @@
 
 ### Removed
 - Automatic `integration` and `unit` tests
+
+---
+
+## [2.1.0] I Am Music - 2026-08-31
+
+### Added
+- A brand new `Songless` mini-game - guessing a song in 6 tries from 1 of 5 categories (`All`, `Hip-Hop`, `Rock`, `Gaming`, `Czech hits`)
+- `/songless` command for starting a new `Songless` game
+- `/songless-guess` command for submitting a selected guess from autocomplete suggestions to the most recent active game
+- Automatic fetching of new songs from 33 playlists once a week.
 
 ---
 
@@ -54,7 +64,7 @@
 - Automated `Tic-Tac-Toe` auto-play moves
 - Hiding of secret words in `Wordle` daily challenge
 - Reduced API calls by caching `Trivia` questions
-- Truncated `Trivia` answers that exceed maximum character limit
+- Truncated `Trivia` answers that exceed the maximum character limit
 
 ---
 

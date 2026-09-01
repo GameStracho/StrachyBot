@@ -1,5 +1,8 @@
 ## Uživatelské statistiky
 
+- přidat modulární uživatelské statistiky, kde každá stránka bude zobrazovat statistiky specifické pro danou hru
+- přidat globální statistiky
+
 ---
 
 ## Česká lokalizace
@@ -17,6 +20,10 @@
 - odstranit TYPE_CHECKING sekci z shared/__init__.py
 - odstranit backwards compatibility věci (např. shared/logs.py)
 - přidat unit a integrační testy
+- automaticky aktualizovat všechny `PENDING` hry na `TIMEOUT` při vypínání bota
+- Zachytit error s nedostupnou databází při startu bota, vypsat jednoduchou chybovou hlášku a bota ukončit
+- odstranit název modulu z vlastních tříd uvnitř modulů (např. `WordleView` -> `View`, `TriviaButton` -> `Button`, `WordleGuessModal` -> `GuessModal`, `WordleGame` -> `Game`, atd.)
+- - přejmenovat atribut `match_id` v tabulce `match` na `id`
 
 https://share.gemini.google/prmBNFuzUWzR
 https://share.gemini.google/WblCzbkuTEP8

@@ -10,7 +10,6 @@ from .game import WordleGame, WordleLetterCategory
 
 class WordleView(discord.ui.View):
     _game: WordleGame
-    _spoiler: str
     message: discord.Message | None
 
     def __init__(self, game: WordleGame, timeout: float = 180):

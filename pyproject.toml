@@ -34,3 +34,7 @@ docstring-code-format = true  # Formats Python code blocks inside docstrings!
 exclude = [
     '^migrations/',
 ]
+
+[[tool.mypy.overrides]]
+module = "pydub.*"
+ignore_missing_imports = true

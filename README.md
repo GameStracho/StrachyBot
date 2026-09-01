@@ -20,10 +20,12 @@ StrachyBot is organized as a monorepo containing:
 
 | Command | Description | Showcase |
 |---|---|---|
-| `/wordle` | Try to guess a 5-letter word in 6 tries. | ![Wordle Demo](docs/assets/wordle-demo.png) |
+| `/info` | Show important information about the bot. | ![Info Demo](docs/assets/info-demo.png) |
+| `/songless` | Try to guess a song in 6 tries. | ![Songless Demo](docs/assets/songless-demo.png) |
+| `/songless-guess` | Submit a selected guess from autocomplete suggestions to the most recent active `Songless` game. | ![Songless Guess Demo](docs/assets/songless-guess-demo.png) |
 | `/tic-tac-toe` | Challenge someone in a 1v1 Tic-Tac-Toe match. | ![TTT Demo](docs/assets/tic-tac-toe-demo.png) |
 | `/trivia` | Try to answer a quiz question by selecting 1 of 4 answers. | ![Trivia Demo](docs/assets/trivia-demo.png) |
-| `/info` | Show important information about the bot. | ![Info Demo](docs/assets/info-demo.png) |
+| `/wordle` | Try to guess a 5-letter word in 6 tries. | ![Wordle Demo](docs/assets/wordle-demo.png) |
 
 ---
 

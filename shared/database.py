@@ -1,8 +1,10 @@
 import os
 import sys
+import traceback
 from collections.abc import Awaitable, Callable
 from typing import Concatenate, ParamSpec, TypeVar
 
+from colorama import Fore, Style
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -71,9 +73,16 @@ class DatabaseManager:
         if self.is_testing or not self._db_session_factory:
             return None
 
-        async with self._db_session_factory() as session:
-            if session:
-                return await db_func(session, *args, **kwargs)
+        try:
+            async with self._db_session_factory() as session:
+                if session:
+                    return await db_func(session, *args, **kwargs)
+        except Exception as error:
+            print(
+                f"{Fore.RED}Execution of database operation {db_func} "
+                f"failed with error: {Style.BRIGHT}{error}.{Style.RESET_ALL}"
+                f"\n{traceback.format_exc()}."
+            )
 
         return None
 
