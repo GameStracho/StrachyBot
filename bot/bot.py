@@ -132,9 +132,9 @@ class StrachyBot(commands.Bot):
                     continue
 
                 try:
-                    await self.load_extension(f"modules.{module_name}")
+                    await self.load_extension(f"src.modules.{module_name}")
                     if os.path.exists(os.path.join(module_path, "models.py")):
-                        importlib.import_module(f"modules.{module_name}.models")
+                        importlib.import_module(f"src.modules.{module_name}.models")
                     logger.info(f"Legacy module '{module_name}' successfully loaded.")
                 except Exception as e:
                     logger.critical(f"Failed to load legacy module '{module_name}': {e}.")

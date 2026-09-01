@@ -1,11 +1,17 @@
 import asyncio
 import importlib
 import os
+import sys
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+# Ensure the project root is on sys.path when running this file directly
+# (e.g. `uvicorn api.main:app` from root), so that `shared`, `api`, etc. are importable.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -63,6 +69,10 @@ def _load_module_routers(app: FastAPI) -> None:
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifecycle management: startup & shutdown."""
     logger.info("Initializing API application...")
+
+    load_dotenv()
+    logger.debug("Environment variables loaded.")
+
     try:
         db_manager.initialize()
         logger.info("API database manager initialized successfully.")
