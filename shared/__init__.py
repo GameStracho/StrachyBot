@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING, Any
 
-from . import database, helpers, logs, models, repository, types
+from . import api, database, logs, models, repository, types
 from .database import db_manager
-from .helpers import fetch_api
 from .logger import logger
 
 if TYPE_CHECKING:
@@ -12,10 +11,10 @@ if TYPE_CHECKING:
 
 __all__ = [
     "StrachyBot",
+    "api",
     "bot",
     "database",
     "db_manager",
-    "fetch_api",
     "helpers",
     "logger",
     "logs",
