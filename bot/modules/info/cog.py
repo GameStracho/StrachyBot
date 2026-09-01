@@ -4,7 +4,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from shared import StrachyBot, logger, ui
+from bot.bot import StrachyBot
+from bot.ui import handle_error, load_attachment
+from shared import logger
 
 from .helpers import parse_changelog
 
@@ -41,9 +43,9 @@ class InfoCog(commands.Cog):
             for section_name, section_content in sections:
                 embed.add_field(name=section_name, value=section_content, inline=False)
 
-            icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
+            icon, icon_url = load_attachment(path=__file__, filename="icon.png")
             embed.set_thumbnail(url=icon_url)
 
             await interaction.response.send_message(embed=embed, file=icon)
         except Exception as error:
-            await ui.handle_error(error=error, interaction=interaction)
+            await handle_error(error=error, interaction=interaction)

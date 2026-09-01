@@ -1,8 +1,8 @@
 # Info module
 
-from shared import StrachyBot
+from bot.bot import StrachyBot
 
-from .cogs import InfoCog
+from .cog import InfoCog
 
 
 async def setup(bot: StrachyBot) -> None:
