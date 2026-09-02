@@ -4,7 +4,7 @@ from datetime import UTC, date, datetime, time
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from shared import logger
+from shared import helpers, logger
 from shared.models import EMatchStatus, Match
 
 from .models import ESonglessCategory, SonglessMatch, SonglessSong
@@ -180,29 +180,33 @@ async def get_song_by_id(
 
 async def search_songs_by_query(
     session: AsyncSession,
-    query_str: str,
+    raw_query: str,
     limit: int = 25,
 ) -> list[SonglessSong]:
     """
     Fetches up to 25 songs matching a search string in their title and/or artist name.
     Case-insensitive search via icontains/ilike.
     """
-    query_str = query_str.replace(" - ", " ")
-    query_str = query_str.replace("- ", " ")
-    query_str = query_str.replace(" -", " ")
+    norm_query: str = raw_query.replace(" - ", " ")
+    norm_query = norm_query.replace("- ", " ")
+    norm_query = norm_query.replace(" -", " ")
+
+    norm_query = helpers.strip_accents(norm_query)
+    norm_title = func.unaccent(SonglessSong.title)
+    norm_artist = func.unaccent(SonglessSong.artist)
 
     # Create concatenated column expressions
-    title_artist = func.concat(SonglessSong.title, " ", SonglessSong.artist)
-    artist_title = func.concat(SonglessSong.artist, " ", SonglessSong.title)
+    title_artist = func.concat(norm_title, " ", norm_artist)
+    artist_title = func.concat(norm_artist, " ", norm_title)
 
     query = (
         select(SonglessSong)
         .where(
             or_(
-                SonglessSong.title.icontains(query_str),
-                SonglessSong.artist.icontains(query_str),
-                title_artist.icontains(query_str),
-                artist_title.icontains(query_str),
+                norm_title.icontains(norm_query),
+                norm_artist.icontains(norm_query),
+                title_artist.icontains(norm_query),
+                artist_title.icontains(norm_query),
             )
         )
         .limit(limit)
