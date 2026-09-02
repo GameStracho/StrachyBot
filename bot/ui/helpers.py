@@ -32,8 +32,8 @@ async def handle_error(error: Exception, interaction: discord.Interaction) -> No
     embed.title = "Error"
     embed.description = f"An unexpected error occurred: '{error}'. \n\nTry again later."
 
-    icon: discord.File = discord.File("./src/shared/images/error.png", filename="error.png")
-    embed.set_thumbnail(url="attachment://error.png")
+    icon, icon_url = load_attachment(path=__file__, filename="error.png", sub_dir="../images")
+    embed.set_thumbnail(url=icon_url)
 
     if interaction.response.is_done():
         await interaction.followup.send(embed=embed, file=icon, ephemeral=True)

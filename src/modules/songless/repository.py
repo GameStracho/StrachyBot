@@ -151,7 +151,7 @@ async def has_played_daily_challenge(
     start_of_day = datetime.combine(target_date, time.min)
     end_of_day = datetime.combine(target_date, time.max)
 
-    wordle_matches = (
+    songless_matches = (
         select(func.count())
         .select_from(SonglessMatch)
         .join(Match, SonglessMatch.match_id == Match.id)
@@ -164,7 +164,7 @@ async def has_played_daily_challenge(
         )
     )
 
-    result = await session.execute(wordle_matches)
+    result = await session.execute(songless_matches)
     count = result.scalar() or 0
     return count > 0
 

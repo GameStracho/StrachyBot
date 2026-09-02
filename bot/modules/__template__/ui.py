@@ -1,33 +1,47 @@
 import discord
+import httpx
 from typing_extensions import override
 
+from api.modules.__template__.schemas import GameResponse
 from shared import logger, models, types, ui
-
-from .game import Game
 
 
 class View(discord.ui.View):
-    _game: Game
-    message: discord.Message | None
+    _match_id: int
+    _player_id: int
+    _status: models.EMatchStatus
+    _api_client: httpx.AsyncClient
+    message: discord.Message
 
-    def __init__(self, game: Game, timeout: float = 180):
+    def __init__(
+        self,
+        match_id: int,
+        player_id: int,
+        status: models.EMatchStatus,
+        api_client: httpx.AsyncClient,
+        timeout: float = 180,
+    ):
         super().__init__(timeout=timeout)
-        self._game = game
-        logger.debug(f"New View created for game {self._game.match_id} with {timeout}s timeout.")
+        self._match_id = match_id
+        self._player_id = player_id
+        self._api_client = api_client
+        self._status = status
+
+        logger.debug(f"New View created for game {self._match_id} with {timeout}s timeout.")
 
         self.add_item(Button(parent_view=self))
 
     @property
-    def game(self) -> Game:
-        return self._game
+    def match_id(self) -> int:
+        return self._match_id
 
-    def build_embed(self) -> tuple[discord.Embed, discord.File]:
+    def build_embed(self, player: types.User) -> tuple[discord.Embed, discord.File]:
         title: str = "Game"
-        user: types.User = self._game.player
 
         embed: discord.Embed = discord.Embed(title=title, color=discord.Color.blue())
-        embed.set_author(name=user.display_name, icon_url=user.display_avatar)
+        embed.set_author(name=player.display_name, icon_url=player.display_avatar)
 
+        embed.add_field(name="Moves", value=0, inline=False)
         embed.add_field(name="Status", value="Game started.", inline=True)
         embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(self), inline=True)
 
@@ -36,14 +50,22 @@ class View(discord.ui.View):
 
         return (embed, icon)
 
-    def update_embed(self, embed: discord.Embed, default_status: str) -> None:
-        match self._game.status:
+    def update_embed(
+        self, default_status: str | None = None, moves_count: int | None = None
+    ) -> discord.Embed:
+        embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
+
+        match self._status:
             case models.EMatchStatus.PENDING:
-                ui.embed.update_field(embed=embed, name="Status", value=default_status)
+                if default_status:
+                    ui.embed.update_field(embed=embed, name="Status", value=default_status)
+
+                if moves_count:
+                    ui.embed.update_field(embed=embed, name="Moves", value=str(moves_count))
+
                 ui.embed.update_field(
                     embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self)
                 )
-                return
             case models.EMatchStatus.WIN:
                 embed.color = discord.Color.green()
                 ui.embed.update_field(
@@ -63,27 +85,36 @@ class View(discord.ui.View):
                     name="Status",
                     value=(f"You gave up! {ui.EMOJIS['game_surrender']}"),
                 )
+            case models.EMatchStatus.TIMEOUT:
+                ui.embed.update_field(
+                    embed=embed,
+                    name="Status",
+                    value=(f"Game timed out! {ui.EMOJIS['game_timeout']}"),
+                )
             case _:
-                raise ValueError(self._game.status)
+                raise ValueError(self._status)
 
-        self.disable_buttons()
-        ui.embed.remove_field(embed=embed, name="Timeout")
-        self.stop()
+        if self._status != models.EMatchStatus.PENDING:
+            self.disable_buttons()
+            ui.embed.remove_field(embed=embed, name="Timeout")
+            self.stop()
+
+        return embed
 
     def disable_buttons(self) -> None:
         for child in self.children:
             if isinstance(child, discord.ui.Button):
                 child.disabled = True
-        logger.debug(f"Buttons disabled for game {self._game.match_id}.")
+        logger.debug(f"Buttons disabled for game {self._match_id}.")
 
     @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
-            if interaction.user.id != self._game.player.id:
+            if interaction.user.id != self._player_id:
                 logger.warning(
                     f"Ineligible user {interaction.user.display_name} "
                     f"({interaction.user.id}) "
-                    f"responded to game {self._game.match_id}."
+                    f"responded to game {self._match_id}."
                 )
 
                 embed, icon = ui.embed.build_warning(message="You cannot respond to this game.")
@@ -98,21 +129,11 @@ class View(discord.ui.View):
 
     @override
     async def on_timeout(self) -> None:
-        if self._game.status != models.EMatchStatus.PENDING or self.message is None:
-            return
+        response = await self._api_client.patch(url=f"{self._match_id}/timeout")
+        response.raise_for_status()
 
-        await self._game.handle_timeout()
-        self.disable_buttons()
-
-        embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
-        ui.embed.remove_field(embed=embed, name="Timeout")
-        ui.embed.update_field(
-            embed=embed,
-            name="Status",
-            value=(f"Game timed out! {ui.EMOJIS['game_timeout']}"),
-        )
-
-        # Edit the original message to show disabled buttons
+        self._status = models.EMatchStatus.TIMEOUT
+        embed: discord.Embed = self.update_embed()
         await self.message.edit(embed=embed, view=self)
 
     @discord.ui.button(
@@ -126,19 +147,17 @@ class View(discord.ui.View):
         try:
             logger.debug(
                 f"User {interaction.user.display_name} ({interaction.user.id}) "
-                f"pressed the 'Send modal' button for game {self._game.match_id}."
+                f"pressed the 'Send modal' button for game {self._match_id}."
             )
 
-            assert self.message is not None
-            embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
-            ui.embed.update_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
+            embed: discord.Embed = self.update_embed()
             await self.message.edit(embed=embed, view=self)
 
             modal: Modal = Modal(parent_view=self)
             await interaction.response.send_modal(modal)
 
             logger.debug(
-                f"Modal for game {self._game.match_id} "
+                f"Modal for game {self._match_id} "
                 f"sent to User {interaction.user.display_name} ({interaction.user.id})."
             )
         except Exception as error:
@@ -156,25 +175,17 @@ class View(discord.ui.View):
                 logger.debug(
                     f"User {confirm_interaction.user.display_name} "
                     f"({confirm_interaction.user.id}) "
-                    f"pressed the 'Give up' button for game {self._game.match_id}."
+                    f"pressed the 'Give up' button for game {self._match_id}."
                 )
 
-                assert self.message is not None
-                embed: discord.Embed = ui.embed.extract(
-                    target=self.message, index=0, hide_icon=True
-                )
+                response = await self._api_client.patch(url=f"{self._match_id}/surrender")
+                response.raise_for_status()
 
-                await self._game.handle_surrender()
-                self.update_embed(embed=embed, default_status="You gave up!")
+                self._status = models.EMatchStatus.SURRENDER
+                embed: discord.Embed = self.update_embed()
                 await self.message.edit(embed=embed, view=self)
 
-            assert self.message is not None
-            message_embed: discord.Embed = ui.embed.extract(
-                target=self.message, index=0, hide_icon=True
-            )
-            ui.embed.update_field(
-                embed=message_embed, name="Timeout", value=ui.get_timeout_timestamp(self)
-            )
+            message_embed: discord.Embed = self.update_embed()
             await self.message.edit(embed=message_embed, view=self)
 
             timeout: float = min(self.timeout, 30.0) if self.timeout else 30.0
@@ -195,6 +206,41 @@ class View(discord.ui.View):
         except Exception as error:
             await ui.handle_error(error=error, interaction=interaction)
 
+    @discord.ui.button(
+        label="Move",
+        style=discord.ButtonStyle.primary,
+        emoji="♟️",
+    )
+    async def move_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button["View"]
+    ) -> None:
+        try:
+            logger.debug(
+                f"User {interaction.user.display_name} ({interaction.user.id}) "
+                f"pressed the 'Move' button for game {self._match_id}."
+            )
+
+            response = await self._api_client.post(url=f"{self._match_id}/move")
+            response.raise_for_status()
+            game_data: GameResponse = GameResponse.model_validate(response.json())
+
+            self._status = game_data.status
+            embed: discord.Embed = self.update_embed(
+                default_status="Move performed", moves_count=game_data.moves_count
+            )
+            await self.message.edit(embed=embed, view=self)
+
+            logger.debug(
+                f"Move #{game_data.moves_count} in game {self._match_id}"
+                f"performed by User {interaction.user.display_name} ({interaction.user.id})."
+            )
+
+            await interaction.response.send_message(
+                "Move performed.", ephemeral=True, delete_after=0
+            )
+        except Exception as error:
+            await ui.handle_error(error=error, interaction=interaction)
+
 
 class Modal(discord.ui.Modal):
     _parent_view: View
@@ -203,7 +249,7 @@ class Modal(discord.ui.Modal):
         super().__init__(title="Template Modal")
 
         self._parent_view = parent_view
-        logger.debug(f"New WordleGuessModal created for game {self._parent_view.game.match_id}.")
+        logger.debug(f"New WordleGuessModal created for game {self._parent_view.match_id}.")
 
     text_input: discord.ui.TextInput["Modal"] = discord.ui.TextInput(
         label="Text",
@@ -220,7 +266,7 @@ class Modal(discord.ui.Modal):
             embed: discord.Embed = ui.embed.extract(target=interaction, index=0, hide_icon=True)
             embed.description = self.text_input.value
 
-            self._parent_view.update_embed(embed=embed, default_status="Updated status.")
+            self._parent_view.update_embed(default_status="Description updated.")
             await interaction.response.edit_message(embed=embed, view=self._parent_view)
             self._parent_view.message = await interaction.original_response()
         except Exception as error:
@@ -235,7 +281,7 @@ class Button(discord.ui.Button[View]):
 
         self._parent_view = parent_view
 
-        logger.debug(f"New Button created for game {parent_view.game.match_id}.")
+        logger.debug(f"New Button created for game {parent_view.match_id}.")
 
     @override
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -251,7 +297,7 @@ class Button(discord.ui.Button[View]):
                 return
 
             embed: discord.Embed = ui.embed.extract(target=interaction, index=0, hide_icon=True)
-            self._parent_view.update_embed(embed=embed, default_status="Embed updated.")
+            self._parent_view.update_embed(default_status="Embed updated.")
 
             # Edit the original message to show disabled buttons
             await interaction.response.edit_message(embed=embed, view=self._parent_view)

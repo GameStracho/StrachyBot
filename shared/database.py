@@ -1,7 +1,7 @@
 import os
 import sys
 import traceback
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from typing import Concatenate, ParamSpec, TypeVar
 
 from colorama import Fore, Style
@@ -98,3 +98,11 @@ class DatabaseManager:
 
 # Export global singleton instance
 db_manager = DatabaseManager()
+
+
+async def get_session() -> AsyncGenerator[AsyncSession]:
+    if not db_manager.db_session_factory:
+        raise RuntimeError("DB Manager not initialized.")
+    async with db_manager.db_session_factory() as session:
+        async with session.begin():
+            yield session

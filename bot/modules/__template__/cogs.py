@@ -1,19 +1,26 @@
+import os
+
 import discord
+import httpx
 from discord import app_commands
 from discord.ext import commands, tasks
 from typing_extensions import override
 
+from api.modules.__template__.schemas import GameResponse
 from shared import StrachyBot, logger, ui
 
-from .game import Game
 from .ui import View
 
 
 class Cog(commands.Cog):
     _bot: StrachyBot
+    _api_client: httpx.AsyncClient
 
     def __init__(self, bot: StrachyBot) -> None:
         self._bot = bot
+
+        base_url: str = os.getenv("API_URL", "http://localhost:8000")
+        self._api_client = httpx.AsyncClient(base_url=f"{base_url}/games/__template__/")
 
     @override
     async def cog_load(self) -> None:
@@ -45,13 +52,22 @@ class Cog(commands.Cog):
             user = ui.get_user(user=interaction.user)
             logger.debug(f"Command '/command' used by user {user}.")
 
-            game: Game = Game(player=user)
-            await game.start()
+            response = await self._api_client.post(
+                url="start", json={"user_id": interaction.user.id}
+            )
+            response.raise_for_status()
+            game_data: GameResponse = GameResponse.model_validate(response.json())
 
-            view: View = View(game=game, timeout=15.0)
-            embed, icon = view.build_embed()
+            view: View = View(
+                match_id=game_data.match_id,
+                player_id=game_data.player_id,
+                status=game_data.status,
+                api_client=self._api_client,
+                timeout=15.0,
+            )
+            embed, icon = view.build_embed(player=user)
 
-            logger.info(f"New {game} started by user {user}")
+            logger.info(f"New {game_data} started by user {user}")
             await interaction.response.send_message(embed=embed, view=view, file=icon)
 
             # CRITICAL: Save the sent message to the view so the timeout handler can edit it!
