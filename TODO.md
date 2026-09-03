@@ -15,6 +15,8 @@
 ---
 
 ## Web API
+FIX: `Songless` - filtrovat seznam nabízených písniček v `songless-guess` buď podle kategorie nebo podle jazyka nejnovější aktivní hry
+FIX: `Songless` - zjistit, proč se v `songless-guess` hledá ukončuje query pozicí ukazatele a případně opravit
 
 - aktualizovat PROJECT_CONTEXT.md
 - odstranit TYPE_CHECKING sekci z shared/__init__.py
