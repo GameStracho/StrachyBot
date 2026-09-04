@@ -1,3 +1,10 @@
+## [2.2.0] Simple Commands - 2026-09-04
+
+### Fixed
+- Removed accents when searching for a song via the `songless-guess` command
+
+---
+
 ## [2.1.0] I Am Music - 2026-08-31
 
 ### Added

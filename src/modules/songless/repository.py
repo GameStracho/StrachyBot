@@ -1,5 +1,11 @@
 import hashlib
 from datetime import UTC, date, datetime, time
+import unicodedata
+
+def strip_accents(text: str) -> str:
+    """Normalizes string by removing diacritical marks/accents in Python."""
+    nfkd_form = unicodedata.normalize("NFKD", text)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -187,22 +193,26 @@ async def search_songs_by_query(
     Fetches up to 25 songs matching a search string in their title and/or artist name.
     Case-insensitive search via icontains/ilike.
     """
-    query_str = query_str.replace(" - ", " ")
-    query_str = query_str.replace("- ", " ")
-    query_str = query_str.replace(" -", " ")
+    norm_query: str = query_str.replace(" - ", " ")
+    norm_query = norm_query.replace("- ", " ")
+    norm_query = norm_query.replace(" -", " ")
+
+    norm_query = strip_accents(norm_query)
+    norm_title = func.unaccent(SonglessSong.title)
+    norm_artist = func.unaccent(SonglessSong.artist)
 
     # Create concatenated column expressions
-    title_artist = func.concat(SonglessSong.title, " ", SonglessSong.artist)
-    artist_title = func.concat(SonglessSong.artist, " ", SonglessSong.title)
+    title_artist = func.concat(norm_title, " ", norm_artist)
+    artist_title = func.concat(norm_artist, " ", norm_title)
 
     query = (
         select(SonglessSong)
         .where(
             or_(
-                SonglessSong.title.icontains(query_str),
-                SonglessSong.artist.icontains(query_str),
-                title_artist.icontains(query_str),
-                artist_title.icontains(query_str),
+                norm_title.icontains(norm_query),
+                norm_artist.icontains(norm_query),
+                title_artist.icontains(norm_query),
+                artist_title.icontains(norm_query),
             )
         )
         .limit(limit)
