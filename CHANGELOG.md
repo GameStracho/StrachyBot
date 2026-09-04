@@ -1,9 +1,14 @@
 ## [2.1.1] Songless Hotfix - 2026-09-04
 
+### Added
+- New category `Pop` for songs previously assigned to category `All`
+- New category `CZ_SK Rap`
+
 ### Changed
 - Filter songs in `songless-guess` autocomplete by recent pending match category
 - Renamed attribute `match_id` inside `match` table to `id`
 - Removed confirmation from `Skip` button
+- Included all songs from other categories into category `All`
 
 ### Fixed
 - Removed accents when searching for a song via the `songless-guess` command

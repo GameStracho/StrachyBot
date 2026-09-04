@@ -216,7 +216,7 @@ async def search_songs_by_query(
         )
     )
 
-    if category:
+    if category and category != ESonglessCategory.ALL:
         query = query.where(SonglessSong.category == category)
 
     query = query.limit(limit)
@@ -258,7 +258,7 @@ async def get_random_song(
     """Returns a single random song from the database."""
     query = select(SonglessSong).order_by(func.random())
 
-    if category is not None:
+    if category and category != ESonglessCategory.ALL:
         query = query.where(SonglessSong.category == category)
 
     result = await session.execute(query.limit(1))
