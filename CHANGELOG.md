@@ -8,7 +8,6 @@
 
 ### Changed
 - Project structure - split `/src` into `/api/`, `/bot/` and `/shared/`
-- Renamed attribute `match_id` inside `match` table to `id`
 
 ### Removed
 - Automatic `integration` and `unit` tests
