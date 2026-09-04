@@ -10,9 +10,6 @@
 - Project structure - split `/src` into `/api/`, `/bot/` and `/shared/`
 - Renamed attribute `match_id` inside `match` table to `id`
 
-### Fixed
-- Removed accents when searching for a song via the `songless-guess` command
-
 ### Removed
 - Automatic `integration` and `unit` tests
 

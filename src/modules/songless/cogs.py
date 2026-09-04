@@ -182,8 +182,15 @@ class SonglessCog(commands.Cog):
     ) -> list[app_commands.Choice[int]]:
         """Provides up to 25 title/artist suggestions for the guess command."""
 
+        match_record = await db_manager.execute(
+            db_func=get_recent_pending_match, player_id=interaction.user.id
+        )
+
         songs = await db_manager.execute(
-            db_func=search_songs_by_query, raw_query=query.strip(), limit=25
+            db_func=search_songs_by_query,
+            raw_query=query.strip(),
+            category=match_record[1].category if match_record else None,
+            limit=25,
         )
 
         if not songs:

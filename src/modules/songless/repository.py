@@ -181,6 +181,7 @@ async def get_song_by_id(
 async def search_songs_by_query(
     session: AsyncSession,
     raw_query: str,
+    category: ESonglessCategory | None = None,
     limit: int = 25,
 ) -> list[SonglessSong]:
     """
@@ -199,18 +200,19 @@ async def search_songs_by_query(
     title_artist = func.concat(norm_title, " ", norm_artist)
     artist_title = func.concat(norm_artist, " ", norm_title)
 
-    query = (
-        select(SonglessSong)
-        .where(
-            or_(
-                norm_title.icontains(norm_query),
-                norm_artist.icontains(norm_query),
-                title_artist.icontains(norm_query),
-                artist_title.icontains(norm_query),
-            )
+    query = select(SonglessSong).where(
+        or_(
+            norm_title.icontains(norm_query),
+            norm_artist.icontains(norm_query),
+            title_artist.icontains(norm_query),
+            artist_title.icontains(norm_query),
         )
-        .limit(limit)
     )
+
+    if category:
+        query = query.where(SonglessSong.category == category)
+
+    query = query.limit(limit)
 
     result = await session.execute(query)
     return list(result.scalars().all())
