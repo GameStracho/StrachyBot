@@ -3,7 +3,6 @@
 - přejmenovat kategorii `All` na `Pop` a přidat skutečnou kategorii `All`, kde budou písničky ze všech ostatních kategorií
 - přidat `CZ/SK Rap kategorii`
 - odebrat potvrzení u `skip` tlačítka
-- opravit interaction timeout u potvrzovací zprávy
 
 ---
 

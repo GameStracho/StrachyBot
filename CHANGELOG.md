@@ -6,6 +6,7 @@
 
 ### Fixed
 - Removed accents when searching for a song via the `songless-guess` command
+- Extended interaction timeout of Confirmation view buttons
 
 ---
 
