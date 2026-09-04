@@ -26,9 +26,13 @@ PLAYLISTS: list[Playlist] = [
         category=ESonglessCategory.GAMING,
     ),
     Playlist(id=8433016882, title="Undertale Boss Fight Themes", category=ESonglessCategory.GAMING),
-    Playlist(id=10190700002, title="Minecraft Nostalgia Playlist", category=ESonglessCategory.GAMING),
+    Playlist(
+        id=10190700002, title="Minecraft Nostalgia Playlist", category=ESonglessCategory.GAMING
+    ),
     Playlist(id=15349884383, title="Terraria OST — Complete", category=ESonglessCategory.GAMING),
-    Playlist(id=9698871682, title="calamity terraria soundtrack", category=ESonglessCategory.GAMING),
+    Playlist(
+        id=9698871682, title="calamity terraria soundtrack", category=ESonglessCategory.GAMING
+    ),
     Playlist(id=1677006641, title="Hip Hop Hits", category=ESonglessCategory.HIP_HOP),
     Playlist(id=12547421383, title="2020s Rap", category=ESonglessCategory.HIP_HOP),
     Playlist(id=7662551722, title="'10s Rap", category=ESonglessCategory.HIP_HOP),
@@ -61,7 +65,7 @@ PLAYLISTS: list[Playlist] = [
     Playlist(id=8970644442, title="90s Club Hits", category=ESonglessCategory.POP),
     Playlist(id=8974688542, title="80s Club Hits", category=ESonglessCategory.POP),
     Playlist(id=15553533743, title="CZ/SK rap - best of", category=ESonglessCategory.CZSK_RAP),
-    Playlist(id=13822566061, title="rap czsk", category=ESonglessCategory.CZSK_RAP)
+    Playlist(id=13822566061, title="rap czsk", category=ESonglessCategory.CZSK_RAP),
 ]
 
 
