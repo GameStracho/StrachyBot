@@ -1,5 +1,8 @@
 ## [2.2.0] Simple Commands - 2026-09-04
 
+### Changed
+- Filter songs in `songless-guess` autocomplete by recent pending match category
+
 ### Fixed
 - Removed accents when searching for a song via the `songless-guess` command
 

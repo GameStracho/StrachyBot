@@ -177,13 +177,20 @@ class SonglessCog(commands.Cog):
         except Exception as error:
             await ui.handle_error(error=error, interaction=interaction)
 
-    async def song_autocomplete(
+        async def song_autocomplete(
         self, interaction: discord.Interaction, query: str
     ) -> list[app_commands.Choice[int]]:
         """Provides up to 25 title/artist suggestions for the guess command."""
 
+        match_record = await db_manager.execute(
+            db_func=get_recent_pending_match, player_id=interaction.user.id
+        )
+
         songs = await db_manager.execute(
-            db_func=search_songs_by_query, query_str=query.strip(), limit=25
+            db_func=search_songs_by_query,
+            raw_query=query.strip(),
+            category=match_record[1].category if match_record else None,
+            limit=25,
         )
 
         if not songs:

@@ -186,18 +186,19 @@ async def get_song_by_id(
 
 async def search_songs_by_query(
     session: AsyncSession,
-    query_str: str,
+    raw_query: str,
+    category: ESonglessCategory | None = None,
     limit: int = 25,
 ) -> list[SonglessSong]:
     """
     Fetches up to 25 songs matching a search string in their title and/or artist name.
     Case-insensitive search via icontains/ilike.
     """
-    norm_query: str = query_str.replace(" - ", " ")
+    norm_query: str = raw_query.replace(" - ", " ")
     norm_query = norm_query.replace("- ", " ")
     norm_query = norm_query.replace(" -", " ")
 
-    norm_query = strip_accents(norm_query)
+    norm_query = helpers.strip_accents(norm_query)
     norm_title = func.unaccent(SonglessSong.title)
     norm_artist = func.unaccent(SonglessSong.artist)
 
@@ -205,18 +206,19 @@ async def search_songs_by_query(
     title_artist = func.concat(norm_title, " ", norm_artist)
     artist_title = func.concat(norm_artist, " ", norm_title)
 
-    query = (
-        select(SonglessSong)
-        .where(
-            or_(
-                norm_title.icontains(norm_query),
-                norm_artist.icontains(norm_query),
-                title_artist.icontains(norm_query),
-                artist_title.icontains(norm_query),
-            )
+    query = select(SonglessSong).where(
+        or_(
+            norm_title.icontains(norm_query),
+            norm_artist.icontains(norm_query),
+            title_artist.icontains(norm_query),
+            artist_title.icontains(norm_query),
         )
-        .limit(limit)
     )
+
+    if category:
+        query = query.where(SonglessSong.category == category)
+
+    query = query.limit(limit)
 
     result = await session.execute(query)
     return list(result.scalars().all())
