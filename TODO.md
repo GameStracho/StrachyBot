@@ -1,3 +1,12 @@
+## Simple commands
+- `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
+- `/coin-toss`, který hodí mincí
+- `/terraria` - výpis informací o Terraria serveru - název světa, počet hráčů, ip, port, atd.
+- `Songless` - rozšířit kategorii `Gaming` o soundtracky z her Undertale, Minecraft, Persona, Terraria a random lobby hudbu z CSka, PUBG, Rocket League apod.
+
+---
+
+
 ## Uživatelské statistiky
 
 - přidat modulární uživatelské statistiky, kde každá stránka bude zobrazovat statistiky specifické pro danou hru
@@ -48,5 +57,3 @@ https://share.gemini.google/WblCzbkuTEP8
 
 ## Další příkazy
 - `/f1`, který vypíše náhodnou hlášku z Formule 1
-- `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
-- `/coin-toss`, který hodí mincí
