@@ -1,4 +1,4 @@
-## [2.2.0] Simple Commands - 2026-09-04
+## [2.1.1] Songless Hotfix - 2026-09-04
 
 ### Changed
 - Filter songs in `songless-guess` autocomplete by recent pending match category

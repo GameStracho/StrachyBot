@@ -1,8 +1,16 @@
+## Songless hotfix
+- rozšířit kategorii `Gaming` o soundtracky z her Undertale, Minecraft, Persona, Terraria a random lobby hudbu z CSka, PUBG, Rocket League apod.
+- přejmenovat kategorii `All` na `Pop` a přidat skutečnou kategorii `All`, kde budou písničky ze všech ostatních kategorií
+- přidat `CZ/SK Rap kategorii`
+- odebrat potvrzení u `skip` tlačítka
+- opravit interaction timeout u potvrzovací zprávy
+
+---
+
 ## Simple commands
 - `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
 - `/coin-toss`, který hodí mincí
 - `/terraria` - výpis informací o Terraria serveru - název světa, počet hráčů, ip, port, atd.
-- `Songless` - rozšířit kategorii `Gaming` o soundtracky z her Undertale, Minecraft, Persona, Terraria a random lobby hudbu z CSka, PUBG, Rocket League apod.
 
 ---
 
