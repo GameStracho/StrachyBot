@@ -3,6 +3,7 @@
 ### Changed
 - Filter songs in `songless-guess` autocomplete by recent pending match category
 - Renamed attribute `match_id` inside `match` table to `id`
+- Removed confirmation from `Skip` button
 
 ### Fixed
 - Removed accents when searching for a song via the `songless-guess` command

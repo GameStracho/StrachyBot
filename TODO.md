@@ -2,7 +2,6 @@
 - rozšířit kategorii `Gaming` o soundtracky z her Undertale, Minecraft, Persona, Terraria a random lobby hudbu z CSka, PUBG, Rocket League apod.
 - přejmenovat kategorii `All` na `Pop` a přidat skutečnou kategorii `All`, kde budou písničky ze všech ostatních kategorií
 - přidat `CZ/SK Rap kategorii`
-- odebrat potvrzení u `skip` tlačítka
 
 ---
 
