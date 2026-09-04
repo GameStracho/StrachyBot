@@ -1,11 +1,6 @@
 import hashlib
-from datetime import UTC, date, datetime, time
 import unicodedata
-
-def strip_accents(text: str) -> str:
-    """Normalizes string by removing diacritical marks/accents in Python."""
-    nfkd_form = unicodedata.normalize("NFKD", text)
-    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+from datetime import UTC, date, datetime, time
 
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +9,12 @@ from shared import logger
 from shared.models import EMatchStatus, Match
 
 from .models import ESonglessCategory, SonglessMatch, SonglessSong
+
+
+def strip_accents(text: str) -> str:
+    """Normalizes string by removing diacritical marks/accents in Python."""
+    nfkd_form = unicodedata.normalize("NFKD", text)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 
 async def create_song(
@@ -198,7 +199,7 @@ async def search_songs_by_query(
     norm_query = norm_query.replace("- ", " ")
     norm_query = norm_query.replace(" -", " ")
 
-    norm_query = helpers.strip_accents(norm_query)
+    norm_query = strip_accents(norm_query)
     norm_title = func.unaccent(SonglessSong.title)
     norm_artist = func.unaccent(SonglessSong.artist)
 

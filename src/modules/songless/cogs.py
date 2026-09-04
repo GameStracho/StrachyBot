@@ -177,7 +177,7 @@ class SonglessCog(commands.Cog):
         except Exception as error:
             await ui.handle_error(error=error, interaction=interaction)
 
-        async def song_autocomplete(
+    async def song_autocomplete(
         self, interaction: discord.Interaction, query: str
     ) -> list[app_commands.Choice[int]]:
         """Provides up to 25 title/artist suggestions for the guess command."""
