@@ -210,7 +210,11 @@ class SonglessCog(commands.Cog):
             full_name = f"{title} - {artist}"
             if len(full_name) <= max_length:
                 return full_name
-            return f"{full_name[: max_length - 3]}..."
+
+            if len(artist) > (max_length // 2):
+                artist = f"{artist[: (max_length // 2) - 3].strip()}..."
+
+            return f"{title[: max_length - 6 - len(artist)].strip()}... - {artist}"
 
         return [
             app_commands.Choice(

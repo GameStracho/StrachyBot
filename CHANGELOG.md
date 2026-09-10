@@ -1,4 +1,4 @@
-## [2.1.1] Songless Hotfix - 2026-09-04
+## [2.1.1] Songless improvements - 2026-09-10
 
 ### Added
 - New category `Pop` for songs previously assigned to category `All`
@@ -9,6 +9,7 @@
 - Renamed attribute `match_id` inside `match` table to `id`
 - Removed confirmation from `Skip` button
 - Included all songs from other categories into category `All`
+- Updated truncation of song title and artist in `songless-guess` command
 
 ### Fixed
 - Removed accents when searching for a song via the `songless-guess` command
