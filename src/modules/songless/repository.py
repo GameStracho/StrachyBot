@@ -1,4 +1,5 @@
 import hashlib
+import unicodedata
 from datetime import UTC, date, datetime, time
 
 from sqlalchemy import and_, func, or_, select
@@ -8,6 +9,12 @@ from shared import helpers, logger
 from shared.models import EMatchStatus, Match
 
 from .models import ESonglessCategory, SonglessMatch, SonglessSong
+
+
+def strip_accents(text: str) -> str:
+    """Normalizes string by removing diacritical marks/accents in Python."""
+    nfkd_form = unicodedata.normalize("NFKD", text)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 
 async def create_song(
@@ -209,7 +216,7 @@ async def search_songs_by_query(
         )
     )
 
-    if category:
+    if category and category != ESonglessCategory.ALL:
         query = query.where(SonglessSong.category == category)
 
     query = query.limit(limit)
@@ -251,7 +258,7 @@ async def get_random_song(
     """Returns a single random song from the database."""
     query = select(SonglessSong).order_by(func.random())
 
-    if category is not None:
+    if category and category != ESonglessCategory.ALL:
         query = query.where(SonglessSong.category == category)
 
     result = await session.execute(query.limit(1))

@@ -98,29 +98,25 @@ class ConfirmView(discord.ui.View):
     async def confirm_button(
         self, interaction: discord.Interaction, button: discord.ui.Button["ConfirmView"]
     ) -> None:
+        await interaction.response.defer()
         logger.debug(f"ConfirmView ({self.id}) confirmed.")
 
         self.stop()
         await self._on_confirm(interaction)
 
-        # Delete the ephemeral confirmation message after execution
-        if not interaction.response.is_done():
-            await interaction.response.defer()
-
+        # Delete the ephemeral confirmation prompt
         await interaction.delete_original_response()
 
     @discord.ui.button()
     async def cancel_button(
         self, interaction: discord.Interaction, button: discord.ui.Button["ConfirmView"]
     ) -> None:
+        await interaction.response.defer()
         logger.debug(f"ConfirmView ({self.id}) cancelled.")
 
         self.stop()
         if self._on_cancel:
             await self._on_cancel(interaction)
 
-        # Default cancel & cleanup behavior: delete the ephemeral confirmation prompt
-        if not interaction.response.is_done():
-            await interaction.response.defer()
-
+        # Delete the ephemeral confirmation prompt
         await interaction.delete_original_response()

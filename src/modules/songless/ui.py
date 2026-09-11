@@ -213,58 +213,31 @@ class View(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button["View"]
     ) -> None:
         try:
+            await interaction.response.defer(ephemeral=True)
 
-            async def handle_skip(confirm_interaction: discord.Interaction) -> None:
-                logger.debug(
-                    f"User {confirm_interaction.user.display_name} "
-                    f"({confirm_interaction.user.id}) "
-                    f"pressed the 'Skip' button for game {self._game.match_id}."
-                )
-
-                embed: discord.Embed = ui.embed.extract(
-                    target=self.message, index=0, hide_icon=True
-                )
-
-                await self._game.handle_skip()
-                self.update_embed(
-                    embed=embed,
-                    default_status=f"Skipped turn #{len(self._game.guesses)}.",
-                    last_guess=(None, EGuessCategory.INCORRECT),
-                )
-
-                icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
-                embed.set_thumbnail(url=icon_url)
-                files: list[discord.File] = [icon]
-
-                if self.game.status == models.EMatchStatus.PENDING:
-                    files.append(discord.File(fp=self.game.snippet, filename="snippet.mp3"))
-
-                await self.message.edit(embed=embed, view=self, attachments=files)
-
-            songless_embed: discord.Embed = ui.embed.extract(
-                target=self.message, index=0, hide_icon=True
-            )
-            ui.embed.update_field(
-                embed=songless_embed, name="Timeout", value=ui.get_timeout_timestamp(self)
+            logger.debug(
+                f"User {interaction.user.display_name} ({interaction.user.id}) "
+                f"pressed the 'Skip' button for game {self._game.match_id}."
             )
 
-            await self.message.edit(embed=songless_embed, view=self)
+            embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
 
-            timeout: float = min(self.timeout, 30.0) if self.timeout else 30.0
-            confirm_view: ui.ConfirmView = ui.ConfirmView(
-                interaction=interaction,
-                on_confirm=handle_skip,
-                confirm_label="Yes",
-                cancel_label="No",
-                timeout=timeout,
+            await self._game.handle_skip()
+            self.update_embed(
+                embed=embed,
+                default_status=f"Skipped turn #{len(self._game.guesses)}.",
+                last_guess=(None, EGuessCategory.INCORRECT),
             )
-            confirm_embed, confirm_icon = confirm_view.build_embed(
-                question="Are you sure you want to skip this turn?"
-            )
+            ui.embed.update_field(embed=embed, name="Timeout", value=ui.get_timeout_timestamp(self))
 
-            await interaction.response.send_message(
-                embed=confirm_embed, view=confirm_view, file=confirm_icon, ephemeral=True
-            )
+            icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
+            embed.set_thumbnail(url=icon_url)
+            files: list[discord.File] = [icon]
+
+            if self.game.status == models.EMatchStatus.PENDING:
+                files.append(discord.File(fp=self.game.snippet, filename="snippet.mp3"))
+
+            await interaction.edit_original_response(embed=embed, view=self, attachments=files)
         except Exception as error:
             await ui.handle_error(error=error, interaction=interaction)
 
