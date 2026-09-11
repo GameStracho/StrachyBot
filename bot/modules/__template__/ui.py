@@ -2,8 +2,8 @@ import discord
 import httpx
 from typing_extensions import override
 
-from api.modules.__template__.schemas import GameResponse
 from shared import logger, models, types, ui
+from shared.modules.__template__ import GameResponse
 
 
 class View(discord.ui.View):

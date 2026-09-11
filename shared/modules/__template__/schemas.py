@@ -7,11 +7,6 @@ class StartRequest(BaseModel):
     user_id: int
 
 
-class UpdateRequest(BaseModel):
-    status: EMatchStatus
-    moves_count: int = 0
-
-
 class GameResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

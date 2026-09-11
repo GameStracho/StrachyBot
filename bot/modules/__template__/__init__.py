@@ -1,6 +1,6 @@
 from shared import StrachyBot
 
-from .cogs import Cog
+from .cog import Cog
 
 
 async def setup(bot: StrachyBot) -> None:

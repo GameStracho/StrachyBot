@@ -1,3 +1,4 @@
+import json
 import os
 
 import discord
@@ -6,8 +7,8 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from typing_extensions import override
 
-from api.modules.__template__.schemas import GameResponse
 from shared import StrachyBot, logger, ui
+from shared.modules.__template__ import GameResponse, StartRequest
 
 from .ui import View
 
@@ -52,8 +53,9 @@ class Cog(commands.Cog):
             user = ui.get_user(user=interaction.user)
             logger.debug(f"Command '/command' used by user {user}.")
 
+            request = StartRequest(user_id=interaction.user.id)
             response = await self._api_client.post(
-                url="start", json={"user_id": interaction.user.id}
+                url="start", json=json.loads(request.model_dump_json())
             )
             response.raise_for_status()
             game_data: GameResponse = GameResponse.model_validate(response.json())
