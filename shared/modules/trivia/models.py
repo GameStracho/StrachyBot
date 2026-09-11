@@ -1,12 +1,7 @@
-from enum import Enum as PyEnum
-
-from sqlalchemy import BigInteger, Enum, ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column
-
-from shared.models import Base
+from enum import Enum
 
 
-class ETriviaCategory(PyEnum):
+class ETriviaCategory(Enum):
     ANY = "Any"
     GENERAL_KNOWLEDGE = "General Knowledge"
     BOOKS = "Books"
@@ -92,7 +87,7 @@ class ETriviaCategory(PyEnum):
                 raise ValueError(f"No API integer code mapped for {self}")
 
 
-class ETriviaDifficulty(PyEnum):
+class ETriviaDifficulty(Enum):
     ANY = "Any"
     EASY = "Easy"
     MEDIUM = "Medium"
@@ -100,23 +95,3 @@ class ETriviaDifficulty(PyEnum):
 
     def __str__(self) -> str:
         return self.value
-
-
-class TriviaMatch(Base):
-    __tablename__ = "trivia_match"
-
-    match_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("match.id", ondelete="CASCADE"), primary_key=True
-    )
-    question: Mapped[str] = mapped_column(String, nullable=False)
-    correct_answer: Mapped[str] = mapped_column(String, nullable=False)
-
-    # native_enum=True tells Postgres to create a custom ENUM data type
-    category: Mapped[ETriviaCategory] = mapped_column(
-        Enum(ETriviaCategory, native_enum=True), nullable=False, default=ETriviaCategory.ANY
-    )
-
-    # native_enum=True tells Postgres to create a custom ENUM data type
-    difficulty: Mapped[ETriviaDifficulty] = mapped_column(
-        Enum(ETriviaDifficulty, native_enum=True), nullable=False, default=ETriviaDifficulty.ANY
-    )

@@ -7,8 +7,7 @@ from typing import NamedTuple
 from pydantic import BaseModel, field_validator
 
 from shared import api, logger, types
-
-from .models import ETriviaCategory, ETriviaDifficulty
+from shared.modules.trivia import ETriviaCategory, ETriviaDifficulty
 
 
 class TriviaQuestion(BaseModel):
@@ -24,7 +23,6 @@ class TriviaQuestion(BaseModel):
     def decode_html_entities(cls, value: str) -> str:
         if isinstance(value, str):
             return html.unescape(value)
-
         return value
 
     # Validate and decode difficulty field automatically
@@ -33,7 +31,6 @@ class TriviaQuestion(BaseModel):
     def decode_difficulty(cls, value: str) -> str:
         if isinstance(value, str):
             return value.capitalize()
-
         return value
 
     # Validate and decode category field automatically
@@ -44,7 +41,6 @@ class TriviaQuestion(BaseModel):
             return re.sub(
                 pattern="^(Entertainment|Science): ", repl="", string=html.unescape(value)
             )
-
         return value
 
     # Validate and decode items inside lists (like incorrect answers)
@@ -53,7 +49,6 @@ class TriviaQuestion(BaseModel):
     def decode_html_list(cls, value: list[str]) -> list[str]:
         if isinstance(value, list):
             return [html.unescape(item) if isinstance(item, str) else item for item in value]
-
         return value
 
     def __str__(self) -> str:
@@ -131,5 +126,5 @@ class TriviaAPIManager:
         )
 
 
-# Global manager instance
+# Global manager instance shared across all router requests
 api_manager = TriviaAPIManager(batch_size=10)

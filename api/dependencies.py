@@ -19,7 +19,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         )
 
     async with db_manager.db_session_factory() as session:
-        yield session
+        async with session.begin():
+            yield session
 
 
 # Type alias for cleaner route signatures

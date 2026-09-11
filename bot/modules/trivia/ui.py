@@ -1,31 +1,45 @@
 import random
 
 import discord
+import httpx
 from typing_extensions import override
 
 from shared import logger, models, types, ui
-
-from .game import TriviaGame
+from shared.modules.trivia import ETriviaCategory, ETriviaDifficulty, TriviaResponse
 
 
 class TriviaView(discord.ui.View):
-    _game: TriviaGame
-    message: discord.Message | None
+    _match_id: int
+    _player_id: int
+    _status: models.EMatchStatus
+    _question: str
+    _category: ETriviaCategory
+    _difficulty: ETriviaDifficulty
+    _api_client: httpx.AsyncClient
+    message: discord.Message
 
-    def __init__(self, game: TriviaGame, timeout: float = 10.0):
+    def __init__(
+        self,
+        game_data: TriviaResponse,
+        api_client: httpx.AsyncClient,
+        timeout: float = 60.0,
+    ) -> None:
         super().__init__(timeout=timeout)
 
-        self._game = game
+        self._match_id = game_data.match_id
+        self._player_id = game_data.player_id
+        self._status = game_data.status
+        self._question = game_data.question
+        self._category = game_data.category
+        self._difficulty = game_data.difficulty
+        self._api_client = api_client
 
-        options: list[tuple[str, bool]] = [(self._game.correct_answer, True)]
-
-        for incorrect_answer in self._game.incorrect_answers:
-            options.append((incorrect_answer, False))
-
+        options: list[tuple[str, bool]] = [(game_data.correct_answer, True)]
+        for incorrect in game_data.incorrect_answers:
+            options.append((incorrect, False))
         random.shuffle(options)
 
-        for i, option in enumerate(options):
-            label, is_correct = option
+        for i, (label, is_correct) in enumerate(options):
             self.add_item(
                 TriviaButton(
                     parent_view=self,
@@ -36,23 +50,23 @@ class TriviaView(discord.ui.View):
                 )
             )
 
-        logger.debug(
-            f"New TriviaView created for game {self._game.match_id} with {timeout}s timeout."
-        )
+        logger.debug(f"New TriviaView created for game {self._match_id} with {timeout}s timeout.")
 
     @property
-    def game(self) -> TriviaGame:
-        return self._game
+    def match_id(self) -> int:
+        return self._match_id
 
-    def build_embed(self) -> tuple[discord.Embed, discord.File]:
-        user: types.User = self._game.player
+    @property
+    def status(self) -> models.EMatchStatus:
+        return self._status
 
+    def build_embed(self, player: types.User) -> tuple[discord.Embed, discord.File]:
         embed: discord.Embed = discord.Embed(title="Trivia", color=discord.Color.dark_gold())
-        embed.set_author(name=user.display_name, icon_url=user.display_avatar)
+        embed.set_author(name=player.display_name, icon_url=player.display_avatar)
 
-        embed.add_field(name="Category", value=self._game.category, inline=True)
-        embed.add_field(name="Difficulty", value=self._game.difficulty, inline=True)
-        embed.add_field(name="Question", value=self._game.question, inline=False)
+        embed.add_field(name="Category", value=self._category, inline=True)
+        embed.add_field(name="Difficulty", value=self._difficulty, inline=True)
+        embed.add_field(name="Question", value=self._question, inline=False)
         embed.add_field(name="Timeout", value=ui.get_timeout_timestamp(view=self), inline=False)
 
         icon, icon_url = ui.load_attachment(path=__file__, filename="icon.png")
@@ -61,37 +75,38 @@ class TriviaView(discord.ui.View):
         return (embed, icon)
 
     def update_embed(self, embed: discord.Embed) -> None:
-        match self._game.status:
+        match self._status:
             case models.EMatchStatus.WIN:
                 embed.color = discord.Color.green()
             case models.EMatchStatus.LOSS:
                 embed.color = discord.Color.red()
+            case models.EMatchStatus.TIMEOUT:
+                embed.color = ui.COLORS["game_timeout"]
             case _:
-                raise ValueError(self._game.status)
+                raise ValueError(self._status)
 
         self.disable_buttons()
         self.stop()
         ui.embed.remove_field(embed=embed, name="Timeout")
 
     def disable_buttons(self) -> None:
-        logger.debug(f"Revealing answers for game {self._game.match_id}...")
+        logger.debug(f"Revealing answers for game {self._match_id}...")
         for child in self.children:
             if isinstance(child, TriviaButton):
                 child.disable()
-        logger.debug(f"Answers revealed for game {self._game.match_id}.")
+        logger.debug(f"Answers revealed for game {self._match_id}.")
 
     @override
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         try:
-            if interaction.user.id != self._game.player.id:
+            if interaction.user.id != self._player_id:
                 logger.warning(
                     f"Ineligible user {interaction.user.display_name} "
                     f"({interaction.user.id}) "
-                    f"responded to game {self._game.match_id}"
+                    f"responded to game {self._match_id}."
                 )
 
                 embed, icon = ui.embed.build_warning(message="You cannot respond to this game.")
-
                 await interaction.response.send_message(embed=embed, file=icon, ephemeral=True)
                 return False  # Aborts processing and DOES NOT reset/extend the view timeout
 
@@ -102,29 +117,32 @@ class TriviaView(discord.ui.View):
 
     @override
     async def on_timeout(self) -> None:
-        if self._game.status != models.EMatchStatus.PENDING or self.message is None:
+        if self._status != models.EMatchStatus.PENDING:
             return
 
-        self.disable_buttons()
-        await self._game.handle_timeout()
+        response = await self._api_client.patch(url=f"{self._match_id}/timeout")
+        response.raise_for_status()
 
+        self._status = models.EMatchStatus.TIMEOUT
         embed: discord.Embed = ui.embed.extract(target=self.message, index=0, hide_icon=True)
-        embed.color = ui.COLORS["game_timeout"]
-        ui.embed.remove_field(embed=embed, name="Timeout")
-
-        # Edit the original message to show disabled buttons
+        self.update_embed(embed=embed)
         await self.message.edit(embed=embed, view=self)
 
 
-class TriviaButton(discord.ui.Button[TriviaView]):
+class TriviaButton(discord.ui.Button["TriviaView"]):
     _parent_view: TriviaView
     _is_correct: bool
     _is_selected: bool
     _full_answer: str
 
     def __init__(
-        self, parent_view: TriviaView, label: str, is_correct: bool, row: int, emoji: str = ""
-    ):
+        self,
+        parent_view: TriviaView,
+        label: str,
+        is_correct: bool,
+        row: int,
+        emoji: str = "",
+    ) -> None:
         display_label = label[:77] + "..." if len(label) > 80 else label
         super().__init__(
             label=display_label, style=discord.ButtonStyle.secondary, emoji=emoji, row=row
@@ -136,17 +154,23 @@ class TriviaButton(discord.ui.Button[TriviaView]):
         self._full_answer = label
 
         logger.debug(
-            f"New TriviaButton created for game {parent_view.game.match_id}: "
+            f"New TriviaButton created for game {parent_view.match_id}: "
             f"label = '{display_label}', is_correct = {is_correct}, emoji = '{emoji}', row = {row}."
         )
 
     @override
     async def callback(self, interaction: discord.Interaction) -> None:
         try:
-            answer: str = self._full_answer
-            await self._parent_view.game.select_answer(answer=answer)
+            response = await self._parent_view._api_client.patch(
+                url=f"{self._parent_view.match_id}/answer",
+                params={"answer": self._full_answer},
+            )
+            response.raise_for_status()
+            game_data: TriviaResponse = TriviaResponse.model_validate(response.json())
 
             self._is_selected = True
+            self._parent_view._status = game_data.status
+
             embed: discord.Embed = ui.embed.extract(target=interaction, index=0, hide_icon=True)
             self._parent_view.update_embed(embed=embed)
 
