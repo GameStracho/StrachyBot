@@ -1,9 +1,3 @@
-## Songless hotfix
-- rozšířit kategorii `Gaming` o soundtracky z her Undertale, Minecraft, Persona, Terraria a random lobby hudbu z CSka, PUBG, Rocket League apod.
-- přidat `CZ/SK Rap kategorii`
-
----
-
 ## Simple commands
 - `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
 - `/coin-toss`, který hodí mincí

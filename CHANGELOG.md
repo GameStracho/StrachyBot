@@ -1,8 +1,14 @@
-## [2.1.1] Songless improvements - 2026-09-10
+## [2.1.1] Songless improvements - 2026-09-11
 
 ### Added
 - New category `Pop` for songs previously assigned to category `All`
 - New category `CZ_SK Rap`
+- Playlist to category `Gaming` with OSTs of the following games:
+  - Minecraft
+  - Undertale
+  - Terraria + Calamity
+  - Dark Souls
+  - Persona
 
 ### Changed
 - Filter songs in `songless-guess` autocomplete by recent pending match category

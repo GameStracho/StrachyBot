@@ -33,6 +33,8 @@ PLAYLISTS: list[Playlist] = [
     Playlist(
         id=9698871682, title="calamity terraria soundtrack", category=ESonglessCategory.GAMING
     ),
+    Playlist(id=13991298821, title="Dark Souls OST", category=ESonglessCategory.GAMING),
+    Playlist(id=5206913924, title="Persona Series Classics", category=ESonglessCategory.GAMING),
     Playlist(id=1677006641, title="Hip Hop Hits", category=ESonglessCategory.HIP_HOP),
     Playlist(id=12547421383, title="2020s Rap", category=ESonglessCategory.HIP_HOP),
     Playlist(id=7662551722, title="'10s Rap", category=ESonglessCategory.HIP_HOP),
