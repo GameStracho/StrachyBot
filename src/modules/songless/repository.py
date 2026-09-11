@@ -5,7 +5,7 @@ from datetime import UTC, date, datetime, time
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from shared import logger
+from shared import helpers, logger
 from shared.models import EMatchStatus, Match
 
 from .models import ESonglessCategory, SonglessMatch, SonglessSong
@@ -158,7 +158,7 @@ async def has_played_daily_challenge(
     start_of_day = datetime.combine(target_date, time.min)
     end_of_day = datetime.combine(target_date, time.max)
 
-    wordle_matches = (
+    songless_matches = (
         select(func.count())
         .select_from(SonglessMatch)
         .join(Match, SonglessMatch.match_id == Match.id)
@@ -171,7 +171,7 @@ async def has_played_daily_challenge(
         )
     )
 
-    result = await session.execute(wordle_matches)
+    result = await session.execute(songless_matches)
     count = result.scalar() or 0
     return count > 0
 
@@ -199,7 +199,7 @@ async def search_songs_by_query(
     norm_query = norm_query.replace("- ", " ")
     norm_query = norm_query.replace(" -", " ")
 
-    norm_query = strip_accents(norm_query)
+    norm_query = helpers.strip_accents(norm_query)
     norm_title = func.unaccent(SonglessSong.title)
     norm_artist = func.unaccent(SonglessSong.artist)
 

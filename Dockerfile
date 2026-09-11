@@ -7,8 +7,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy bot code
+# Copy application code
 COPY . .
 
-# Run the bot
-CMD ["python", "src/main.py"]
+# Set Python path to app root
+ENV PYTHONPATH=/app
+
+# Default command (can be overridden by docker-compose)
+CMD ["python", "bot/main.py"]

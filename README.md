@@ -3,7 +3,16 @@
 [![](https://img.shields.io/badge/Invite_Bot-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/oauth2/authorize?client_id=1024635572591001630&permissions=378880&integration_type=0&scope=bot+applications.commands)
 
 ## 📌 About
-Discord bot with fun mini-games like *Trivia*, *Wordle* and *Tic-Tac-Toe* built with **Python** and **[discord.py](https://discordpy.readthedocs.io/en/stable/)**. 
+Modular Discord bot and backend service with fun mini-games like *Trivia*, *Wordle*, and *Tic-Tac-Toe* built with **Python 3.11+**, **[FastAPI](https://fastapi.tiangolo.com/)**, and **[discord.py](https://discordpy.readthedocs.io/en/stable/)**.
+
+---
+
+## 🏗️ Architecture Overview
+
+StrachyBot is organized as a monorepo containing:
+- **`shared/`**: Core shared library (database singleton engine, async logger to DB, models, and shared schemas).
+- **`api/`**: FastAPI REST & WebSocket server acting as the application brain and single source of truth.
+- **`bot/`**: Discord client handling slash commands and interactive views via the backend API.
 
 ---
 
@@ -24,87 +33,73 @@ Discord bot with fun mini-games like *Trivia*, *Wordle* and *Tic-Tac-Toe* built 
 
 ### Option 1: Local Development
 **Prerequisites**
- - Install [Python](https://www.python.org/downloads/)
- - Install [Docker](https://docs.docker.com/engine/install/)
- - Install [Docker Compose](https://docs.docker.com/compose/install/)
+ - Install [Python 3.11+](https://www.python.org/downloads/)
+ - Install [Docker](https://docs.docker.com/engine/install/) & [Docker Compose](https://docs.docker.com/compose/install/)
 
 1. Clone the repository and navigate into it:
    ```bash
    git clone https://github.com/GameStracho/StrachyBot
    cd StrachyBot
    ```
-2. Make the setup script executable and run the script.
-   > Make sure to select `Development` mode during setup.
+2. Make the setup script executable and run the script:
+   > Select `1) Development` mode during setup.
    ```bash
    chmod u+x scripts/setup.sh
    ./scripts/setup.sh
    ```
-3. (Optional) *VS Code Configuration:* Ensure your python interpreter is set to the virtual environment. Press `Ctrl+Shift+P` (or `Cmd+Shift+P`), search for **Python: Select Interpreter**, and choose the one inside `./venv/bin/python`.
-4. Run docker services (database and adminer).
-   > Upon start you can access adminer (database interface) at *localhost:ADMINER_PORT* (*[localhost:8080](http://localhost:8080/)* by default)
+3. Start database and adminer via Docker:
    ```bash
-    docker compose up --build
-
-    # or start in detached (background) process
-    docker compose up --build -d
-    ```
-5. Update database to latest migration.
+   docker compose up -d
+   ```
+   > Access Adminer at *[localhost:8080](http://localhost:8080/)*.
+4. Run database migrations:
    ```bash
    alembic upgrade head
    ```
-6.  Run the bot locally.
-    ```bash
-    # Linux/macOS
-    python3 src/main.py
-
-    # Windows
-    python src/main.py
-    ```
-
-### Option 2: Docker hosting (Recommended)
-**Prerequisites**
- - Install [Docker](https://docs.docker.com/engine/install/)
- - Install [Docker Compose](https://docs.docker.com/compose/install/)
-
-1. Clone the repository and navigate into it:
+5. Run the API and Bot services locally:
    ```bash
-   git clone https://github.com/GameStracho/StrachyBot
-   cd StrachyBot
-   ```
-2. Make the setup script executable and run the script.
-   > Make sure to select `Production` mode during setup.
-   ```bash
-   chmod u+x scripts/setup.sh
-   ./scripts/setup.sh
-   ```
-3. Build and start the bot via docker.
-   > Upon start you can access adminer (database interface) at *localhost:ADMINER_PORT* (*[localhost:8080](http://localhost:8080/)* by default)
-   ```bash
-    docker compose up --build
+   # Terminal 1: Run FastAPI backend
+   uvicorn api.main:app --reload --port 8000
 
-    # or start in detached (background) process
-    docker compose up --build -d
+   # Terminal 2: Run Discord Bot client
+   python bot/main.py
    ```
+
+### Option 2: Docker Hosting (Production / Profiles)
+StrachyBot supports dedicated Docker Compose profiles:
+- **`development`**: Starts Postgres, Socat port forwarder, and Adminer.
+- **`bot`**: Starts Postgres, Adminer, API (internal network only), and the Discord Bot.
+- **`api`**: Starts Postgres, Adminer, and the API server with port exposed.
+- **`production`**: Starts Postgres, Adminer, API (port exposed), and the Discord Bot.
+
+To deploy via Docker:
+```bash
+./scripts/setup.sh  # Select your desired mode
+
+# Build and start services
+docker compose up --build -d
+```
 
 ### Automatic database backups (optional)
 1. Create a new **private** StrachyBotBackups repository on [GitHub](https://github.com/new)
 2. Add SSH key to your [GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
-3. Clone the StrachyBotBackups repository into `backups`
+3. Clone the StrachyBotBackups repository into `backups`:
    ```bash
-      git clone git@github.com:YOUR-GITHUB-USERNAME/StrachyBotBackups.git backups
+   git clone git@github.com:YOUR-GITHUB-USERNAME/StrachyBotBackups.git backups
    ```
-4. Update backup script's privileges to make it executable
+4. Update backup script's privileges:
    ```bash
    chmod +x scripts/backup.sh
    ```
-5. Open cron manager terminal.
+5. Open cron manager:
    ```bash
    crontab -e
    ```
-6. Add new cron job to the **bottom of the file**. This job executes the backup script every dat at 2 am and logs errors into `backups/err.log`.
+6. Add new cron job:
    ```bash
    0 2 * * * /bin/bash /absolute-path-to-StrachyBot/scripts/backup.sh 2> /absolute-path-to-StrachyBot/backups/err.log
    ```
+
 ---
 
 ## ⚙️ Developer Commands
@@ -123,14 +118,12 @@ Discord bot with fun mini-games like *Trivia*, *Wordle* and *Tic-Tac-Toe* built 
 
 ## 📄 Developer Reference
 
-Information about the codebase is documented inside [PROJECT_CONTEXT](PROJECT_CONTEXT.md).
+Information about the codebase is documented inside [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md).
 
 ---
 
 ## 🔑 License
 This project is licensed under the **GNU General Public License** - see the [LICENSE](LICENSE) file for details.
 
-
 ## 🔁 Changelog
-
-To see a full list of changes between releases, please refer to [CHANGELOG](CHANGELOG.md) file.
+To see a full list of changes between releases, please refer to the [CHANGELOG.md](CHANGELOG.md) file.

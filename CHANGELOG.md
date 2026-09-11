@@ -1,3 +1,19 @@
+## [2.2.0] Web API - 2026-09-02
+
+### Added
+- Rest API server that handles module logic and database records
+- Docker Compose profiles:
+  - `bot` - runs Discord bot with internal API server
+  - `api` - runs API server on exposed host port
+
+### Changed
+- Project structure - split `/src` into `/api/`, `/bot/` and `/shared/`
+
+### Removed
+- Automatic `integration` and `unit` tests
+
+---
+
 ## [2.1.1] Songless improvements - 2026-09-11
 
 ### Added

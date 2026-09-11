@@ -1,5 +1,5 @@
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = [".", "src"]
 
 [tool.ruff]
 line-length = 100
@@ -23,7 +23,7 @@ ignore = [
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-single-line = false
-known-first-party = ["shared", "modules", "console"] # Treat these as local imports
+known-first-party = ["shared", "api", "bot", "modules"] # Treat these as local imports
 
 [tool.ruff.format]
 quote-style = "double"       # "double" or "single"

@@ -7,6 +7,11 @@ types-colorama == 0.4.15
 # JSON parsing
 pydantic == 2.13.4
 
+# API server
+fastapi == 0.115.8
+uvicorn[standard] == 0.34.0
+httpx == 0.28.1
+
 # database
 sqlalchemy == 2.0.51
 asyncpg == 0.31.0
