@@ -1,3 +1,28 @@
+## [2.1.1] Songless improvements - 2026-09-11
+
+### Added
+- New category `Pop` for songs previously assigned to category `All`
+- New category `CZ_SK Rap`
+- Playlist to category `Gaming` with OSTs of the following games:
+  - Minecraft
+  - Undertale
+  - Terraria + Calamity
+  - Dark Souls
+  - Persona
+
+### Changed
+- Filter songs in `songless-guess` autocomplete by recent pending match category
+- Renamed attribute `match_id` inside `match` table to `id`
+- Removed confirmation from `Skip` button
+- Included all songs from other categories into category `All`
+- Updated truncation of song title and artist in `songless-guess` command
+
+### Fixed
+- Removed accents when searching for a song via the `songless-guess` command
+- Extended interaction timeout of Confirmation view buttons
+
+---
+
 ## [2.1.0] I Am Music - 2026-08-31
 
 ### Added

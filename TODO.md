@@ -1,3 +1,11 @@
+## Simple commands
+- `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
+- `/coin-toss`, který hodí mincí
+- `/terraria` - výpis informací o Terraria serveru - název světa, počet hráčů, ip, port, atd.
+
+---
+
+
 ## Uživatelské statistiky
 
 - přidat modulární uživatelské statistiky, kde každá stránka bude zobrazovat statistiky specifické pro danou hru
@@ -19,7 +27,6 @@
 - automaticky aktualizovat všechny `PENDING` hry na `TIMEOUT` při vypínání bota
 - Zachytit error s nedostupnou databází při startu bota, vypsat jednoduchou chybovou hlášku a bota ukončit
 - odstranit název modulu z vlastních tříd uvnitř modulů (např. `WordleView` -> `View`, `TriviaButton` -> `Button`, `WordleGuessModal` -> `GuessModal`, `WordleGame` -> `Game`, atd.)
-- - přejmenovat atribut `match_id` v tabulce `match` na `id`
 
 https://share.gemini.google/prmBNFuzUWzR
 https://share.gemini.google/WblCzbkuTEP8
@@ -36,7 +43,6 @@ https://share.gemini.google/WblCzbkuTEP8
 ---
 
 ## Další mini-hry
-- Songless
 - Spoj 4 (Connect 4)
 - Kámen-nůžky-papír(-spock-lizard)
 - 2048
@@ -50,5 +56,3 @@ https://share.gemini.google/WblCzbkuTEP8
 
 ## Další příkazy
 - `/f1`, který vypíše náhodnou hlášku z Formule 1
-- `/web` nebo `/website`, který bude odkazovat na mojí webovou stránku `strachy.win`
-- `/coin-toss`, který hodí mincí

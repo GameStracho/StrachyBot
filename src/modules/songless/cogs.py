@@ -25,6 +25,16 @@ PLAYLISTS: list[Playlist] = [
         title="League Of Legends + Arcane Soundtrack",
         category=ESonglessCategory.GAMING,
     ),
+    Playlist(id=8433016882, title="Undertale Boss Fight Themes", category=ESonglessCategory.GAMING),
+    Playlist(
+        id=10190700002, title="Minecraft Nostalgia Playlist", category=ESonglessCategory.GAMING
+    ),
+    Playlist(id=15349884383, title="Terraria OST — Complete", category=ESonglessCategory.GAMING),
+    Playlist(
+        id=9698871682, title="calamity terraria soundtrack", category=ESonglessCategory.GAMING
+    ),
+    Playlist(id=13991298821, title="Dark Souls OST", category=ESonglessCategory.GAMING),
+    Playlist(id=5206913924, title="Persona Series Classics", category=ESonglessCategory.GAMING),
     Playlist(id=1677006641, title="Hip Hop Hits", category=ESonglessCategory.HIP_HOP),
     Playlist(id=12547421383, title="2020s Rap", category=ESonglessCategory.HIP_HOP),
     Playlist(id=7662551722, title="'10s Rap", category=ESonglessCategory.HIP_HOP),
@@ -40,22 +50,24 @@ PLAYLISTS: list[Playlist] = [
     Playlist(id=8621268482, title="80s Rock", category=ESonglessCategory.ROCK),
     Playlist(id=1405240385, title="70s Rock", category=ESonglessCategory.ROCK),
     Playlist(id=1437011185, title="60s Rock", category=ESonglessCategory.ROCK),
-    Playlist(id=3155776842, title="Top Worldwide", category=ESonglessCategory.ALL),
-    Playlist(id=2098157264, title="Global Hits", category=ESonglessCategory.ALL),
-    Playlist(id=13650203641, title="20s Pop", category=ESonglessCategory.ALL),
-    Playlist(id=8282573142, title="10s Pop", category=ESonglessCategory.ALL),
-    Playlist(id=8326097522, title="00s Pop", category=ESonglessCategory.ALL),
-    Playlist(id=8311123682, title="90s Pop", category=ESonglessCategory.ALL),
-    Playlist(id=8512471762, title="80s Pop", category=ESonglessCategory.ALL),
-    Playlist(id=756018311, title="70s Pop", category=ESonglessCategory.ALL),
-    Playlist(id=8962730322, title="60s Pop", category=ESonglessCategory.ALL),
-    Playlist(id=706093725, title="Global Dance Hits", category=ESonglessCategory.ALL),
-    Playlist(id=13651021241, title="20s Dance", category=ESonglessCategory.ALL),
-    Playlist(id=2159765062, title="10s Dance", category=ESonglessCategory.ALL),
-    Playlist(id=4135818362, title="00s Dance", category=ESonglessCategory.ALL),
-    Playlist(id=4135981802, title="90s Dance", category=ESonglessCategory.ALL),
-    Playlist(id=8970644442, title="90s Club Hits", category=ESonglessCategory.ALL),
-    Playlist(id=8974688542, title="80s Club Hits", category=ESonglessCategory.ALL),
+    Playlist(id=3155776842, title="Top Worldwide", category=ESonglessCategory.POP),
+    Playlist(id=2098157264, title="Global Hits", category=ESonglessCategory.POP),
+    Playlist(id=13650203641, title="20s Pop", category=ESonglessCategory.POP),
+    Playlist(id=8282573142, title="10s Pop", category=ESonglessCategory.POP),
+    Playlist(id=8326097522, title="00s Pop", category=ESonglessCategory.POP),
+    Playlist(id=8311123682, title="90s Pop", category=ESonglessCategory.POP),
+    Playlist(id=8512471762, title="80s Pop", category=ESonglessCategory.POP),
+    Playlist(id=756018311, title="70s Pop", category=ESonglessCategory.POP),
+    Playlist(id=8962730322, title="60s Pop", category=ESonglessCategory.POP),
+    Playlist(id=706093725, title="Global Dance Hits", category=ESonglessCategory.POP),
+    Playlist(id=13651021241, title="20s Dance", category=ESonglessCategory.POP),
+    Playlist(id=2159765062, title="10s Dance", category=ESonglessCategory.POP),
+    Playlist(id=4135818362, title="00s Dance", category=ESonglessCategory.POP),
+    Playlist(id=4135981802, title="90s Dance", category=ESonglessCategory.POP),
+    Playlist(id=8970644442, title="90s Club Hits", category=ESonglessCategory.POP),
+    Playlist(id=8974688542, title="80s Club Hits", category=ESonglessCategory.POP),
+    Playlist(id=15553533743, title="CZ/SK rap - best of", category=ESonglessCategory.CZSK_RAP),
+    Playlist(id=13822566061, title="rap czsk", category=ESonglessCategory.CZSK_RAP),
 ]
 
 
@@ -182,8 +194,15 @@ class SonglessCog(commands.Cog):
     ) -> list[app_commands.Choice[int]]:
         """Provides up to 25 title/artist suggestions for the guess command."""
 
+        match_record = await db_manager.execute(
+            db_func=get_recent_pending_match, player_id=interaction.user.id
+        )
+
         songs = await db_manager.execute(
-            db_func=search_songs_by_query, query_str=query.strip(), limit=25
+            db_func=search_songs_by_query,
+            raw_query=query.strip(),
+            category=match_record[1].category if match_record else None,
+            limit=25,
         )
 
         if not songs:
@@ -193,7 +212,11 @@ class SonglessCog(commands.Cog):
             full_name = f"{title} - {artist}"
             if len(full_name) <= max_length:
                 return full_name
-            return f"{full_name[: max_length - 3]}..."
+
+            if len(artist) > (max_length // 2):
+                artist = f"{artist[: (max_length // 2) - 3].strip()}..."
+
+            return f"{title[: max_length - 6 - len(artist)].strip()}... - {artist}"
 
         return [
             app_commands.Choice(
@@ -217,7 +240,7 @@ class SonglessCog(commands.Cog):
                 db_func=get_recent_pending_match, player_id=user.id
             )
 
-            if not game or not active_game_views.get(game[0].match_id):
+            if not game or not active_game_views.get(game[0].id):
                 warning_embed, warning_icon = ui.embed.build_warning(
                     "No active game found. Use command `/songless` to start a new game."
                 )
@@ -228,7 +251,7 @@ class SonglessCog(commands.Cog):
                 logger.debug(f"No active game found for user {user}.")
                 return
 
-            view: View = active_game_views[game[0].match_id]
+            view: View = active_game_views[game[0].id]
             default_status: str = "Guess submitted."
             guess = None
 

@@ -12,8 +12,10 @@ class ESonglessCategory(PyEnum):
     ALL = "All"
     HIP_HOP = "Hip-Hop"
     ROCK = "Rock"
+    POP = "Pop"
     CZECH_HITS = "Czech hits"
     GAMING = "Gaming"
+    CZSK_RAP = "CZ/SK Rap"
 
     def __str__(self) -> str:
         return self.value
@@ -34,7 +36,7 @@ class SonglessMatch(Base):
     __table_args__ = (CheckConstraint("guesses_count BETWEEN 0 AND 6", name="valid_guesses"),)
 
     match_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("match.match_id", ondelete="CASCADE"), primary_key=True
+        BigInteger, ForeignKey("match.id", ondelete="CASCADE"), primary_key=True
     )
     song_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("songless_song.id", ondelete="RESTRICT"), nullable=False

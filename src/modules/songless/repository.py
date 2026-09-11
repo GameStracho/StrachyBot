@@ -1,4 +1,5 @@
 import hashlib
+import unicodedata
 from datetime import UTC, date, datetime, time
 
 from sqlalchemy import and_, func, or_, select
@@ -8,6 +9,12 @@ from shared import logger
 from shared.models import EMatchStatus, Match
 
 from .models import ESonglessCategory, SonglessMatch, SonglessSong
+
+
+def strip_accents(text: str) -> str:
+    """Normalizes string by removing diacritical marks/accents in Python."""
+    nfkd_form = unicodedata.normalize("NFKD", text)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 
 async def create_song(
@@ -82,11 +89,11 @@ async def create_match(
         await session.flush()
 
         child_match: SonglessMatch = SonglessMatch(
-            match_id=parent_match.match_id, song_id=song_id, category=category, is_daily=is_daily
+            match_id=parent_match.id, song_id=song_id, category=category, is_daily=is_daily
         )
         session.add(child_match)
 
-        match_id = parent_match.match_id
+        match_id = parent_match.id
 
     logger.debug(f"songless: New match ({match_id}) created.")
     return match_id
@@ -111,7 +118,7 @@ async def update_match(
 
     async with session.begin():
         parent_match: Match | None = (
-            await session.execute(select(Match).where(Match.match_id == match_id))
+            await session.execute(select(Match).where(Match.id == match_id))
         ).scalar_one_or_none()
 
         child_match: SonglessMatch | None = (
@@ -154,7 +161,7 @@ async def has_played_daily_challenge(
     wordle_matches = (
         select(func.count())
         .select_from(SonglessMatch)
-        .join(Match, SonglessMatch.match_id == Match.match_id)
+        .join(Match, SonglessMatch.match_id == Match.id)
         .where(
             Match.player_id == player_id,
             SonglessMatch.is_daily.is_(True),
@@ -180,33 +187,39 @@ async def get_song_by_id(
 
 async def search_songs_by_query(
     session: AsyncSession,
-    query_str: str,
+    raw_query: str,
+    category: ESonglessCategory | None = None,
     limit: int = 25,
 ) -> list[SonglessSong]:
     """
     Fetches up to 25 songs matching a search string in their title and/or artist name.
     Case-insensitive search via icontains/ilike.
     """
-    query_str = query_str.replace(" - ", " ")
-    query_str = query_str.replace("- ", " ")
-    query_str = query_str.replace(" -", " ")
+    norm_query: str = raw_query.replace(" - ", " ")
+    norm_query = norm_query.replace("- ", " ")
+    norm_query = norm_query.replace(" -", " ")
+
+    norm_query = strip_accents(norm_query)
+    norm_title = func.unaccent(SonglessSong.title)
+    norm_artist = func.unaccent(SonglessSong.artist)
 
     # Create concatenated column expressions
-    title_artist = func.concat(SonglessSong.title, " ", SonglessSong.artist)
-    artist_title = func.concat(SonglessSong.artist, " ", SonglessSong.title)
+    title_artist = func.concat(norm_title, " ", norm_artist)
+    artist_title = func.concat(norm_artist, " ", norm_title)
 
-    query = (
-        select(SonglessSong)
-        .where(
-            or_(
-                SonglessSong.title.icontains(query_str),
-                SonglessSong.artist.icontains(query_str),
-                title_artist.icontains(query_str),
-                artist_title.icontains(query_str),
-            )
+    query = select(SonglessSong).where(
+        or_(
+            norm_title.icontains(norm_query),
+            norm_artist.icontains(norm_query),
+            title_artist.icontains(norm_query),
+            artist_title.icontains(norm_query),
         )
-        .limit(limit)
     )
+
+    if category and category != ESonglessCategory.ALL:
+        query = query.where(SonglessSong.category == category)
+
+    query = query.limit(limit)
 
     result = await session.execute(query)
     return list(result.scalars().all())
@@ -245,7 +258,7 @@ async def get_random_song(
     """Returns a single random song from the database."""
     query = select(SonglessSong).order_by(func.random())
 
-    if category is not None:
+    if category and category != ESonglessCategory.ALL:
         query = query.where(SonglessSong.category == category)
 
     result = await session.execute(query.limit(1))
@@ -262,7 +275,7 @@ async def get_recent_pending_match(
     """
     query = (
         select(Match, SonglessMatch)
-        .join(SonglessMatch, Match.match_id == SonglessMatch.match_id)
+        .join(SonglessMatch, Match.id == SonglessMatch.match_id)
         .where(
             Match.player_id == player_id,
             Match.status == EMatchStatus.PENDING,
